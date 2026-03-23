@@ -3,452 +3,192 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Newmera Pro BeReal</title>
+<title>Newmera</title>
+
+<!-- iOS 앱 느낌 -->
+<meta name="theme-color" content="#000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
 <style>
 :root {
-  --ios-blue: #007aff;
-  --ios-red: #ff3b30;
-  --ios-yellow: #ffd60a;
-  --safe-top: env(safe-area-inset-top);
-  --safe-bottom: env(safe-area-inset-bottom);
+  --ios-blue:#007aff;
+  --ios-yellow:#ffd60a;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
-html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:#000;color:#fff;font-family:-apple-system;}
 
-.screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: #000; }
-.screen.active { display: flex; }
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;}
 
-/* TOP BAR */
-#topBar { 
-  height: 60px;
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  padding: 0 20px; 
-  margin-top: max(var(--safe-top), 10px);
-  z-index: 100;
-  position: absolute;
-  top: 0; left: 0; right: 0;
+/* top */
+#topBar{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;justify-content:space-between;
+  padding:20px;
 }
-.top-btn { 
-  background: rgba(40,40,40,0.6); 
-  border: none;
-  color: #fff; 
-  height: 40px; 
-  border-radius: 20px; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  font-size: 14px; 
-  backdrop-filter: blur(15px); 
-  padding: 0 16px;
-  font-weight: 700;
+.top-btn{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(25px);
+  border:none;color:#fff;
+  padding:10px 16px;border-radius:20px;
+  font-weight:700;
 }
-.top-btn.active { background: #fff; color: #000; }
 
-#ratioMenu {
-  position: absolute;
-  top: 65px; left: 20px;
-  background: rgba(30,30,30,0.95);
-  border-radius: 14px;
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 200;
-  border: 1px solid rgba(255,255,255,0.1);
+/* camera */
+#vfWrapper{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
-#ratioMenu.show { display: flex; }
-.ratio-opt { padding: 14px 24px; font-size: 15px; font-weight: 600; text-align: center; border-bottom: 0.5px solid #333; }
-.ratio-opt.selected { color: var(--ios-yellow); }
+#vf{
+  width:90%;
+  aspect-ratio:3/4;
+  border-radius:36px;
+  overflow:hidden;
+  background:#111;
+}
+#mainVid{width:100%;height:100%;object-fit:cover;}
+#mainVid.mirror{transform:scaleX(-1);}
 
-/* VIEWPORT - 3:4 default scale */
-#vfWrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 12px;
-  margin-top: 60px;
-  margin-bottom: 200px;
+/* bottom */
+#cameraBottom{
+  height:160px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
-#vf { 
-  position: relative; 
-  width: 100%; 
-  aspect-ratio: 3/4;
-  overflow: hidden; 
-  background: #111;
-  border-radius: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+#shutter{
+  width:80px;height:80px;
+  border-radius:50%;
+  border:5px solid #fff;
+  display:flex;align-items:center;justify-content:center;
 }
-#mainVid { width: 100%; height: 100%; object-fit: cover; }
-#mainVid.mirror { transform: scaleX(-1); }
+#shutterInner{
+  width:60px;height:60px;
+  border-radius:50%;
+  background:linear-gradient(145deg,#fff,#ddd);
+}
+#shutter:active{transform:scale(.92);}
 
-/* UI Overlays */
-#overlayMsg {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 54px;
-  font-weight: 900;
-  color: #fff;
-  z-index: 150;
-  display: none;
-  text-shadow: 0 0 40px rgba(0,0,0,1);
+/* toast */
+#toast{
+  position:fixed;
+  top:120px;left:50%;
+  transform:translateX(-50%);
+  background:#fff;color:#000;
+  padding:10px 20px;
+  border-radius:20px;
+  opacity:0;
+  transition:.3s;
 }
-#flashEffect { position: absolute; inset: 0; background: #fff; z-index: 200; display: none; }
-
-/* BOTTOM UI */
-#cameraBottom { 
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 200px;
-  background: #000; 
-  padding-bottom: max(var(--safe-bottom), 15px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-#modesWrapper { display: flex; justify-content: center; gap: 32px; margin-bottom: 24px; }
-.mode { font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.3); }
-.mode.active { color: var(--ios-yellow); }
-
-#shutterRow { width: 100%; display: flex; align-items: center; justify-content: space-evenly; }
-#thumb { 
-  width: 56px; height: 56px; border-radius: 12px; background: #1a1a1a; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); 
-}
-#thumb img { width: 100%; height: 100%; object-fit: cover; }
-#shutter { width: 80px; height: 80px; border-radius: 50%; border: 5px solid #fff; display: flex; align-items: center; justify-content: center; }
-#shutterInner { width: 62px; height: 62px; border-radius: 50%; background: #fff; }
-
-/* 3x3 GALLERY */
-#galleryGrid { 
-  flex: 1; 
-  overflow-y: auto; 
-  display: grid; 
-  grid-template-columns: repeat(3, 1fr); 
-  gap: 2px; 
-  padding: 2px;
-  background: #000;
-}
-.gItem { 
-  width: 100%; 
-  aspect-ratio: 1; 
-  position: relative; 
-  background: #111; 
-}
-.gItem img.main { width: 100%; height: 100%; object-fit: cover; }
-.gItem .sub-pip { 
-  position: absolute; 
-  top: 5%; left: 5%; 
-  width: 32%; 
-  aspect-ratio: 3/4;
-  border: 1px solid #fff; 
-  border-radius: 4px; 
-  overflow: hidden;
-}
-.gItem .sub-pip img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-/* PHOTO VIEWER (BeReal Layout + DoubleTap) */
-#photoViewer { position: fixed; inset: 0; background: #000; display: none; z-index: 500; flex-direction: column; }
-#photoViewer.active { display: flex; }
-#pvContainer { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; }
-#pvBox { 
-  position: relative; 
-  width: 100%; 
-  aspect-ratio: 3/4; 
-  border-radius: 36px; 
-  overflow: hidden; 
-  background: #111; 
-  cursor: pointer;
-}
-#pvMainImg { width: 100%; height: 100%; object-fit: cover; transition: 0.2s opacity; }
-#pvSubImgWrapper { 
-  position: absolute; 
-  top: 18px; left: 18px; 
-  width: 30%; 
-  aspect-ratio: 3/4;
-  border: 2px solid #fff; 
-  border-radius: 16px; 
-  overflow: hidden; 
-  box-shadow: 0 8px 30px rgba(0,0,0,0.8);
-  z-index: 10;
-}
-#pvSubImg { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-#toast { position: fixed; top: 140px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 28px; border-radius: 30px; font-size: 14px; font-weight: 800; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
-#toast.show { opacity: 1; }
+#toast.show{opacity:1;}
 </style>
 </head>
+
 <body>
 
-<div class="screen active" id="cameraScreen">
+<div class="screen">
   <div id="topBar">
-    <div style="position:relative">
-      <button class="top-btn" onclick="toggleRatioMenu()" id="ratioBtn">3:4</button>
-      <div id="ratioMenu">
-        <div class="ratio-opt" onclick="setRatio('1:1')">1:1</div>
-        <div class="ratio-opt selected" onclick="setRatio('3:4')">3:4</div>
-        <div class="ratio-opt" onclick="setRatio('9:16')">9:16</div>
-      </div>
-    </div>
     <button class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH OFF</button>
   </div>
 
   <div id="vfWrapper">
     <div id="vf">
       <video id="mainVid" autoplay playsinline muted></video>
-      <div id="overlayMsg"></div>
-      <div id="flashEffect"></div>
     </div>
   </div>
 
   <div id="cameraBottom">
-    <div id="modesWrapper">
-      <div class="mode">VIDEO</div>
-      <div class="mode active">PHOTO</div>
-    </div>
-    <div id="shutterRow">
-      <div id="thumb" onclick="openLib()"><img id="thumbImg" src=""></div>
-      <div id="shutter" onclick="handleShutter()"><div id="shutterInner"></div></div>
-      <div id="flipBtn" onclick="flipCam()" style="font-size:26px">🔄</div>
+    <div id="shutter" onclick="handleShutter()">
+      <div id="shutterInner"></div>
     </div>
   </div>
-</div>
-
-<div class="screen" id="libraryScreen">
-  <header style="padding: 60px 20px 20px; display:flex; justify-content:space-between; align-items:center; background:#000;">
-    <h1 style="font-size:30px; font-weight:900;">Memories</h1>
-    <button onclick="closeLib()" style="background:none; border:none; color:var(--ios-blue); font-size:18px; font-weight:700;">Close</button>
-  </header>
-  <div id="galleryGrid"></div>
-</div>
-
-<div id="photoViewer">
-  <header style="padding: max(var(--safe-top), 20px) 20px 10px; display:flex; justify-content:space-between; z-index:20;">
-    <button onclick="closeViewer()" style="color:var(--ios-blue); font-size:18px; background:none; border:none; font-weight:700;">Done</button>
-    <button onclick="deleteItem()" style="color:var(--ios-red); font-size:18px; background:none; border:none; font-weight:600;">Delete</button>
-  </header>
-  <div id="pvContainer">
-    <div id="pvBox" id="pvBox">
-        <img id="pvMainImg">
-        <div id="pvSubImgWrapper"><img id="pvSubImg"></div>
-    </div>
-  </div>
-  <div style="text-align:center; padding: 20px; font-size: 12px; color: #555;">Double Tap to Swap Photos</div>
 </div>
 
 <div id="toast"></div>
 <canvas id="canvas" style="display:none"></canvas>
 
 <script>
-(function() {
-  let stream=null, facing='back', items=[], db=null;
-  let bothMode=false, isProcessing=false;
-  let currentRatio = '3:4';
-  
-  const mainVid = document.getElementById('mainVid');
-  const canvas = document.getElementById('canvas');
-  const overlayMsg = document.getElementById('overlayMsg');
-  const flashEffect = document.getElementById('flashEffect');
-  const thumbImg = document.getElementById('thumbImg');
-  const ratioBtn = document.getElementById('ratioBtn');
-  const ratioMenu = document.getElementById('ratioMenu');
+let stream,facing='back',bothMode=false,isProcessing=false,db;
 
-  // DB Setup
-  const req = indexedDB.open("BeReal_Camera_App_Final_Fixed_v4", 1);
-  req.onupgradeneeded = e => { 
-    db = e.target.result; 
-    db.createObjectStore("media", {keyPath:"id"}); 
-  };
-  req.onsuccess = e => { db = e.target.result; loadItems(); startCam(); };
+const mainVid=document.getElementById('mainVid');
+const canvas=document.getElementById('canvas');
 
-  async function startCam() {
-    if(stream) stream.getTracks().forEach(t=>t.stop());
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: facing==='back'?'environment':'user', width:{ideal:1920}, height:{ideal:1080} } 
-      });
-      mainVid.srcObject = stream;
-      mainVid.className = facing=='front'?'mirror':'';
-    } catch(e) { msg('Camera Error'); }
-  }
+/* DB */
+const req=indexedDB.open("camDB",1);
+req.onupgradeneeded=e=>{
+  db=e.target.result;
+  db.createObjectStore("media",{keyPath:"id"});
+};
+req.onsuccess=e=>{
+  db=e.target.result;
+  startCam();
+};
 
-  window.toggleRatioMenu = () => ratioMenu.classList.toggle('show');
-  window.setRatio = r => {
-    currentRatio = r;
-    ratioBtn.textContent = r;
-    ratioMenu.classList.remove('show');
-    const vf = document.getElementById('vf');
-    if(r==='1:1') vf.style.aspectRatio = '1/1';
-    else if(r==='9:16') vf.style.aspectRatio = '9/16';
-    else vf.style.aspectRatio = '3/4';
-    document.querySelectorAll('.ratio-opt').forEach(opt => opt.classList.toggle('selected', opt.textContent === r));
-  };
-
-  window.toggleBoth = () => {
-    bothMode = !bothMode;
-    const btn = document.getElementById('bothBtn');
-    btn.textContent = bothMode ? 'BOTH ON' : 'BOTH OFF';
-    btn.classList.toggle('active', bothMode);
-  };
-
-  window.handleShutter = async () => {
-    if(isProcessing) return;
-    isProcessing = true;
-
-    if(bothMode) {
-      overlayMsg.textContent = "SMILE!";
-      overlayMsg.style.display = "block";
-      setTimeout(async () => {
-        overlayMsg.style.display = "none";
-        triggerFlashUI();
-        const firstShot = grab();
-        
-        overlayMsg.textContent = "CHANGE!";
-        overlayMsg.style.display = "block";
-        facing = facing === 'back' ? 'front' : 'back';
-        await startCam();
-        
-        setTimeout(() => {
-          let count = 3;
-          overlayMsg.textContent = count;
-          const cdInt = setInterval(async () => {
-            count--;
-            if(count > 0) { overlayMsg.textContent = count; } 
-            else {
-              clearInterval(cdInt);
-              overlayMsg.style.display = 'none';
-              triggerFlashUI();
-              const secondShot = grab();
-              saveItem({ type:'photo', main: firstShot, sub: secondShot, ratio: currentRatio });
-              msg('MEMORIES SAVED');
-              isProcessing = false;
-            }
-          }, 1000);
-        }, 800);
-      }, 600);
-    } else {
-      triggerFlashUI();
-      const data = grab();
-      saveItem({ type:'photo', main: data, ratio: currentRatio });
-      msg('SAVED');
-      isProcessing = false;
-    }
-  };
-
-  function triggerFlashUI() {
-    flashEffect.style.display = 'block';
-    setTimeout(() => { flashEffect.style.display = 'none'; }, 100);
-  }
-
-  function grab() {
-    const ctx = canvas.getContext('2d');
-    const vW = mainVid.videoWidth, vH = mainVid.videoHeight;
-    
-    if(currentRatio === '1:1') { canvas.width = 1080; canvas.height = 1080; }
-    else if(currentRatio === '9:16') { canvas.width = 1080; canvas.height = 1920; }
-    else { canvas.width = 1080; canvas.height = 1440; }
-    
-    const vAspect = vW / vH, tAspect = canvas.width / canvas.height;
-    let sW, sH, sX, sY;
-    if (vAspect > tAspect) { sH = vH; sW = vH * tAspect; sX = (vW - sW) / 2; sY = 0; } 
-    else { sW = vW; sH = vW / tAspect; sX = 0; sY = (vH - sH) / 2; }
-
-    ctx.save();
-    if(facing==='front') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
-    ctx.drawImage(mainVid, sX, sY, sW, sH, 0, 0, canvas.width, canvas.height);
-    ctx.restore();
-    return canvas.toDataURL('image/jpeg', 0.9);
-  }
-
-  function saveItem(item) {
-    item.id = Date.now();
-    const tx = db.transaction("media", "readwrite");
-    tx.objectStore("media").add(item).onsuccess = () => loadItems();
-  }
-
-  function loadItems() {
-    db.transaction("media", "readonly").objectStore("media").getAll().onsuccess = e => {
-      items = e.target.result.sort((a,b)=>b.id-a.id);
-      if(items.length>0) { thumbImg.src = items[0].main; }
-      renderGrid();
-    };
-  }
-
-  window.openLib = () => { document.getElementById('libraryScreen').classList.add('active'); renderGrid(); };
-  window.closeLib = () => document.getElementById('libraryScreen').classList.remove('active');
-
-  function renderGrid() {
-    const grid = document.getElementById('galleryGrid');
-    grid.innerHTML = '';
-    items.forEach((it, i) => {
-      const div = document.createElement('div');
-      div.className = 'gItem';
-      div.innerHTML = `
-        <img src="${it.main}" class="main">
-        ${it.sub ? `<div class="sub-pip"><img src="${it.sub}"></div>` : ''}
-      `;
-      div.onclick = () => openViewer(i);
-      grid.appendChild(div);
-    });
-  }
-
-  // Double Tap Logic
-  let lastTap = 0;
-  let isSwapped = false;
-  let vIdx = 0;
-
-  const pvBox = document.getElementById('pvBox');
-  pvBox.addEventListener('click', e => {
-    const now = Date.now();
-    if (now - lastTap < 300) {
-      swapPhotos();
-    }
-    lastTap = now;
+/* camera */
+async function startCam(){
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  stream=await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:facing==='back'?'environment':'user'}
   });
+  mainVid.srcObject=stream;
+  mainVid.className = facing==='front'?'mirror':'';
+}
 
-  function swapPhotos() {
-    const it = items[vIdx];
-    if (!it.sub) return;
-    isSwapped = !isSwapped;
-    const mainEl = document.getElementById('pvMainImg');
-    const subEl = document.getElementById('pvSubImg');
-    
-    if (isSwapped) {
-      mainEl.src = it.sub;
-      subEl.src = it.main;
-    } else {
-      mainEl.src = it.main;
-      subEl.src = it.sub;
-    }
+/* capture */
+function grab(){
+  const ctx=canvas.getContext('2d');
+  canvas.width=1080;
+  canvas.height=1440;
+  ctx.drawImage(mainVid,0,0,canvas.width,canvas.height);
+  return canvas.toDataURL('image/jpeg',0.7);
+}
+
+/* save */
+function saveItem(it){
+  it.id=Date.now();
+  db.transaction("media","readwrite").objectStore("media").add(it);
+}
+
+/* UI */
+function toggleBoth(){
+  bothMode=!bothMode;
+  document.getElementById('bothBtn').textContent = bothMode?"BOTH ON":"BOTH OFF";
+}
+
+async function handleShutter(){
+  if(isProcessing) return;
+  isProcessing=true;
+
+  if(bothMode){
+    const first=grab();
+
+    facing=facing==='back'?'front':'back';
+    await startCam();
+
+    setTimeout(()=>{
+      const second=grab();
+      saveItem({main:first,sub:second});
+      msg("BOTH SAVED");
+      isProcessing=false;
+    },500);
+  } else {
+    const data=grab();
+    saveItem({main:data});
+    msg("SAVED");
+    isProcessing=false;
   }
+}
 
-  window.openViewer = i => {
-    vIdx = i; const it = items[i];
-    isSwapped = false; // Reset swap state
-    document.getElementById('photoViewer').classList.add('active');
-    document.getElementById('pvMainImg').src = it.main;
-    const subWrapper = document.getElementById('pvSubImgWrapper');
-    if(it.sub) {
-        document.getElementById('pvSubImg').src = it.sub;
-        subWrapper.style.display = 'block';
-    } else {
-        subWrapper.style.display = 'none';
-    }
-  };
-
-  window.closeViewer = () => document.getElementById('photoViewer').classList.remove('active');
-  window.deleteItem = () => {
-    db.transaction("media", "readwrite").objectStore("media").delete(items[vIdx].id).oncomplete = () => {
-      loadItems(); closeViewer();
-    };
-  };
-  window.flipCam = () => { facing=facing==='back'?'front':'back'; startCam(); };
-  function msg(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
-})();
+/* toast */
+function msg(m){
+  const t=document.getElementById('toast');
+  t.textContent=m;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1500);
+}
 </script>
+
 </body>
 </html>
-
