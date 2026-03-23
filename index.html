@@ -62,7 +62,6 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   overflow: hidden;
   z-index: 200;
   border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 #ratioMenu.show { display: flex; }
 .ratio-opt {
@@ -72,7 +71,6 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   color: #fff;
   border-bottom: 0.5px solid rgba(255,255,255,0.1);
   text-align: center;
-  white-space: nowrap;
 }
 .ratio-opt:last-child { border-bottom: none; }
 .ratio-opt.selected { color: var(--ios-yellow); }
@@ -82,6 +80,22 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 #vf { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 40px; transition: all 0.3s ease; background: #111; display: flex; align-items: center; justify-content: center; }
 #mainVid { width: 100%; height: 100%; object-fit: cover; background: #000; }
 #mainVid.mirror { transform: scaleX(-1); }
+
+/* BOTH OVERLAY (Front Camera Preview in Both mode) */
+#bothOverlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 30%;
+  aspect-ratio: 3/4;
+  background: #000;
+  border-radius: 15px;
+  border: 2px solid #fff;
+  overflow: hidden;
+  z-index: 50;
+  display: none;
+}
+#bothOverlay video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
 /* REC UI */
 #recUI { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); background: rgba(255, 59, 48, 0.9); padding: 5px 15px; border-radius: 20px; display: none; align-items: center; gap: 8px; z-index: 110; }
@@ -103,7 +117,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 #shutterInner { width: 56px; height: 56px; border-radius: 50%; background: #fff; transition: 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); }
 #shutter.recording #shutterInner { background: var(--ios-red); border-radius: 12px; transform: scale(0.5); }
 
-/* GALLERY */
+/* GALLERY & VIEWER */
 #galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; background: #000; }
 .gItem { width: 100%; aspect-ratio: 1; background: #1c1c1e; position: relative; overflow: hidden; }
 .gItem img { width: 100%; height: 100%; object-fit: cover; }
@@ -134,6 +148,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   <div id="vfContainer">
     <div id="vf" ontouchstart="handleSwipeStart(event)" ontouchend="handleSwipeEnd(event)">
       <video id="mainVid" autoplay playsinline muted></video>
+      <div id="bothOverlay"><video id="subVid" autoplay playsinline muted></video></div>
       <div id="recUI"><div id="recDot"></div><div id="recTimer">00:00</div></div>
     </div>
   </div>
@@ -167,8 +182,11 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     <button onclick="deleteItem()" style="color:var(--ios-red); font-size:17px; background:none; border:none">Delete</button>
   </header>
   <div style="flex:1; display:flex; align-items:center; justify-content:center; background:#000;">
-    <img id="pvMainImg" style="max-width:100%; max-height:100%; display:none; object-fit:contain">
-    <video id="pvMainVid" controls style="max-width:100%; max-height:100%; display:none; object-fit:contain"></video>
+    <div id="pvMainContainer" style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+        <img id="pvMainImg" style="max-width:100%; max-height:100%; display:none; object-fit:contain">
+        <img id="pvSubImg" style="position:absolute; top:20px; left:20px; width:25%; border:2px solid #fff; border-radius:10px; display:none; z-index:10;">
+        <video id="pvMainVid" controls style="max-width:100%; max-height:100%; display:none; object-fit:contain"></video>
+    </div>
   </div>
 </div>
 
@@ -177,12 +195,13 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 
 <script>
 (function() {
-  let stream=null, facing='back', currentMode='PHOTO', items=[];
+  let stream=null, subStream=null, facing='back', currentMode='PHOTO', items=[];
   let isRec=false, recStart=0, recInt=null, drawInt=null, mediaRec=null, chunks=[];
   let db=null, flash=false, bothMode=false, isProcessing=false;
   let ratioMode = '3:4'; 
 
   const mainVid = document.getElementById('mainVid');
+  const subVid = document.getElementById('subVid');
   const canvas = document.getElementById('canvas');
   const thumbImg = document.getElementById('thumbImg');
   const cameraScreen = document.getElementById('cameraScreen');
@@ -190,8 +209,9 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   const ratioBtn = document.getElementById('ratioBtn');
   const ratioMenu = document.getElementById('ratioMenu');
   const bothBtn = document.getElementById('bothBtn');
+  const bothOverlay = document.getElementById('bothOverlay');
 
-  const req = indexedDB.open("NewmeraPro_Final_V4", 1);
+  const req = indexedDB.open("NewmeraPro_Perfect_V5", 1);
   req.onupgradeneeded = e => { 
     db = e.target.result; 
     if(!db.objectStoreNames.contains("media")) db.createObjectStore("media", {keyPath:"id"}); 
@@ -201,17 +221,28 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   async function startCam() {
     if(stream) stream.getTracks().forEach(t=>t.stop());
     try {
-      const constraints = { 
-        video: { 
-            facingMode: facing==='back'?'environment':'user', 
-            width:{ideal:1920}, 
-            height:{ideal:1080} 
-        } 
-      };
-      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: facing==='back'?'environment':'user', width:{ideal:1920}, height:{ideal:1080} } 
+      });
       mainVid.srcObject = stream;
       mainVid.className = facing=='front'?'mirror':'';
     } catch(e) { msg('Camera Error'); }
+  }
+
+  async function startSubCam() {
+    try {
+        subStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user', width:{ideal:640}, height:{ideal:480} } 
+        });
+        subVid.srcObject = subStream;
+        bothOverlay.style.display = 'block';
+    } catch(e) { bothOverlay.style.display = 'none'; }
+  }
+
+  function stopSubCam() {
+    if(subStream) subStream.getTracks().forEach(t=>t.stop());
+    subStream = null;
+    bothOverlay.style.display = 'none';
   }
 
   window.toggleFlash = () => {
@@ -251,6 +282,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     bothMode = !bothMode;
     bothBtn.textContent = bothMode ? 'BOTH ON' : 'BOTH OFF';
     bothBtn.classList.toggle('active', bothMode);
+    if(bothMode) startSubCam(); else stopSubCam();
   };
 
   let startX=0, cIdx=1;
@@ -270,32 +302,28 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     document.getElementById('modesTrack').style.transform = `translateX(${idx===0?40:-40}px)`;
     document.querySelectorAll('.mode').forEach((m,i)=>m.classList.toggle('active', i===idx));
     
-    bothBtn.style.visibility = (currentMode === 'VIDEO') ? 'hidden' : 'visible';
-    ratioBtn.style.visibility = (currentMode === 'VIDEO') ? 'hidden' : 'visible';
+    bothBtn.style.display = (currentMode === 'VIDEO') ? 'none' : 'flex';
+    ratioBtn.style.display = (currentMode === 'VIDEO') ? 'none' : 'flex';
     document.getElementById('shutterInner').style.background = (currentMode === 'VIDEO') ? 'var(--ios-red)' : '#fff';
     
+    if(currentMode === 'VIDEO') stopSubCam();
+    else if(bothMode) startSubCam();
+
     updateVFRatio();
   };
 
   window.handleShutter = async () => { 
     if(isProcessing) return;
     if(currentMode === 'PHOTO') {
+        isProcessing = true;
+        const mainData = grab(mainVid, facing==='front', 0.9);
+        let subData = null;
         if(bothMode) {
-            isProcessing = true;
-            const backImg = grab(0.9);
-            flipCam();
-            setTimeout(() => {
-                const frontImg = grab(0.9);
-                saveItem({ type:'photo', thumb: backImg, main: backImg, second: frontImg });
-                msg('BOTH SAVED');
-                flipCam();
-                isProcessing = false;
-            }, 1000);
-        } else {
-            const data = grab(0.9);
-            saveItem({ type:'photo', thumb: data, main: data });
-            msg('PHOTO SAVED');
+            subData = grab(subVid, true, 0.9);
         }
+        saveItem({ type:'photo', thumb: mainData, main: mainData, sub: subData });
+        msg(bothMode ? 'BOTH SAVED' : 'PHOTO SAVED');
+        isProcessing = false;
     } else {
         handleVideo();
     }
@@ -313,8 +341,6 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
       document.getElementById('recTimer').textContent = `${String(Math.floor(d/60)).padStart(2,'0')}:${String(d%60).padStart(2,'0')}`;
     }, 1000);
 
-    // Initial grab to set canvas size
-    grab(0, true);
     const cStream = canvas.captureStream(30);
     mediaRec = new MediaRecorder(cStream, { mimeType:'video/webm;codecs=vp8', videoBitsPerSecond:5000000 });
     mediaRec.ondataavailable = e => chunks.push(e.data);
@@ -326,7 +352,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
       reader.readAsDataURL(blob);
     };
     mediaRec.start();
-    drawInt = setInterval(() => grab(0, true), 1000/30);
+    drawInt = setInterval(() => grab(mainVid, facing==='front', 0, true), 1000/30);
   }
 
   function stopRec() { 
@@ -336,43 +362,36 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     mediaRec.stop(); 
   }
 
-  // CORE LOGIC: Capture exactly what's visible in the Viewfinder
-  function grab(q, drawOnly=false) {
+  // Improved Grab Logic for 100% Aspect Match
+  function grab(vidObj, isMirror, q, drawOnly=false) {
     const ctx = canvas.getContext('2d');
-    
-    // 1. Determine Output Size (Always High Quality)
+    const vW = vidObj.videoWidth;
+    const vH = vidObj.videoHeight;
+    if(!vW || !vH) return null;
+
     let outW, outH;
-    if (currentMode === 'VIDEO') { outW = 1280; outH = 720; } // 16:9 Landscape
+    if (currentMode === 'VIDEO') { outW = 1280; outH = 720; } 
     else {
         if (ratioMode === '1:1') { outW = 1080; outH = 1080; }
         else if (ratioMode === '3:4') { outW = 1080; outH = 1440; }
-        else { outW = 1080; outH = 1920; } // 9:16
+        else { outW = 1080; outH = 1920; }
     }
     
     canvas.width = outW; canvas.height = outH;
     
-    // 2. Center Crop Logic
-    const vW = mainVid.videoWidth;
-    const vH = mainVid.videoHeight;
     const vAspect = vW / vH;
     const tAspect = outW / outH;
-    
     let sW, sH, sX, sY;
+
     if (vAspect > tAspect) {
-        sH = vH;
-        sW = vH * tAspect;
-        sX = (vW - sW) / 2;
-        sY = 0;
+        sH = vH; sW = vH * tAspect; sX = (vW - sW) / 2; sY = 0;
     } else {
-        sW = vW;
-        sH = vW / tAspect;
-        sX = 0;
-        sY = (vH - sH) / 2;
+        sW = vW; sH = vW / tAspect; sX = 0; sY = (vH - sH) / 2;
     }
 
     ctx.save();
-    if(facing==='front') { ctx.translate(outW, 0); ctx.scale(-1, 1); }
-    ctx.drawImage(mainVid, sX, sY, sW, sH, 0, 0, outW, outH);
+    if(isMirror) { ctx.translate(outW, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(vidObj, sX, sY, sW, sH, 0, 0, outW, outH);
     ctx.restore();
 
     return drawOnly ? null : canvas.toDataURL('image/jpeg', q);
@@ -404,7 +423,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     items.forEach((it, i) => {
       const div = document.createElement('div');
       div.className = 'gItem';
-      div.innerHTML = `<img src="${it.thumb}">`;
+      div.innerHTML = `<img src="${it.thumb}">${it.sub?'<div style="position:absolute; top:5px; left:5px; width:20%; border:1px solid #fff; border-radius:3px; overflow:hidden;"><img src="'+it.sub+'"></div>':''}`;
       div.onclick = () => openViewer(i);
       grid.appendChild(div);
     });
@@ -413,9 +432,14 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   let vIdx=0;
   window.openViewer = i => { vIdx=i; document.getElementById('photoViewer').classList.add('active'); updateViewer(); };
   function updateViewer() {
-    const it = items[vIdx], img=document.getElementById('pvMainImg'), vid=document.getElementById('pvMainVid');
-    if(it.type==='video') { img.style.display='none'; vid.style.display='block'; vid.src=it.main; vid.play(); }
-    else { vid.style.display='none'; img.style.display='block'; img.src=it.main; }
+    const it = items[vIdx], img=document.getElementById('pvMainImg'), sub=document.getElementById('pvSubImg'), vid=document.getElementById('pvMainVid');
+    if(it.type==='video') { 
+        img.style.display='none'; sub.style.display='none'; vid.style.display='block'; 
+        vid.src=it.main; vid.play(); 
+    } else { 
+        vid.style.display='none'; img.style.display='block'; img.src=it.main; 
+        if(it.sub) { sub.style.display='block'; sub.src=it.sub; } else { sub.style.display='none'; }
+    }
   }
   window.closeViewer = () => { document.getElementById('photoViewer').classList.remove('active'); document.getElementById('pvMainVid').pause(); };
   window.deleteItem = () => {
