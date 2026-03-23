@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; object-src 'none';">
-<title>Newmera Pro</title>
+<title>Newmera Swipe Pro</title>
 <style>
 :root {
   --ios-blue: #007aff;
@@ -22,52 +22,52 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 #mainVid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 #mainVid.mirror { transform: scaleX(-1); }
 
-/* Cinematic Guide Line (Only for Video Mode) */
+/* Cinematic Guide Line (For Video Mode) */
 #guide { position: absolute; top: 50%; left: 0; width: 100%; height: 56.25vw; transform: translateY(-50%); border: 1.5px solid rgba(255,255,255,0.4); pointer-events: none; z-index: 50; display: none; }
 #guide.active { display: block; }
 
 #topbar { position: absolute; top: max(env(safe-area-inset-top), 20px); left: 0; right: 0; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-.tbtn { width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); color: #fff; font-size: 20px; }
-#bothBtn { width: auto; padding: 0 16px; border-radius: 22px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px; transition: 0.2s; border: 1px solid rgba(255,255,255,0.2); }
-#bothBtn.on { background: var(--ios-blue); border-color: var(--ios-blue); }
+.tbtn { width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); color: #fff; font-size: 20px; border: 1px solid rgba(255,255,255,0.1); }
+#bothBtn { width: auto; padding: 0 16px; border-radius: 22px; font-weight: 800; font-size: 13px; transition: 0.2s; }
+#bothBtn.on { background: var(--ios-blue); }
 
-/* BOTTOM UI */
+/* BOTTOM UI & SWIPE MODES */
 #cameraBottom { background: #000; padding: 10px 0 calc(env(safe-area-inset-bottom) + 10px); flex-shrink: 0; }
-#modesContainer { overflow: hidden; margin-bottom: 15px; }
-#modes { display: flex; justify-content: center; gap: 30px; transition: 0.3s; }
-.mode { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.8px; cursor: pointer; transition: 0.2s; }
-.mode.active { color: var(--ios-yellow); }
+#modesWrapper { position: relative; width: 100%; height: 40px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: grab; }
+#modesTrack { display: flex; position: absolute; gap: 40px; transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); will-change: transform; }
+.mode { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 1px; transition: 0.3s; white-space: nowrap; }
+.mode.active { color: var(--ios-yellow); transform: scale(1.1); }
 
 #shutterRow { display: flex; align-items: center; justify-content: space-between; padding: 0 35px; }
-#thumb { width: 54px; height: 54px; border-radius: 12px; border: 2.5px solid #fff; background: #1a1a1a; overflow: hidden; }
+#thumb { width: 54px; height: 54px; border-radius: 12px; border: 2px solid #fff; background: #1a1a1a; overflow: hidden; }
 #thumb img { width: 100%; height: 100%; object-fit: cover; display: none; }
-#shutter { width: 76px; height: 76px; border-radius: 50%; border: 4.5px solid #fff; display: flex; align-items: center; justify-content: center; }
-#shutterInner { width: 60px; height: 60px; border-radius: 50%; background: #fff; transition: 0.1s; }
+#shutter { width: 76px; height: 76px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; }
+#shutterInner { width: 60px; height: 60px; border-radius: 50%; background: #fff; transition: 0.2s; }
 #shutter.recording #shutterInner { background: var(--ios-red); border-radius: 8px; transform: scale(0.6); }
-#flipBtn { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 26px; }
+
+#flipBtn { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 24px; }
 
 /* LIBRARY GRID */
 #libraryScreen { z-index: 200; display: none; flex-direction: column; background: #000; }
 #libraryScreen.active { display: flex; }
-#libHeader { padding: max(env(safe-area-inset-top), 40px) 20px 10px; flex-shrink: 0; }
-#libTitleRow { display: flex; justify-content: space-between; align-items: center; }
+#libHeader { padding: max(env(safe-area-inset-top), 40px) 20px 10px; }
 #libTitle { font-size: 34px; font-weight: 800; }
-#libCount { font-size: 16px; color: #8e8e93; margin-top: 5px; }
-#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px 2px 100px; }
+#libCount { font-size: 15px; color: #8e8e93; margin-top: 4px; }
+#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; padding-bottom: 120px; }
 .gItem { aspect-ratio: 1; background: #1c1c1e; position: relative; overflow: hidden; }
 .gItem img { width: 100%; height: 100%; object-fit: cover; }
-.video-badge { position: absolute; bottom: 5px; right: 5px; font-size: 10px; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; }
+.badge { position: absolute; bottom: 4px; right: 4px; font-size: 9px; background: rgba(0,0,0,0.6); padding: 2px 4px; border-radius: 3px; }
 
-#backToCam { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 800; z-index: 250; }
+#backToCam { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 800; border: none; }
 
-/* PHOTO VIEWER */
+/* VIEWER */
 #photoViewer { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 300; }
 #photoViewer.show { display: flex; }
 #pvHeader { padding: max(env(safe-area-inset-top), 20px) 20px; display: flex; justify-content: space-between; }
-#pvContainer { flex: 1; display: flex; align-items: center; justify-content: center; }
+#pvContainer { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
 #pvMainImg, #pvMainVid { max-width: 100%; max-height: 100%; }
 
-#toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; }
+#toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; }
 #toast.show { opacity: 1; }
 </style>
 </head>
@@ -78,15 +78,15 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     <video id="mainVid" autoplay playsinline muted></video>
     <div id="guide"></div>
     <div id="topbar">
-      <div class="tbtn">⚡</div>
+      <div class="tbtn" id="flashBtn">⚡</div>
       <div class="tbtn" id="bothBtn" onclick="toggleBoth()">Both</div>
     </div>
   </div>
   <div id="cameraBottom">
-    <div id="modesContainer">
-      <div id="modes">
-        <div class="mode active" id="modePhoto" onclick="setMode('PHOTO')">PHOTO</div>
-        <div class="mode" id="modeVideo" onclick="setMode('VIDEO')">VIDEO</div>
+    <div id="modesWrapper">
+      <div id="modesTrack">
+        <div class="mode" id="m-video">VIDEO</div>
+        <div class="mode active" id="m-photo">PHOTO</div>
       </div>
     </div>
     <div id="shutterRow">
@@ -99,7 +99,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 
 <div class="screen" id="libraryScreen">
   <header id="libHeader">
-    <div id="libTitleRow"><h1 id="libTitle">Library</h1></div>
+    <h1 id="libTitle">Library</h1>
     <div id="libCount">0 Items</div>
   </header>
   <div id="galleryGrid"></div>
@@ -108,8 +108,8 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 
 <div id="photoViewer">
   <div id="pvHeader">
-    <button onclick="closeViewer()" style="background:none;border:none;color:var(--ios-blue);font-size:18px;font-weight:700">Done</button>
-    <button onclick="deleteCurrent()" style="background:none;border:none;color:var(--ios-red);font-size:18px">🗑️</button>
+    <button onclick="closeViewer()" style="background:none;border:none;color:var(--ios-blue);font-size:17px;font-weight:700">Done</button>
+    <button onclick="deleteCurrent()" style="background:none;border:none;color:var(--ios-red);font-size:17px">🗑️</button>
   </div>
   <div id="pvContainer" ontouchstart="handleViewerTouch(event)">
     <img id="pvMainImg" style="display:none">
@@ -126,34 +126,59 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   let viewerIdx=0, isSwapped=false, lastTap=0;
   let mediaRecorder=null, recordedChunks=[], isRecording=false;
 
+  // Swipe logic
+  const track = document.getElementById('modesTrack');
+  const modes = ['VIDEO', 'PHOTO'];
+  let currentIdx = 1; 
+  let startX = 0;
+
   const mainVid = document.getElementById('mainVid');
   const canvas = document.getElementById('canvas');
 
   window.onload = () => {
-    photos = JSON.parse(localStorage.getItem('newmera_v_pro') || '[]');
+    photos = JSON.parse(localStorage.getItem('newmera_v_final') || '[]');
     startCamera();
     updateThumb();
+    updateModeUI();
   };
 
   async function startCamera() {
     if(stream) stream.getTracks().forEach(t=>t.stop());
     try {
-      const constraints = { 
-        video: { facingMode: facing==='back'?'environment':'user', width: { ideal: 3840 }, height: { ideal: 2160 } }
-      };
-      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: facing==='back'?'environment':'user', width: { ideal: 3840 }, height: { ideal: 2160 } } 
+      });
       mainVid.srcObject = stream;
       mainVid.className = facing==='front'?'mirror':'';
-    } catch(e) { showToast('카메라를 시작할 수 없어.'); }
+    } catch(e) { showToast('카메라를 켤 수 없어.'); }
   }
 
-  window.setMode = function(m) {
+  // Swipe Events
+  document.getElementById('modesWrapper').addEventListener('touchstart', e => startX = e.touches[0].clientX);
+  document.getElementById('modesWrapper').addEventListener('touchend', e => {
+    let diff = startX - e.changedTouches[0].clientX;
+    if(Math.abs(diff) > 30) {
+      if(diff > 0 && currentIdx < 1) currentIdx++;
+      else if(diff < 0 && currentIdx > 0) currentIdx--;
+      setModeByIndex(currentIdx);
+    }
+  });
+
+  function setModeByIndex(idx) {
     if(isRecording) return;
-    currentMode = m;
-    document.querySelectorAll('.mode').forEach(el => el.classList.remove('active'));
-    document.getElementById('mode' + m.charAt(0) + m.slice(1).toLowerCase()).classList.add('active');
-    document.getElementById('guide').classList.toggle('active', m === 'VIDEO');
-    showToast(m + ' 모드');
+    currentIdx = idx;
+    currentMode = modes[idx];
+    updateModeUI();
+  }
+
+  function updateModeUI() {
+    const offset = currentIdx === 0 ? 44 : -44; // 간단한 트랙 이동 계산
+    track.style.transform = `translateX(${offset}px)`;
+    document.querySelectorAll('.mode').forEach((el, i) => {
+      el.classList.toggle('active', i === currentIdx);
+    });
+    document.getElementById('guide').classList.toggle('active', currentMode === 'VIDEO');
+    document.getElementById('shutterInner').style.background = currentMode === 'VIDEO' ? 'var(--ios-red)' : '#fff';
   }
 
   window.handleAction = function() {
@@ -166,47 +191,40 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
       const f1 = grabCinematic(false);
       facing = (facing==='back')?'front':'back';
       startCamera();
-      showToast('📸 Switching...');
+      showToast('📸 Switching for Both...');
       setTimeout(() => {
         saveItem({ type:'photo', main: f1, sub: grabCinematic(false), isBoth: true });
-        showToast('📸 Both 사진 저장!');
+        showToast('📸 Both 사진 완료!');
       }, 1200);
     } else {
       saveItem({ type:'photo', main: grabCinematic(false), isBoth: false });
-      showToast('📸 사진 저장!');
+      showToast('📸 사진 저장됨');
     }
   }
 
   function handleVideo() {
-    if(!isRecording) {
-      startRecording();
-    } else {
-      stopRecording();
-    }
+    if(!isRecording) startRecording();
+    else stopRecording();
   }
 
   async function startRecording() {
     isRecording = true;
     recordedChunks = [];
     document.getElementById('shutter').classList.add('recording');
-    
-    // 가로 영상 캡처용 캔버스 스트림 생성
     const canvasStream = canvas.captureStream(30);
     mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm;codecs=vp8' });
-    
     mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
     mediaRecorder.onstop = () => {
       const blob = new Blob(recordedChunks, { type: 'video/webm' });
       const reader = new FileReader();
       reader.onloadend = () => {
         saveItem({ type:'video', data: reader.result });
-        showToast('🎥 가로 영상 저장 완료!');
+        showToast('🎥 가로 영상 저장!');
       };
       reader.readAsDataURL(blob);
     };
-
     mediaRecorder.start();
-    requestAnimationFrame(drawVideoFrame);
+    requestAnimationFrame(drawLoop);
   }
 
   function stopRecording() {
@@ -215,42 +233,40 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     mediaRecorder.stop();
   }
 
-  function drawVideoFrame() {
+  function drawLoop() {
     if(!isRecording) return;
-    grabCinematic(true); // 캔버스에 그리기만 함
-    requestAnimationFrame(drawVideoFrame);
+    grabCinematic(true);
+    requestAnimationFrame(drawLoop);
   }
 
-  // 가로 16:9 크롭 캡처 (가로 영상 모드의 핵심)
   function grabCinematic(drawOnly) {
     const vw = mainVid.videoWidth, vh = mainVid.videoHeight;
-    const targetAspect = 16/9;
+    const aspect = 16/9;
     let dW, dH;
-    if (vw / vh > targetAspect) { dH = vh; dW = vh * targetAspect; }
-    else { dW = vw; dH = vw / targetAspect; }
+    if (vw / vh > aspect) { dH = vh; dW = vh * aspect; }
+    else { dW = vw; dH = vw / aspect; }
 
     canvas.width = dW; canvas.height = dH;
     const ctx = canvas.getContext('2d', { alpha: false });
     if(facing==='front') { ctx.translate(dW, 0); ctx.scale(-1, 1); }
     ctx.drawImage(mainVid, (vw - dW)/2, (vh - dH)/2, dW, dH, 0, 0, dW, dH);
-    
-    return drawOnly ? null : canvas.toDataURL('image/jpeg', 0.92);
+    return drawOnly ? null : canvas.toDataURL('image/jpeg', 0.95);
   }
 
   function saveItem(item) {
     photos.unshift({ id: Date.now(), ...item });
-    localStorage.setItem('newmera_v_pro', JSON.stringify(photos));
+    localStorage.setItem('newmera_v_final', JSON.stringify(photos));
     updateThumb();
   }
 
   function updateThumb() {
     const thumb = document.getElementById('thumbImg');
-    if(photos.length>0) {
+    if(photos.length > 0) {
       const p = photos[0];
-      if(p.type==='video') thumb.src = p.data; // 영상은 첫 프레임 데이터 (실제론 썸네일 처리 필요하지만 간소화)
+      if(p.type === 'video') thumb.src = p.data;
       else compose(p, false, url => thumb.src = url);
-      thumb.style.display='block';
-    } else thumb.style.display='none';
+      thumb.style.display = 'block';
+    } else thumb.style.display = 'none';
   }
 
   window.openLibrary = function() {
@@ -264,19 +280,15 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     const grid = document.getElementById('galleryGrid');
     grid.innerHTML = '';
     document.getElementById('libCount').textContent = photos.length + ' Items';
-    
     photos.forEach((p, i) => {
       const div = document.createElement('div');
       div.className = 'gItem';
       const img = document.createElement('img');
       if(p.type === 'video') {
         img.src = p.data;
-        const badge = document.createElement('div');
-        badge.className = 'video-badge'; badge.textContent = 'VIDEO';
-        div.appendChild(badge);
-      } else {
-        compose(p, false, url => img.src = url);
-      }
+        const b = document.createElement('div'); b.className = 'badge'; b.textContent = 'VIDEO';
+        div.appendChild(b);
+      } else { compose(p, false, url => img.src = url); }
       div.onclick = () => openViewer(i);
       div.appendChild(img);
       grid.appendChild(div);
@@ -295,15 +307,14 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
       ctx.save(); ctx.beginPath(); ctx.roundRect(canvas.width-pw-marg, marg, pw, ph, 15); ctx.clip();
       ctx.drawImage(sub, canvas.width-pw-marg, marg, pw, ph); ctx.restore();
       ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.stroke();
-      cb(canvas.toDataURL('image/jpeg', 0.85));
+      cb(canvas.toDataURL('image/jpeg', 0.9));
     }; s.src=p.sub; }; m.src=p.main;
   }
 
   window.openViewer = function(idx) {
     viewerIdx = idx; const p = photos[idx];
     document.getElementById('photoViewer').classList.add('show');
-    const imgEl = document.getElementById('pvMainImg');
-    const vidEl = document.getElementById('pvMainVid');
+    const imgEl = document.getElementById('pvMainImg'), vidEl = document.getElementById('pvMainVid');
     if(p.type === 'video') {
       imgEl.style.display='none'; vidEl.style.display='block'; vidEl.src = p.data;
     } else {
@@ -311,9 +322,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     }
   }
 
-  function updateViewer() { 
-    compose(photos[viewerIdx], isSwapped, url => document.getElementById('pvMainImg').src = url); 
-  }
+  function updateViewer() { compose(photos[viewerIdx], isSwapped, url => document.getElementById('pvMainImg').src = url); }
 
   window.handleViewerTouch = function() {
     const now = Date.now();
@@ -322,7 +331,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   }
 
   window.closeViewer = function() { document.getElementById('photoViewer').classList.remove('show'); document.getElementById('pvMainVid').pause(); }
-  window.deleteCurrent = function() { if(confirm('삭제할까?')) { photos.splice(viewerIdx,1); localStorage.setItem('newmera_v_pro',JSON.stringify(photos)); closeViewer(); renderGrid(); } }
+  window.deleteCurrent = function() { if(confirm('이 항목을 삭제할까?')) { photos.splice(viewerIdx,1); localStorage.setItem('newmera_v_final',JSON.stringify(photos)); closeViewer(); renderGrid(); } }
   window.toggleBoth = function() { bothMode=!bothMode; document.getElementById('bothBtn').classList.toggle('on', bothMode); }
   window.flipCamera = function() { facing=(facing==='back')?'front':'back'; startCamera(); }
   function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
