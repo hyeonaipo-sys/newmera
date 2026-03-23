@@ -9,9 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
 <style>
-body{margin:0;background:#000;color:#fff;font-family:-apple-system}
-
-/* layout */
+body{margin:0;background:#000;color:#fff;font-family:-apple-system;overflow:hidden}
 .screen{position:fixed;inset:0;display:none;flex-direction:column}
 .screen.active{display:flex}
 
@@ -19,65 +17,49 @@ body{margin:0;background:#000;color:#fff;font-family:-apple-system}
 #topBar{
 position:absolute;top:0;left:0;right:0;
 display:flex;justify-content:space-between;
-padding:20px;
-z-index:10;
+padding:20px;z-index:10;
 }
 .top-btn{
 background:rgba(255,255,255,.1);
 backdrop-filter:blur(20px);
-padding:10px 16px;
-border-radius:20px;
-font-weight:700;
+padding:10px 16px;border-radius:20px;font-weight:700;
 }
 
-/* center */
+/* camera */
 #vfWrapper{flex:1;display:flex;justify-content:center;align-items:center}
-#vf{width:90%;aspect-ratio:3/4;border-radius:30px;overflow:hidden}
+#vf{width:90%;aspect-ratio:3/4;border-radius:30px;overflow:hidden;background:#111}
 video{width:100%;height:100%;object-fit:cover}
 
 /* bottom */
-#bottom{
-height:180px;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-}
+#bottom{height:180px;display:flex;flex-direction:column;justify-content:center;align-items:center}
 
-#modes{
-display:flex;
-gap:30px;
-margin-bottom:10px;
-}
+#modes{display:flex;gap:30px;margin-bottom:10px}
 .mode{color:#777;font-weight:700}
 .mode.active{color:#ffd60a}
 
-#controls{
-width:100%;
-display:flex;
-justify-content:space-around;
-align-items:center;
-}
+#controls{width:100%;display:flex;justify-content:space-around;align-items:center}
 
 #shutter{
-width:80px;height:80px;
-border:5px solid #fff;
-border-radius:50%;
+width:80px;height:80px;border:5px solid #fff;border-radius:50%;
 display:flex;align-items:center;justify-content:center;
 }
 #shutterInner{
-width:60px;height:60px;border-radius:50%;
-background:#fff;
+width:60px;height:60px;border-radius:50%;background:#fff;
 }
+#shutter:active{transform:scale(.9)}
 
-/* gallery */
-#gallery{
-flex:1;
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:2px;
-}
+#gallery{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
 #gallery img{width:100%;aspect-ratio:1;object-fit:cover}
+
+/* toast */
+#toast{
+position:fixed;top:120px;left:50%;
+transform:translateX(-50%);
+background:#fff;color:#000;
+padding:10px 20px;border-radius:20px;
+opacity:0;transition:.3s;font-weight:700;
+}
+#toast.show{opacity:1;}
 </style>
 </head>
 
@@ -85,12 +67,11 @@ gap:2px;
 
 <!-- CAMERA -->
 <div class="screen active" id="cam">
+
 <div id="topBar">
 <div class="top-btn">⚡</div>
-
-<div class="top-btn" onclick="changeRatio()">3:4</div>
-
-<div class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH</div>
+<div class="top-btn">3:4</div>
+<div class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH OFF</div>
 </div>
 
 <div id="vfWrapper">
@@ -125,15 +106,16 @@ gap:2px;
 <div id="gallery"></div>
 </div>
 
+<div id="toast"></div>
 <canvas id="canvas" style="display:none"></canvas>
 
 <script>
-let stream,facing='back',both=false,db;
+let stream,facing='back',both=false,db,mode='photo';
 
 const vid=document.getElementById('mainVid');
-
 vid.controls=false;
 
+/* DB */
 const req=indexedDB.open("db",1);
 req.onupgradeneeded=e=>{
 db=e.target.result;
@@ -145,6 +127,7 @@ startCam();
 load();
 };
 
+/* camera */
 async function startCam(){
 if(stream) stream.getTracks().forEach(t=>t.stop());
 stream=await navigator.mediaDevices.getUserMedia({
@@ -153,6 +136,7 @@ video:{facingMode:facing==='back'?'environment':'user'}
 vid.srcObject=stream;
 }
 
+/* capture */
 function grab(){
 const c=document.getElementById('canvas');
 const ctx=c.getContext('2d');
@@ -161,18 +145,70 @@ ctx.drawImage(vid,0,0,c.width,c.height);
 return c.toDataURL('image/jpeg',0.7);
 }
 
-function shot(){
-const data=grab();
-save(data);
+/* toast */
+function msg(t){
+const el=document.getElementById('toast');
+el.textContent=t;
+el.classList.add('show');
+setTimeout(()=>el.classList.remove('show'),1500);
 }
 
+/* shoot */
+async function shot(){
+if(mode==='video'){
+msg("VIDEO 준비중 🎥");
+return;
+}
+
+if(both){
+msg("SMILE 😏");
+
+setTimeout(async ()=>{
+const first=grab();
+
+msg("CHANGE 🔄");
+
+facing = facing==='back'?'front':'back';
+await startCam();
+
+setTimeout(()=>{
+let count=3;
+msg(count);
+
+const timer=setInterval(()=>{
+count--;
+if(count>0){
+msg(count);
+}else{
+clearInterval(timer);
+
+const second=grab();
+save({main:first,sub:second});
+
+msg("BOTH SAVED 🔥");
+}
+},1000);
+
+},700);
+
+},600);
+
+}else{
+const data=grab();
+save({main:data});
+msg("SAVED 📸");
+}
+}
+
+/* save */
 function save(d){
 db.transaction("img","readwrite")
 .objectStore("img")
-.add({id:Date.now(),src:d});
+.add({id:Date.now(),...d});
 load();
 }
 
+/* load */
 function load(){
 db.transaction("img","readonly")
 .objectStore("img")
@@ -181,10 +217,21 @@ const g=document.getElementById('gallery');
 g.innerHTML='';
 e.target.result.reverse().forEach(it=>{
 const img=document.createElement('img');
-img.src=it.src;
+img.src=it.main;
 g.appendChild(img);
 });
 };
+}
+
+/* UI */
+function toggleBoth(){
+both=!both;
+document.getElementById('bothBtn').textContent = both?"BOTH ON":"BOTH OFF";
+}
+
+function flip(){
+facing=facing==='back'?'front':'back';
+startCam();
 }
 
 function openGallery(){
@@ -196,18 +243,30 @@ document.getElementById('cam').classList.add('active');
 document.getElementById('lib').classList.remove('active');
 }
 
-function flip(){
-facing=facing==='back'?'front':'back';
-startCam();
-}
+/* swipe */
+let startX=0;
 
-function toggleBoth(){
-both=!both;
-document.getElementById('bothBtn').textContent = both?'BOTH ON':'BOTH';
-}
+document.addEventListener('touchstart',e=>{
+startX=e.touches[0].clientX;
+});
 
-function changeRatio(){
-alert("ratio next 단계에서 넣자");
+document.addEventListener('touchend',e=>{
+let diff=e.changedTouches[0].clientX-startX;
+
+if(Math.abs(diff)>50){
+if(diff<0){
+setMode('video');
+}else{
+setMode('photo');
+}
+}
+});
+
+function setMode(m){
+mode=m;
+document.getElementById('videoMode').classList.toggle('active',m==='video');
+document.getElementById('photoMode').classList.toggle('active',m==='photo');
+msg(m==='video'?"VIDEO 🎥":"PHOTO 📸");
 }
 </script>
 
