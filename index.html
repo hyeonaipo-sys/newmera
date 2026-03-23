@@ -3,24 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Newmera Pro - Wide Cinema</title>
+<title>Newmera Pro - Classic</title>
 <style>
 :root {
   --ios-blue: #007aff;
   --ios-red: #ff3b30;
   --ios-yellow: #ffd60a;
-  --bg-dark: #000;
-  --surface: #1c1c1e;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
-html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; }
 
-.screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: var(--bg-dark); }
+.screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: #000; }
 .screen.active { display: flex; }
 
-/* CAMERA VIEWPORT - WIDE FOCUS */
-#vf { position: relative; flex: 1; background: #000; overflow: hidden; border-radius: 0 0 44px 44px; touch-action: none; display: flex; align-items: center; justify-content: center; }
-#mainVid { width: 100%; height: 100%; object-fit: contain; background: #000; transition: transform 0.3s; }
+/* CAMERA VIEWPORT - FULL SCREEN BACK */
+#vf { position: relative; flex: 1; background: #000; overflow: hidden; border-radius: 0 0 44px 44px; touch-action: none; }
+#mainVid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 #mainVid.mirror { transform: scaleX(-1); }
 
 /* Recording UI */
@@ -31,41 +29,42 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
 #recTimer { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* BOTTOM UI */
-#cameraBottom { background: #000; padding: 15px 0 calc(env(safe-area-inset-bottom) + 10px); flex-shrink: 0; }
+#cameraBottom { background: #000; padding: 20px 0 calc(env(safe-area-inset-bottom) + 10px); flex-shrink: 0; }
 #modesWrapper { position: relative; width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 #modesTrack { display: flex; position: absolute; gap: 40px; transition: transform 0.4s cubic-bezier(0.2, 1, 0.2, 1); }
 .mode { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 0.5px; transition: 0.3s; padding: 10px; }
 .mode.active { color: var(--ios-yellow); transform: scale(1.1); }
 
-#shutterRow { display: flex; align-items: center; justify-content: space-between; padding: 0 45px; margin-top: 5px; }
-#thumb { width: 54px; height: 54px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.3); background: #111; overflow: hidden; }
+#shutterRow { display: flex; align-items: center; justify-content: space-between; padding: 0 45px; margin-top: 10px; }
+#thumb { width: 56px; height: 56px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.3); background: #111; overflow: hidden; }
 #thumb img { width: 100%; height: 100%; object-fit: cover; }
-#shutter { width: 72px; height: 72px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; }
-#shutterInner { width: 56px; height: 56px; border-radius: 50%; background: #fff; transition: 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
-#shutter.recording #shutterInner { background: var(--ios-red); border-radius: 10px; transform: scale(0.5); }
+#shutter { width: 76px; height: 76px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; }
+#shutterInner { width: 60px; height: 60px; border-radius: 50%; background: #fff; transition: 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
+#shutter.recording #shutterInner { background: var(--ios-red); border-radius: 12px; transform: scale(0.5); }
+#flipBtn { font-size: 24px; opacity: 0.8; }
 
-/* LIBRARY (iOS Modern) */
-#libHeader { padding: max(env(safe-area-inset-top), 40px) 20px 10px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
-#libActions { display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 15px; }
+/* LIBRARY SCREEN */
+#libHeader { padding: max(env(safe-area-inset-top), 40px) 20px 15px; }
+#libActions { display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 10px; }
 .action-btn { color: var(--ios-blue); font-size: 17px; font-weight: 600; background: none; border: none; }
 #libTitle { font-size: 34px; font-weight: 800; }
-#libCount { font-size: 15px; color: #8e8e93; margin-top: 4px; }
-
+#libCount { font-size: 15px; color: #8e8e93; margin-top: 5px; }
 #galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; padding-bottom: 120px; }
-.gItem { aspect-ratio: 1; background: var(--surface); position: relative; }
+.gItem { aspect-ratio: 1; background: #1c1c1e; position: relative; }
 .gItem img { width: 100%; height: 100%; object-fit: cover; }
-.vBadge { position: absolute; bottom: 5px; right: 5px; font-size: 10px; font-weight: 800; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; }
+.vBadge { position: absolute; bottom: 6px; right: 6px; font-size: 10px; font-weight: 800; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; }
 
-#backToCam { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 14px 30px; border-radius: 30px; font-weight: 800; border: none; z-index: 250; }
+#backToCam { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 14px 30px; border-radius: 30px; font-weight: 800; border: none; z-index: 250; }
 
 /* VIEWER */
 #photoViewer { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 300; }
-#pvHeader { padding: max(env(safe-area-inset-top), 20px) 20px; display: flex; justify-content: space-between; }
-#pvContainer { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; }
+#pvHeader { padding: max(env(safe-area-inset-top), 20px) 20px; display: flex; justify-content: space-between; align-items: center; }
+#pvContainer { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 .viewer-slide { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transition: transform 0.4s cubic-bezier(0.2, 1, 0.2, 1); }
-#pvMainVid, #pvMainImg { max-width: 100%; max-height: 100%; }
+#pvMainImg, #pvMainVid { max-width: 100%; max-height: 100%; }
 
-#toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; }
+#toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; }
+#toast.show { opacity: 1; }
 </style>
 </head>
 <body>
@@ -105,8 +104,8 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
 
 <div id="photoViewer">
   <div id="pvHeader">
-    <button onclick="closeViewer()" style="color:var(--ios-blue); font-weight:700; background:none; border:none; font-size:17px;">Done</button>
-    <button onclick="deleteCurrent()" style="color:var(--ios-red); background:none; border:none; font-size:17px;">Delete</button>
+    <button onclick="closeViewer()" style="background:none; border:none; color:var(--ios-blue); font-size:17px; font-weight:700">Done</button>
+    <button onclick="deleteCurrent()" style="background:none; border:none; color:var(--ios-red); font-size:17px">Delete</button>
   </div>
   <div id="pvContainer" ontouchstart="handleViewerSwipeStart(event)" ontouchend="handleViewerSwipeEnd(event)">
     <div class="viewer-slide" id="viewerSlide">
@@ -133,8 +132,8 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
   const recTimer = document.getElementById('recTimer');
   const thumbImg = document.getElementById('thumbImg');
 
-  // IndexedDB Init (For Large Video Files)
-  const request = indexedDB.open("NewmeraDB", 1);
+  // IndexedDB for large media storage
+  const request = indexedDB.open("NewmeraV8", 1);
   request.onupgradeneeded = e => {
     db = e.target.result;
     if(!db.objectStoreNames.contains("media")) db.createObjectStore("media", { keyPath: "id" });
@@ -148,20 +147,15 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
   async function startCamera() {
     if(stream) stream.getTracks().forEach(t=>t.stop());
     try {
-      // 광각 확보를 위해 고해상도 요청
       stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-            facingMode: facing==='back'?'environment':'user',
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-        } 
+        video: { facingMode: facing==='back'?'environment':'user', width: {ideal: 1920}, height: {ideal: 1080}, frameRate: 30 } 
       });
       mainVid.srcObject = stream;
       mainVid.className = facing==='front'?'mirror':'';
-    } catch(e) { showToast('Camera Error'); }
+    } catch(e) { showToast('카메라 로드 실패'); }
   }
 
-  // Camera Swipe
+  // Swipe logic
   let startX = 0, currentIdx = 1;
   const modes = ['VIDEO', 'PHOTO'];
   window.handleCameraSwipeStart = e => startX = e.touches[0].clientX;
@@ -173,24 +167,22 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
       else if(diff < 0 && currentIdx > 0) setModeByIndex(currentIdx - 1);
     }
   };
-  window.setModeByIndex = idx => { currentIdx = idx; currentMode = modes[idx]; updateUI(); };
-  function updateUI() {
+  window.setModeByIndex = idx => { currentIdx = idx; currentMode = modes[idx]; updateModeUI(); };
+  function updateModeUI() {
     track.style.transform = `translateX(${currentIdx === 0 ? 40 : -40}px)`;
     document.querySelectorAll('.mode').forEach((el, i) => el.classList.toggle('active', i === currentIdx));
     document.getElementById('shutterInner').style.background = currentMode==='VIDEO'?'var(--ios-red)':'#fff';
   }
 
-  window.handleAction = () => currentMode==='PHOTO'?takePhoto():handleVideo();
+  window.handleAction = () => currentMode==='PHOTO' ? takePhoto() : handleVideo();
 
   function takePhoto() {
-    const data = grab(0.95);
+    const data = grab(0.92);
     saveItem({ type:'photo', thumb: data, main: data });
-    showToast('📸 Photo Saved');
+    showToast('📸 사진 저장됨');
   }
 
-  function handleVideo() {
-    if(!isRecording) startRec(); else stopRec();
-  }
+  function handleVideo() { if(!isRecording) startRec(); else stopRec(); }
 
   async function startRec() {
     isRecording = true; recordedChunks = [];
@@ -198,12 +190,12 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
     recUI.classList.add('active');
     recStartTime = Date.now();
     recInterval = setInterval(() => {
-        const diff = Math.floor((Date.now()-recStartTime)/1000);
-        recTimer.textContent = `${String(Math.floor(diff/60)).padStart(2,'0')}:${String(diff%60).padStart(2,'0')}`;
+        const d = Math.floor((Date.now()-recStartTime)/1000);
+        recTimer.textContent = `${String(Math.floor(d/60)).padStart(2,'0')}:${String(d%60).padStart(2,'0')}`;
     }, 1000);
 
     const cStream = canvas.captureStream(30);
-    mediaRecorder = new MediaRecorder(cStream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 });
+    mediaRecorder = new MediaRecorder(cStream, { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 6000000 });
     mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
     mediaRecorder.onstop = () => {
       const blob = new Blob(recordedChunks, { type: 'video/webm' });
@@ -211,7 +203,7 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
       const reader = new FileReader();
       reader.onloadend = () => {
         saveItem({ type:'video', thumb: thumb, main: reader.result });
-        showToast('🎥 Video Saved');
+        showToast('🎥 영상 저장됨');
       };
       reader.readAsDataURL(blob);
     };
@@ -240,22 +232,17 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
     item.id = Date.now();
     const tx = db.transaction("media", "readwrite");
     tx.objectStore("media").add(item);
-    tx.oncomplete = () => { loadItems(); updateThumb(); };
+    tx.oncomplete = () => loadItems();
   }
 
   function loadItems() {
     const tx = db.transaction("media", "readonly");
-    const store = tx.objectStore("media");
-    const req = store.getAll();
+    const req = tx.objectStore("media").getAll();
     req.onsuccess = () => {
       items = req.result.sort((a,b) => b.id - a.id);
-      updateThumb();
+      if(items.length > 0) { thumbImg.src = items[0].thumb; thumbImg.style.display='block'; }
+      else thumbImg.style.display='none';
     };
-  }
-
-  function updateThumb() {
-    if(items.length > 0) { thumbImg.src = items[0].thumb; thumbImg.style.display='block'; }
-    else thumbImg.style.display='none';
   }
 
   window.openLibrary = () => { document.getElementById('libraryScreen').classList.add('active'); renderGrid(); };
@@ -268,7 +255,7 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
     items.forEach((item, i) => {
       const div = document.createElement('div');
       div.className = 'gItem';
-      div.innerHTML = `<img src="${item.thumb}">${item.type==='video' ? '<div class="vBadge">▶</div>':''}`;
+      div.innerHTML = `<img src="${item.thumb}">${item.type==='video'?'<div class="vBadge">▶</div>':''}`;
       div.onclick = () => openViewer(i);
       grid.appendChild(div);
     });
@@ -290,8 +277,8 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
     setTimeout(() => {
         viewerIdx += dir;
         updateViewer();
-        s.style.transition = 'none'; s.style.transform = 'translateX(0)';
-        setTimeout(() => s.style.transition = 'transform 0.4s cubic-bezier(0.2, 1, 0.2, 1)', 10);
+        s.style.transition='none'; s.style.transform='translateX(0)';
+        setTimeout(()=> s.style.transition='transform 0.4s cubic-bezier(0.2, 1, 0.2, 1)', 10);
     }, 350);
   }
 
@@ -305,15 +292,11 @@ html, body { width: 100%; height: 100%; background: var(--bg-dark); overflow: hi
 
   window.closeViewer = () => { document.getElementById('photoViewer').classList.remove('show'); document.getElementById('pvMainVid').pause(); };
   window.deleteCurrent = () => {
-    if(confirm('Delete this?')) {
+    if(confirm('정말 삭제할까?')) {
       const id = items[viewerIdx].id;
       const tx = db.transaction("media", "readwrite");
       tx.objectStore("media").delete(id);
-      tx.oncomplete = () => {
-        items.splice(viewerIdx, 1);
-        if(items.length===0) closeViewer(); else { if(viewerIdx >= items.length) viewerIdx--; updateViewer(); }
-        renderGrid(); updateThumb();
-      };
+      tx.oncomplete = () => { loadItems(); renderGrid(); if(items.length===0) closeViewer(); else { if(viewerIdx >= items.length) viewerIdx--; updateViewer(); } };
     }
   };
 
