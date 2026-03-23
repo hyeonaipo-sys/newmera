@@ -1,274 +1,931 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
 <title>Newmera</title>
 
-<meta name="theme-color" content="#000">
+<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 <style>
-body{margin:0;background:#000;color:#fff;font-family:-apple-system;overflow:hidden}
-.screen{position:fixed;inset:0;display:none;flex-direction:column}
-.screen.active{display:flex}
+:root{
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --yellow:#ffd60a;
+}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+html,body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#000;
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+}
+button{
+  border:none;
+  outline:none;
+  background:none;
+  color:inherit;
+  font:inherit;
+}
+.screen{
+  position:fixed;
+  inset:0;
+  display:none;
+  flex-direction:column;
+  background:#000;
+}
+.screen.active{
+  display:flex;
+}
 
-/* top */
+/* CAMERA */
+#camScreen{
+  overflow:hidden;
+}
 #topBar{
-position:absolute;top:0;left:0;right:0;
-display:flex;justify-content:space-between;
-padding:20px;z-index:10;
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  z-index:20;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:
+    max(var(--safe-top), 14px)
+    18px
+    0;
+  pointer-events:none;
+}
+.top-btn-wrap{
+  pointer-events:auto;
 }
 .top-btn{
-background:rgba(255,255,255,.1);
-backdrop-filter:blur(20px);
-padding:10px 16px;border-radius:20px;font-weight:700;
+  min-width:94px;
+  height:56px;
+  padding:0 18px;
+  border-radius:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,0.14);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  font-size:18px;
+  font-weight:800;
+  color:#fff;
+}
+.top-btn.small{
+  min-width:82px;
+}
+.top-btn.active{
+  background:rgba(255,255,255,0.24);
+}
+#ratioMenu{
+  position:absolute;
+  top:66px;
+  left:50%;
+  transform:translateX(-50%);
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+  border-radius:18px;
+  background:rgba(30,30,30,0.96);
+  border:1px solid rgba(255,255,255,0.08);
+  min-width:110px;
+}
+#ratioMenu.show{
+  display:flex;
+}
+.ratio-opt{
+  padding:14px 18px;
+  text-align:center;
+  font-size:16px;
+  font-weight:700;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.ratio-opt:last-child{
+  border-bottom:none;
+}
+.ratio-opt.selected{
+  color:var(--yellow);
 }
 
-/* camera */
-#vfWrapper{flex:1;display:flex;justify-content:center;align-items:center}
-#vf{width:90%;aspect-ratio:3/4;border-radius:30px;overflow:hidden;background:#111}
-video{width:100%;height:100%;object-fit:cover}
+#vfWrap{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:110px 18px 230px;
+}
+#vf{
+  position:relative;
+  width:100%;
+  max-width:430px;
+  aspect-ratio:3/4;
+  overflow:hidden;
+  border-radius:38px;
+  background:#111;
+}
+#mainVid{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transform:scaleX(-1);
+  pointer-events:none;
+}
+#mainVid::-webkit-media-controls,
+#mainVid::-webkit-media-controls-play-button,
+#mainVid::-webkit-media-controls-start-playback-button{
+  display:none !important;
+  -webkit-appearance:none;
+}
 
-/* bottom */
-#bottom{height:180px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+#centerOverlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  z-index:12;
+}
+#countdownBubble{
+  width:128px;
+  height:128px;
+  border-radius:50%;
+  background:rgba(70,70,70,0.72);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:54px;
+  font-weight:900;
+  color:#fff;
+}
+#flashFx{
+  position:absolute;
+  inset:0;
+  background:#fff;
+  opacity:0;
+  pointer-events:none;
+  z-index:15;
+}
 
-#modes{display:flex;gap:30px;margin-bottom:10px}
-.mode{color:#777;font-weight:700}
-.mode.active{color:#ffd60a}
-
-#controls{width:100%;display:flex;justify-content:space-around;align-items:center}
-
+#bottomUI{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:20;
+  padding:0 20px max(var(--safe-bottom), 24px);
+}
+#modes{
+  display:flex;
+  justify-content:center;
+  gap:42px;
+  margin-bottom:16px;
+}
+.mode{
+  font-size:16px;
+  font-weight:900;
+  color:rgba(255,255,255,0.36);
+  transition:.2s;
+}
+.mode.active{
+  color:var(--yellow);
+}
+#controlsRow{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+}
+.sideCtl{
+  display:flex;
+  align-items:center;
+}
+.sideCtl.left{
+  justify-content:flex-start;
+}
+.sideCtl.right{
+  justify-content:flex-end;
+}
+#thumbBtn{
+  width:58px;
+  height:58px;
+  border-radius:16px;
+  overflow:hidden;
+  background:#111;
+  border:1px solid rgba(255,255,255,0.14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#thumbBtn img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:none;
+}
+#thumbPlaceholder{
+  font-size:26px;
+}
+#flipBtn{
+  width:58px;
+  height:58px;
+  border-radius:16px;
+  background:transparent;
+  font-size:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 #shutter{
-width:80px;height:80px;border:5px solid #fff;border-radius:50%;
-display:flex;align-items:center;justify-content:center;
+  width:94px;
+  height:94px;
+  border-radius:50%;
+  border:6px solid #fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 #shutterInner{
-width:60px;height:60px;border-radius:50%;background:#fff;
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  background:#fff;
 }
-#shutter:active{transform:scale(.9)}
+#shutter:active{
+  transform:scale(0.96);
+}
 
-#gallery{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
-#gallery img{width:100%;aspect-ratio:1;object-fit:cover}
+/* GALLERY */
+#galleryScreen{
+  z-index:40;
+}
+#galleryHeader{
+  padding:
+    max(var(--safe-top), 12px)
+    14px
+    12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#000;
+}
+#galleryClose{
+  width:100%;
+  height:42px;
+  border-radius:22px;
+  background:#e9e9eb;
+  color:#111;
+  font-size:16px;
+  font-weight:700;
+}
+#galleryGrid{
+  flex:1;
+  overflow-y:auto;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+  background:#000;
+}
+.gItem{
+  position:relative;
+  aspect-ratio:1;
+  background:#111;
+  overflow:hidden;
+}
+.gItem > img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.gPip{
+  position:absolute;
+  top:6px;
+  left:6px;
+  width:32%;
+  aspect-ratio:3/4;
+  border-radius:7px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,0.85);
+  background:#111;
+}
+.gPip img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
 
-/* toast */
+/* VIEWER */
+#viewer{
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:60;
+  display:none;
+  flex-direction:column;
+}
+#viewer.active{
+  display:flex;
+}
+#viewerHeader{
+  padding:
+    max(var(--safe-top), 12px)
+    16px
+    10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.viewerBtn{
+  color:#fff;
+  font-size:17px;
+  font-weight:700;
+  opacity:.95;
+}
+#viewerBody{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+#viewerBox{
+  position:relative;
+  width:100%;
+  max-width:430px;
+  aspect-ratio:3/4;
+  border-radius:28px;
+  overflow:hidden;
+  background:#111;
+}
+#viewerMain{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+#viewerSubWrap{
+  position:absolute;
+  top:14px;
+  left:14px;
+  width:30%;
+  aspect-ratio:3/4;
+  overflow:hidden;
+  border-radius:14px;
+  border:2px solid rgba(255,255,255,0.96);
+  background:#111;
+  box-shadow:0 10px 28px rgba(0,0,0,.45);
+}
+#viewerSub{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* TOAST */
 #toast{
-position:fixed;top:120px;left:50%;
-transform:translateX(-50%);
-background:#fff;color:#000;
-padding:10px 20px;border-radius:20px;
-opacity:0;transition:.3s;font-weight:700;
+  position:fixed;
+  top:124px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:100;
+  background:#fff;
+  color:#111;
+  padding:12px 22px;
+  border-radius:999px;
+  font-size:15px;
+  font-weight:800;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  white-space:nowrap;
 }
-#toast.show{opacity:1;}
+#toast.show{
+  opacity:1;
+}
 </style>
 </head>
-
 <body>
 
-<!-- CAMERA -->
-<div class="screen active" id="cam">
+<div class="screen active" id="camScreen">
+  <div id="topBar">
+    <div class="top-btn-wrap">
+      <button class="top-btn small" id="flashBtn" type="button">⚡</button>
+    </div>
 
-<div id="topBar">
-<div class="top-btn">⚡</div>
-<div class="top-btn">3:4</div>
-<div class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH OFF</div>
+    <div class="top-btn-wrap" style="position:relative;">
+      <button class="top-btn small" id="ratioBtn" type="button">3:4</button>
+      <div id="ratioMenu">
+        <button class="ratio-opt" type="button" data-ratio="1:1">1:1</button>
+        <button class="ratio-opt selected" type="button" data-ratio="3:4">3:4</button>
+        <button class="ratio-opt" type="button" data-ratio="9:16">9:16</button>
+      </div>
+    </div>
+
+    <div class="top-btn-wrap">
+      <button class="top-btn" id="bothBtn" type="button">BOTH OFF</button>
+    </div>
+  </div>
+
+  <div id="vfWrap">
+    <div id="vf">
+      <video
+        id="mainVid"
+        autoplay
+        playsinline
+        webkit-playsinline
+        muted
+        disablepictureinpicture
+        controlslist="nodownload nofullscreen noremoteplayback"
+      ></video>
+
+      <div id="centerOverlay">
+        <div id="countdownBubble"></div>
+      </div>
+
+      <div id="flashFx"></div>
+    </div>
+  </div>
+
+  <div id="bottomUI">
+    <div id="modes">
+      <div class="mode" id="videoMode">VIDEO</div>
+      <div class="mode active" id="photoMode">PHOTO</div>
+    </div>
+
+    <div id="controlsRow">
+      <div class="sideCtl left">
+        <button id="thumbBtn" type="button" aria-label="gallery">
+          <img id="thumbImg" alt="thumbnail">
+          <div id="thumbPlaceholder">🖼️</div>
+        </button>
+      </div>
+
+      <button id="shutter" type="button" aria-label="shutter">
+        <div id="shutterInner"></div>
+      </button>
+
+      <div class="sideCtl right">
+        <button id="flipBtn" type="button" aria-label="flip">🔄</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div id="vfWrapper">
-<div id="vf">
-<video id="mainVid" autoplay playsinline muted webkit-playsinline></video>
-</div>
-</div>
-
-<div id="bottom">
-
-<div id="modes">
-<div class="mode" id="videoMode">VIDEO</div>
-<div class="mode active" id="photoMode">PHOTO</div>
+<div class="screen" id="galleryScreen">
+  <div id="galleryHeader">
+    <button id="galleryClose" type="button">닫기</button>
+  </div>
+  <div id="galleryGrid"></div>
 </div>
 
-<div id="controls">
-<div onclick="openGallery()">🖼️</div>
-
-<div id="shutter" onclick="shot()">
-<div id="shutterInner"></div>
-</div>
-
-<div onclick="flip()">🔄</div>
-</div>
-
-</div>
-</div>
-
-<!-- GALLERY -->
-<div class="screen" id="lib">
-<button onclick="closeGallery()">닫기</button>
-<div id="gallery"></div>
+<div id="viewer">
+  <div id="viewerHeader">
+    <button class="viewerBtn" id="viewerDone" type="button">Done</button>
+    <button class="viewerBtn" id="viewerDelete" type="button">Delete</button>
+  </div>
+  <div id="viewerBody">
+    <div id="viewerBox">
+      <img id="viewerMain" alt="photo">
+      <div id="viewerSubWrap" style="display:none;">
+        <img id="viewerSub" alt="sub photo">
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
-<canvas id="canvas" style="display:none"></canvas>
+<canvas id="canvas" style="display:none;"></canvas>
 
 <script>
-let stream,facing='back',both=false,db,mode='photo';
+(() => {
+  let stream = null;
+  let facing = 'back';
+  let bothMode = false;
+  let mode = 'photo';
+  let db = null;
+  let items = [];
+  let isProcessing = false;
+  let currentRatio = '3:4';
+  let viewerIndex = -1;
 
-const vid=document.getElementById('mainVid');
-vid.controls=false;
+  const camScreen = document.getElementById('camScreen');
+  const galleryScreen = document.getElementById('galleryScreen');
+  const mainVid = document.getElementById('mainVid');
+  const vf = document.getElementById('vf');
+  const ratioBtn = document.getElementById('ratioBtn');
+  const ratioMenu = document.getElementById('ratioMenu');
+  const bothBtn = document.getElementById('bothBtn');
+  const shutter = document.getElementById('shutter');
+  const thumbBtn = document.getElementById('thumbBtn');
+  const thumbImg = document.getElementById('thumbImg');
+  const thumbPlaceholder = document.getElementById('thumbPlaceholder');
+  const flipBtn = document.getElementById('flipBtn');
+  const galleryClose = document.getElementById('galleryClose');
+  const galleryGrid = document.getElementById('galleryGrid');
+  const canvas = document.getElementById('canvas');
+  const toast = document.getElementById('toast');
+  const countdownBubble = document.getElementById('countdownBubble');
+  const flashFx = document.getElementById('flashFx');
+  const videoMode = document.getElementById('videoMode');
+  const photoMode = document.getElementById('photoMode');
 
-/* DB */
-const req=indexedDB.open("db",1);
-req.onupgradeneeded=e=>{
-db=e.target.result;
-db.createObjectStore("img",{keyPath:"id"});
-};
-req.onsuccess=e=>{
-db=e.target.result;
-startCam();
-load();
-};
+  const viewer = document.getElementById('viewer');
+  const viewerMain = document.getElementById('viewerMain');
+  const viewerSub = document.getElementById('viewerSub');
+  const viewerSubWrap = document.getElementById('viewerSubWrap');
+  const viewerDone = document.getElementById('viewerDone');
+  const viewerDelete = document.getElementById('viewerDelete');
 
-/* camera */
-async function startCam(){
-if(stream) stream.getTracks().forEach(t=>t.stop());
-stream=await navigator.mediaDevices.getUserMedia({
-video:{facingMode:facing==='back'?'environment':'user'}
-});
-vid.srcObject=stream;
-}
+  mainVid.controls = false;
+  mainVid.removeAttribute('controls');
 
-/* capture */
-function grab(){
-const c=document.getElementById('canvas');
-const ctx=c.getContext('2d');
-c.width=1080;c.height=1440;
-ctx.drawImage(vid,0,0,c.width,c.height);
-return c.toDataURL('image/jpeg',0.7);
-}
+  const req = indexedDB.open('newmera_local_db_v1', 1);
 
-/* toast */
-function msg(t){
-const el=document.getElementById('toast');
-el.textContent=t;
-el.classList.add('show');
-setTimeout(()=>el.classList.remove('show'),1500);
-}
+  req.onupgradeneeded = (e) => {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains('photos')) {
+      db.createObjectStore('photos', { keyPath: 'id' });
+    }
+  };
 
-/* shoot */
-async function shot(){
-if(mode==='video'){
-msg("VIDEO 준비중 🎥");
-return;
-}
+  req.onsuccess = (e) => {
+    db = e.target.result;
+    loadItems();
+    startCam();
+  };
 
-if(both){
-msg("SMILE 😏");
+  req.onerror = () => {
+    showToast('DB ERROR');
+  };
 
-setTimeout(async ()=>{
-const first=grab();
+  async function startCam() {
+    try {
+      if (stream) stream.getTracks().forEach(t => t.stop());
 
-msg("CHANGE 🔄");
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: facing === 'back' ? 'environment' : 'user',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      });
 
-facing = facing==='back'?'front':'back';
-await startCam();
+      mainVid.srcObject = stream;
+      mainVid.setAttribute('playsinline', 'true');
+      mainVid.setAttribute('webkit-playsinline', 'true');
+      mainVid.muted = true;
+      mainVid.style.transform = 'scaleX(-1)';
 
-setTimeout(()=>{
-let count=3;
-msg(count);
+      const p = mainVid.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } catch (err) {
+      showToast('CAMERA ERROR');
+    }
+  }
 
-const timer=setInterval(()=>{
-count--;
-if(count>0){
-msg(count);
-}else{
-clearInterval(timer);
+  function setRatio(ratio) {
+    currentRatio = ratio;
+    ratioBtn.textContent = ratio;
+    ratioMenu.classList.remove('show');
 
-const second=grab();
-save({main:first,sub:second});
+    if (ratio === '1:1') {
+      vf.style.aspectRatio = '1 / 1';
+    } else if (ratio === '9:16') {
+      vf.style.aspectRatio = '9 / 16';
+    } else {
+      vf.style.aspectRatio = '3 / 4';
+    }
 
-msg("BOTH SAVED 🔥");
-}
-},1000);
+    document.querySelectorAll('.ratio-opt').forEach(el => {
+      el.classList.toggle('selected', el.dataset.ratio === ratio);
+    });
+  }
 
-},700);
+  function triggerFlash() {
+    flashFx.style.opacity = '0.92';
+    setTimeout(() => {
+      flashFx.style.opacity = '0';
+    }, 120);
+  }
 
-},600);
+  function showToast(text, duration = 1200) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => {
+      toast.classList.remove('show');
+    }, duration);
+  }
 
-}else{
-const data=grab();
-save({main:data});
-msg("SAVED 📸");
-}
-}
+  function showCenterText(text) {
+    countdownBubble.textContent = text;
+    countdownBubble.style.display = 'flex';
+  }
 
-/* save */
-function save(d){
-db.transaction("img","readwrite")
-.objectStore("img")
-.add({id:Date.now(),...d});
-load();
-}
+  function hideCenterText() {
+    countdownBubble.style.display = 'none';
+  }
 
-/* load */
-function load(){
-db.transaction("img","readonly")
-.objectStore("img")
-.getAll().onsuccess=e=>{
-const g=document.getElementById('gallery');
-g.innerHTML='';
-e.target.result.reverse().forEach(it=>{
-const img=document.createElement('img');
-img.src=it.main;
-g.appendChild(img);
-});
-};
-}
+  function grab() {
+    const ctx = canvas.getContext('2d');
 
-/* UI */
-function toggleBoth(){
-both=!both;
-document.getElementById('bothBtn').textContent = both?"BOTH ON":"BOTH OFF";
-}
+    if (currentRatio === '1:1') {
+      canvas.width = 1080;
+      canvas.height = 1080;
+    } else if (currentRatio === '9:16') {
+      canvas.width = 1080;
+      canvas.height = 1920;
+    } else {
+      canvas.width = 1080;
+      canvas.height = 1440;
+    }
 
-function flip(){
-facing=facing==='back'?'front':'back';
-startCam();
-}
+    const vW = mainVid.videoWidth || 1080;
+    const vH = mainVid.videoHeight || 1440;
+    const vAspect = vW / vH;
+    const tAspect = canvas.width / canvas.height;
 
-function openGallery(){
-document.getElementById('cam').classList.remove('active');
-document.getElementById('lib').classList.add('active');
-}
-function closeGallery(){
-document.getElementById('cam').classList.add('active');
-document.getElementById('lib').classList.remove('active');
-}
+    let sW, sH, sX, sY;
+    if (vAspect > tAspect) {
+      sH = vH;
+      sW = vH * tAspect;
+      sX = (vW - sW) / 2;
+      sY = 0;
+    } else {
+      sW = vW;
+      sH = vW / tAspect;
+      sX = 0;
+      sY = (vH - sH) / 2;
+    }
 
-/* swipe */
-let startX=0;
+    ctx.save();
 
-document.addEventListener('touchstart',e=>{
-startX=e.touches[0].clientX;
-});
+    /* 저장본도 항상 좌우반전 */
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
 
-document.addEventListener('touchend',e=>{
-let diff=e.changedTouches[0].clientX-startX;
+    ctx.drawImage(
+      mainVid,
+      sX, sY, sW, sH,
+      0, 0, canvas.width, canvas.height
+    );
 
-if(Math.abs(diff)>50){
-if(diff<0){
-setMode('video');
-}else{
-setMode('photo');
-}
-}
-});
+    ctx.restore();
 
-function setMode(m){
-mode=m;
-document.getElementById('videoMode').classList.toggle('active',m==='video');
-document.getElementById('photoMode').classList.toggle('active',m==='photo');
-msg(m==='video'?"VIDEO 🎥":"PHOTO 📸");
-}
+    return canvas.toDataURL('image/jpeg', 0.82);
+  }
+
+  function saveItem(item) {
+    item.id = Date.now() + Math.floor(Math.random() * 1000);
+
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').add(item);
+
+    tx.oncomplete = () => {
+      loadItems();
+    };
+
+    tx.onerror = () => {
+      showToast('SAVE ERROR');
+    };
+  }
+
+  function loadItems() {
+    if (!db) return;
+
+    const tx = db.transaction('photos', 'readonly');
+    tx.objectStore('photos').getAll().onsuccess = (e) => {
+      items = e.target.result.sort((a, b) => b.id - a.id);
+      renderThumb();
+      renderGallery();
+    };
+  }
+
+  function renderThumb() {
+    if (items.length > 0 && items[0].main) {
+      thumbImg.src = items[0].main;
+      thumbImg.style.display = 'block';
+      thumbPlaceholder.style.display = 'none';
+    } else {
+      thumbImg.removeAttribute('src');
+      thumbImg.style.display = 'none';
+      thumbPlaceholder.style.display = 'block';
+    }
+  }
+
+  function renderGallery() {
+    galleryGrid.innerHTML = '';
+
+    items.forEach((item, index) => {
+      const div = document.createElement('button');
+      div.className = 'gItem';
+      div.type = 'button';
+
+      const main = document.createElement('img');
+      main.src = item.main;
+      main.alt = 'photo';
+      div.appendChild(main);
+
+      if (item.sub) {
+        const pip = document.createElement('div');
+        pip.className = 'gPip';
+
+        const sub = document.createElement('img');
+        sub.src = item.sub;
+        sub.alt = 'sub photo';
+
+        pip.appendChild(sub);
+        div.appendChild(pip);
+      }
+
+      div.addEventListener('click', () => openViewer(index));
+      galleryGrid.appendChild(div);
+    });
+  }
+
+  function openGallery() {
+    camScreen.classList.remove('active');
+    galleryScreen.classList.add('active');
+  }
+
+  function closeGallery() {
+    galleryScreen.classList.remove('active');
+    camScreen.classList.add('active');
+  }
+
+  function openViewer(index) {
+    viewerIndex = index;
+    const item = items[index];
+    if (!item) return;
+
+    viewerMain.src = item.main;
+
+    if (item.sub) {
+      viewerSub.src = item.sub;
+      viewerSubWrap.style.display = 'block';
+    } else {
+      viewerSubWrap.style.display = 'none';
+      viewerSub.removeAttribute('src');
+    }
+
+    viewer.classList.add('active');
+  }
+
+  function closeViewer() {
+    viewer.classList.remove('active');
+  }
+
+  function deleteViewerItem() {
+    const item = items[viewerIndex];
+    if (!item) return;
+
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').delete(item.id);
+
+    tx.oncomplete = () => {
+      closeViewer();
+      loadItems();
+      showToast('DELETED');
+    };
+  }
+
+  function setMode(nextMode) {
+    mode = nextMode;
+    videoMode.classList.toggle('active', mode === 'video');
+    photoMode.classList.toggle('active', mode === 'photo');
+    showToast(mode === 'video' ? 'VIDEO' : 'PHOTO', 700);
+  }
+
+  async function handleBothShot() {
+    showToast('CHANGE');
+
+    facing = facing === 'back' ? 'front' : 'back';
+    await startCam();
+
+    let count = 3;
+    showCenterText(count);
+
+    await new Promise(resolve => {
+      const timer = setInterval(() => {
+        count -= 1;
+        if (count > 0) {
+          showCenterText(count);
+        } else {
+          clearInterval(timer);
+          hideCenterText();
+          resolve();
+        }
+      }, 1000);
+    });
+
+    triggerFlash();
+    const second = grab();
+
+    saveItem({
+      type: 'photo',
+      main: second,
+      ratio: currentRatio
+    });
+
+    showToast('DONE ✓', 1400);
+  }
+
+  async function handlePhotoShot() {
+    if (isProcessing || mode !== 'photo') return;
+    isProcessing = true;
+
+    triggerFlash();
+
+    if (bothMode) {
+      await handleBothShot();
+    } else {
+      const shot = grab();
+      saveItem({
+        type: 'photo',
+        main: shot,
+        ratio: currentRatio
+      });
+      showToast('DONE ✓', 1400);
+    }
+
+    setTimeout(() => {
+      isProcessing = false;
+    }, 300);
+  }
+
+  ratioBtn.addEventListener('click', () => {
+    ratioMenu.classList.toggle('show');
+  });
+
+  document.querySelectorAll('.ratio-opt').forEach(btn => {
+    btn.addEventListener('click', () => setRatio(btn.dataset.ratio));
+  });
+
+  bothBtn.addEventListener('click', () => {
+    bothMode = !bothMode;
+    bothBtn.textContent = bothMode ? 'BOTH ON' : 'BOTH OFF';
+    bothBtn.classList.toggle('active', bothMode);
+  });
+
+  shutter.addEventListener('click', handlePhotoShot);
+  thumbBtn.addEventListener('click', openGallery);
+  galleryClose.addEventListener('click', closeGallery);
+
+  flipBtn.addEventListener('click', async () => {
+    facing = facing === 'back' ? 'front' : 'back';
+    await startCam();
+  });
+
+  viewerDone.addEventListener('click', closeViewer);
+  viewerDelete.addEventListener('click', deleteViewerItem);
+
+  document.addEventListener('click', (e) => {
+    const insideRatio = ratioBtn.contains(e.target) || ratioMenu.contains(e.target);
+    if (!insideRatio) ratioMenu.classList.remove('show');
+  });
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  camScreen.addEventListener('touchstart', (e) => {
+    if (viewer.classList.contains('active') || galleryScreen.classList.contains('active')) return;
+    const t = e.changedTouches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+  }, { passive: true });
+
+  camScreen.addEventListener('touchend', (e) => {
+    if (viewer.classList.contains('active') || galleryScreen.classList.contains('active')) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) setMode('video');
+      else setMode('photo');
+    }
+  }, { passive: true });
+
+  setRatio('3:4');
+})();
 </script>
-
 </body>
 </html>
