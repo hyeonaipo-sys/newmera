@@ -275,30 +275,49 @@ window.addEventListener('load', function(){ startCamera(); });
 
 async function startCamera(){
   try{
-    try{
-      backStream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:{exact:'environment'},width:{ideal:1920},height:{ideal:1080}},
-        audio:true
-      });
-    }catch(e){
-      backStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-    }
-    mainVid.srcObject=backStream;
-    mainVid.play();
-    document.getElementById('permScreen').style.display='none';
-
+    // 전면 카메라 먼저 시작 (iOS는 첫 번째 권한 요청에서 둘 다 허용)
     try{
       frontStream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},
+        video:{facingMode:'user'},
         audio:false
       });
       frontVid.srcObject=frontStream;
       frontVid.play();
     }catch(e){}
 
+    // 후면 카메라
+    var devices=await navigator.mediaDevices.enumerateDevices();
+    var backCam=devices.find(function(d){
+      return d.kind==='videoinput'&&d.label.toLowerCase().indexOf('back')>-1;
+    });
+
+    if(backCam){
+      backStream=await navigator.mediaDevices.getUserMedia({
+        video:{deviceId:{exact:backCam.deviceId},width:{ideal:1920},height:{ideal:1080}},
+        audio:true
+      });
+    }else{
+      // deviceId 못 찾으면 facingMode로 시도
+      try{
+        backStream=await navigator.mediaDevices.getUserMedia({
+          video:{facingMode:{exact:'environment'}},
+          audio:true
+        });
+      }catch(e){
+        backStream=await navigator.mediaDevices.getUserMedia({
+          video:{facingMode:'environment'},
+          audio:true
+        });
+      }
+    }
+
+    mainVid.srcObject=backStream;
+    mainVid.play();
+    document.getElementById('permScreen').style.display='none';
+
   }catch(e){
     var p=document.querySelector('#permScreen p');
-    p.textContent='권한 거부됨. 브라우저 설정에서 카메라를 허용해주세요.';
+    p.textContent='권한 거부됨. Safari 설정 → 카메라를 허용해주세요.';
     document.getElementById('permScreen').style.display='flex';
   }
 }
