@@ -53,16 +53,17 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 #shutter.recording #shutterInner { background: var(--ios-red); border-radius: 12px; transform: scale(0.5); }
 
 /* LIBRARY */
-#libHeader { padding: max(var(--safe-top), 40px) 20px 20px; border-bottom: 0.5px solid #2c2c2e; }
-#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; }
+#libHeader { padding: max(var(--safe-top), 40px) 20px 20px; border-bottom: 0.5px solid #2c2c2e; background: #000; }
+#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; background: #000; }
 .gItem { width: 100%; aspect-ratio: 1; background: #1c1c1e; position: relative; overflow: hidden; }
 .gItem img { width: 100%; height: 100%; object-fit: cover; }
 .vBadge { position: absolute; bottom: 8px; right: 8px; font-size: 10px; font-weight: 800; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; }
 
-#toast { position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; }
+#toast { position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 25px; border-radius: 25px; font-size: 16px; font-weight: 900; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; text-transform: uppercase; }
 #toast.show { opacity: 1; }
 
-#photoViewer { background: #000; }
+#photoViewer { background: #000; display: none; position: fixed; inset: 0; z-index: 300; flex-direction: column; }
+#photoViewer.active { display: flex; }
 </style>
 </head>
 <body>
@@ -106,7 +107,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   <button onclick="closeLib()" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#fff; color:#000; padding:15px 35px; border-radius:30px; font-weight:800; border:none; z-index:250; box-shadow: 0 4px 15px rgba(0,0,0,0.3)">카메라</button>
 </div>
 
-<div class="screen" id="photoViewer">
+<div id="photoViewer">
   <header style="padding: max(var(--safe-top), 20px) 20px; display:flex; justify-content:space-between">
     <button onclick="closeViewer()" style="color:var(--ios-blue); font-size:17px; font-weight:700; background:none; border:none">Done</button>
     <button onclick="deleteItem()" style="color:var(--ios-red); font-size:17px; background:none; border:none">Delete</button>
@@ -131,9 +132,16 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   const thumbImg = document.getElementById('thumbImg');
   const countdownEl = document.getElementById('countdown');
 
-  const req = indexedDB.open("NewmeraProBeReal_v4", 1);
-  req.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains("media")) db.createStore("media", {keyPath:"id"}); };
-  req.onsuccess = e => { db = e.target.result; loadItems(); startCam(); };
+  const req = indexedDB.open("NewmeraProBeReal_vFinal_Fixed", 1);
+  req.onupgradeneeded = e => { 
+    db = e.target.result; 
+    if(!db.objectStoreNames.contains("media")) db.createObjectStore("media", {keyPath:"id"}); 
+  };
+  req.onsuccess = e => { 
+    db = e.target.result; 
+    loadItems(); 
+    startCam(); 
+  };
 
   async function startCam() {
     if(stream) stream.getTracks().forEach(t=>t.stop());
@@ -142,9 +150,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
         video: { facingMode: facing==='back'?'environment':'user', width:{ideal:1920}, height:{ideal:1080} } 
       });
       mainVid.srcObject = stream;
-      mainVid.className = facing==='front'?'mirror':'';
-      const track = stream.getVideoTracks()[0];
-      if(track.getCapabilities().torch) track.applyConstraints({advanced:[{torch:flash}]});
+      mainVid.className = facing=='front'?'mirror':'';
     } catch(e) { msg('Camera Error'); }
   }
 
@@ -187,42 +193,41 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     if(!bothMode) {
       const data = grab(0.9);
       saveItem({ type:'photo', thumb: data, main: data });
-      msg('📸 Photo Saved');
+      msg('📸 PHOTO SAVED');
       return;
     }
 
-    // BeReal 로직: 즉시 촬영 후 3초 대기
     isBothCapturing = true;
-    const firstPic = grab(0.9); // 첫번째 컷 찍기
-    msg('첫 번째 컷 촬영 완료! 카메라 전환 중...');
+    const firstPic = grab(0.9);
+    msg('CHANGE!');
     
-    // 즉시 카메라 전환 준비
-    facing = facing === 'back' ? 'front' : 'back';
-    await startCam();
+    setTimeout(async () => {
+      facing = facing === 'back' ? 'front' : 'back';
+      await startCam();
 
-    // 3초 카운트다운 시작
-    countdownEl.style.display = 'block';
-    let count = 3;
-    countdownEl.textContent = count;
-    
-    const countInt = setInterval(async () => {
-      count--;
-      if(count > 0) countdownEl.textContent = count;
-      else {
-        clearInterval(countInt);
-        countdownEl.style.display = 'none';
-        
-        setTimeout(() => {
-          const secondPic = grab(0.9); // 두번째 컷 찍기
-          combineImages(firstPic, secondPic);
-          isBothCapturing = false;
-          // 다시 복구
-          facing = facing === 'back' ? 'front' : 'back';
-          startCam();
-          msg('👥 BeReal 합성 완료!');
-        }, 500);
-      }
-    }, 1000);
+      countdownEl.style.display = 'block';
+      let count = 3;
+      countdownEl.textContent = count;
+      
+      const countInt = setInterval(async () => {
+        count--;
+        if(count > 0) {
+          countdownEl.textContent = count;
+        } else {
+          clearInterval(countInt);
+          countdownEl.style.display = 'none';
+          
+          setTimeout(() => {
+            const secondPic = grab(0.9); 
+            combineImages(firstPic, secondPic);
+            isBothCapturing = false;
+            facing = facing === 'back' ? 'front' : 'back';
+            startCam();
+            msg('👥 BEREAL SAVED');
+          }, 500);
+        }
+      }, 1000);
+    }, 1500);
   }
 
   function combineImages(main, sub) {
@@ -269,14 +274,24 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
       const blob = new Blob(chunks, {type:'video/webm'});
       const thumb = canvas.toDataURL('image/jpeg', 0.5);
       const reader = new FileReader();
-      reader.onloadend = () => { saveItem({ type:'video', thumb, main: reader.result }); msg('🎥 Video Saved'); };
+      reader.onloadend = () => { 
+        saveItem({ type:'video', thumb, main: reader.result }); 
+        msg('🎥 VIDEO SAVED'); 
+      };
       reader.readAsDataURL(blob);
     };
     mediaRec.start();
     drawInt = setInterval(() => grab(0, true), 1000/30);
   }
 
-  function stopRec() { isRec=false; clearInterval(recInt); clearInterval(drawInt); document.getElementById('shutter').classList.remove('recording'); document.getElementById('recUI').classList.remove('active'); mediaRec.stop(); }
+  function stopRec() { 
+    isRec=false; 
+    clearInterval(recInt); 
+    clearInterval(drawInt); 
+    document.getElementById('shutter').classList.remove('recording'); 
+    document.getElementById('recUI').classList.remove('active'); 
+    mediaRec.stop(); 
+  }
 
   function grab(q, drawOnly=false) {
     canvas.width = 1920; canvas.height = 1080;
@@ -289,8 +304,11 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   function saveItem(item) {
     item.id = Date.now();
     const tx = db.transaction("media", "readwrite");
-    tx.objectStore("media").add(item);
-    tx.oncomplete = () => loadItems();
+    const store = tx.objectStore("media");
+    store.add(item);
+    tx.oncomplete = () => {
+      loadItems();
+    };
   }
 
   function loadItems() {
@@ -298,16 +316,25 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     const req = tx.objectStore("media").getAll();
     req.onsuccess = () => {
       items = req.result.sort((a,b)=>b.id-a.id);
-      if(items.length>0) { thumbImg.src = items[0].thumb; thumbImg.style.display='block'; }
-      else thumbImg.style.display='none';
+      if(items.length>0) { 
+        thumbImg.src = items[0].thumb; 
+        thumbImg.style.display='block'; 
+      } else {
+        thumbImg.style.display='none';
+      }
+      renderGrid();
     };
   }
 
-  window.openLib = () => { document.getElementById('libraryScreen').classList.add('active'); renderGrid(); };
+  window.openLib = () => { 
+    document.getElementById('libraryScreen').classList.add('active'); 
+    renderGrid(); 
+  };
   window.closeLib = () => document.getElementById('libraryScreen').classList.remove('active');
 
   function renderGrid() {
     const grid = document.getElementById('galleryGrid');
+    if(!grid) return;
     grid.innerHTML = '';
     document.getElementById('libCount').textContent = items.length + ' Items';
     items.forEach((it, i) => {
@@ -320,24 +347,47 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   }
 
   let vIdx=0;
-  window.openViewer = i => { vIdx=i; document.getElementById('photoViewer').classList.add('active'); updateViewer(); };
+  window.openViewer = i => { 
+    vIdx=i; 
+    document.getElementById('photoViewer').classList.add('active'); 
+    updateViewer(); 
+  };
   function updateViewer() {
     const it = items[vIdx];
     const img=document.getElementById('pvMainImg'), vid=document.getElementById('pvMainVid');
-    if(it.type==='video') { img.style.display='none'; vid.style.display='block'; vid.src=it.main; }
-    else { vid.style.display='none'; img.style.display='block'; img.src=it.main; }
+    if(it.type==='video') { 
+      img.style.display='none'; 
+      vid.style.display='block'; 
+      vid.src=it.main; 
+    }
+    else { 
+      vid.style.display='none'; 
+      img.style.display='block'; 
+      img.src=it.main; 
+    }
   }
-  window.closeViewer = () => { document.getElementById('photoViewer').classList.remove('active'); document.getElementById('pvMainVid').pause(); };
+  window.closeViewer = () => { 
+    document.getElementById('photoViewer').classList.remove('active'); 
+    document.getElementById('pvMainVid').pause(); 
+  };
   window.deleteItem = () => {
     if(confirm('진짜 삭제할까?')) {
       const tx = db.transaction("media", "readwrite");
       tx.objectStore("media").delete(items[vIdx].id);
-      tx.oncomplete = () => { loadItems(); renderGrid(); closeViewer(); };
+      tx.oncomplete = () => { 
+        loadItems(); 
+        closeViewer(); 
+      };
     }
   };
 
   window.flipCam = () => { facing=facing==='back'?'front':'back'; startCam(); };
-  function msg(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+  function msg(m) { 
+    const t=document.getElementById('toast'); 
+    t.textContent=m; 
+    t.classList.add('show'); 
+    setTimeout(()=>t.classList.remove('show'), 2000); 
+  }
 })();
 </script>
 </body>
