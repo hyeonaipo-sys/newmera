@@ -31,7 +31,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   top: 0; left: 0; right: 0;
 }
 .top-btn { 
-  background: rgba(0,0,0,0.5); 
+  background: rgba(40,40,40,0.6); 
   border: none;
   color: #fff; 
   height: 40px; 
@@ -40,110 +40,144 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   align-items: center; 
   justify-content: center; 
   font-size: 14px; 
-  backdrop-filter: blur(10px); 
-  padding: 0 15px;
+  backdrop-filter: blur(15px); 
+  padding: 0 16px;
   font-weight: 700;
 }
 .top-btn.active { background: #fff; color: #000; }
 
-/* VIEWPORT - Adjust height to ensure bottom bar is visible */
-#vfContainer {
+#ratioMenu {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 200px; /* Space for bottom bar */
+  top: 65px; left: 20px;
+  background: rgba(30,30,30,0.95);
+  border-radius: 14px;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 200;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+#ratioMenu.show { display: flex; }
+.ratio-opt { padding: 14px 24px; font-size: 15px; font-weight: 600; text-align: center; border-bottom: 0.5px solid #333; }
+.ratio-opt.selected { color: var(--ios-yellow); }
+
+/* VIEWPORT - 3:4 default scale */
+#vfWrapper {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 15px;
-  padding-top: 80px;
+  padding: 0 12px;
+  margin-top: 60px;
+  margin-bottom: 200px;
 }
 #vf { 
   position: relative; 
   width: 100%; 
-  height: 100%;
+  aspect-ratio: 3/4;
   overflow: hidden; 
   background: #111;
-  border-radius: 40px;
+  border-radius: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
 }
 #mainVid { width: 100%; height: 100%; object-fit: cover; }
 #mainVid.mirror { transform: scaleX(-1); }
 
-/* OVERLAYS */
+/* UI Overlays */
 #overlayMsg {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 60px;
+  font-size: 54px;
   font-weight: 900;
   color: #fff;
   z-index: 150;
   display: none;
-  text-shadow: 0 0 30px rgba(0,0,0,1);
+  text-shadow: 0 0 40px rgba(0,0,0,1);
 }
-#flashEffect {
-  position: absolute; inset: 0; background: #fff; z-index: 200; display: none;
-}
+#flashEffect { position: absolute; inset: 0; background: #fff; z-index: 200; display: none; }
 
-/* BOTTOM BAR - Fixed at the very bottom */
+/* BOTTOM UI */
 #cameraBottom { 
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   height: 200px;
   background: #000; 
-  padding-bottom: max(var(--safe-bottom), 20px);
+  padding-bottom: max(var(--safe-bottom), 15px);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  z-index: 100;
 }
-#modesWrapper { 
-  display: flex; 
-  justify-content: center;
-  gap: 30px; 
-  margin-bottom: 20px;
-}
-.mode { font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.4); }
+#modesWrapper { display: flex; justify-content: center; gap: 32px; margin-bottom: 24px; }
+.mode { font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.3); }
 .mode.active { color: var(--ios-yellow); }
 
-#shutterRow { 
-  width: 100%;
-  display: flex; 
-  align-items: center; 
-  justify-content: space-evenly; 
-}
+#shutterRow { width: 100%; display: flex; align-items: center; justify-content: space-evenly; }
 #thumb { 
-  width: 54px; height: 54px; border-radius: 12px; background: #1a1a1a; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); 
+  width: 56px; height: 56px; border-radius: 12px; background: #1a1a1a; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); 
 }
 #thumb img { width: 100%; height: 100%; object-fit: cover; }
-#shutter { 
-  width: 76px; height: 76px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; 
-}
-#shutterInner { 
-  width: 60px; height: 60px; border-radius: 50%; background: #fff; transition: 0.1s;
-}
-#shutter:active #shutterInner { transform: scale(0.85); }
+#shutter { width: 80px; height: 80px; border-radius: 50%; border: 5px solid #fff; display: flex; align-items: center; justify-content: center; }
+#shutterInner { width: 62px; height: 62px; border-radius: 50%; background: #fff; }
 
-/* GALLERY & VIEWER */
-#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; padding-top: 20px;}
-.gItem { width: 100%; aspect-ratio: 1; position: relative; background: #111; }
+/* 3x3 GALLERY */
+#galleryGrid { 
+  flex: 1; 
+  overflow-y: auto; 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 2px; 
+  padding: 2px;
+  background: #000;
+}
+.gItem { 
+  width: 100%; 
+  aspect-ratio: 1; 
+  position: relative; 
+  background: #111; 
+}
 .gItem img.main { width: 100%; height: 100%; object-fit: cover; }
-.gItem img.sub { position: absolute; top: 4px; left: 4px; width: 30%; border: 1px solid #fff; border-radius: 4px; }
+.gItem .sub-pip { 
+  position: absolute; 
+  top: 5%; left: 5%; 
+  width: 32%; 
+  aspect-ratio: 3/4;
+  border: 1px solid #fff; 
+  border-radius: 4px; 
+  overflow: hidden;
+}
+.gItem .sub-pip img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+/* PHOTO VIEWER (BeReal Layout + DoubleTap) */
 #photoViewer { position: fixed; inset: 0; background: #000; display: none; z-index: 500; flex-direction: column; }
 #photoViewer.active { display: flex; }
-#pvContainer { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
-#pvMainImg { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 20px; }
-#pvSubImg { position: absolute; top: 40px; left: 40px; width: 30%; border: 2px solid #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.8); }
+#pvContainer { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; }
+#pvBox { 
+  position: relative; 
+  width: 100%; 
+  aspect-ratio: 3/4; 
+  border-radius: 36px; 
+  overflow: hidden; 
+  background: #111; 
+  cursor: pointer;
+}
+#pvMainImg { width: 100%; height: 100%; object-fit: cover; transition: 0.2s opacity; }
+#pvSubImgWrapper { 
+  position: absolute; 
+  top: 18px; left: 18px; 
+  width: 30%; 
+  aspect-ratio: 3/4;
+  border: 2px solid #fff; 
+  border-radius: 16px; 
+  overflow: hidden; 
+  box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+  z-index: 10;
+}
+#pvSubImg { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-#toast { position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 25px; border-radius: 25px; font-size: 14px; font-weight: 800; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
+#toast { position: fixed; top: 140px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 28px; border-radius: 30px; font-size: 14px; font-weight: 800; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
 #toast.show { opacity: 1; }
 </style>
 </head>
@@ -151,11 +185,18 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 
 <div class="screen active" id="cameraScreen">
   <div id="topBar">
-    <button class="top-btn" onclick="toggleFlash()" id="flashBtn">⚡️ OFF</button>
+    <div style="position:relative">
+      <button class="top-btn" onclick="toggleRatioMenu()" id="ratioBtn">3:4</button>
+      <div id="ratioMenu">
+        <div class="ratio-opt" onclick="setRatio('1:1')">1:1</div>
+        <div class="ratio-opt selected" onclick="setRatio('3:4')">3:4</div>
+        <div class="ratio-opt" onclick="setRatio('9:16')">9:16</div>
+      </div>
+    </div>
     <button class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH OFF</button>
   </div>
 
-  <div id="vfContainer">
+  <div id="vfWrapper">
     <div id="vf">
       <video id="mainVid" autoplay playsinline muted></video>
       <div id="overlayMsg"></div>
@@ -169,7 +210,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
       <div class="mode active">PHOTO</div>
     </div>
     <div id="shutterRow">
-      <div id="thumb" onclick="openLib()"><img id="thumbImg"></div>
+      <div id="thumb" onclick="openLib()"><img id="thumbImg" src=""></div>
       <div id="shutter" onclick="handleShutter()"><div id="shutterInner"></div></div>
       <div id="flipBtn" onclick="flipCam()" style="font-size:26px">🔄</div>
     </div>
@@ -177,22 +218,25 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 </div>
 
 <div class="screen" id="libraryScreen">
-  <header style="padding: 60px 20px 20px; background: #000;">
-    <h1 style="font-size:32px; font-weight:800;">Gallery</h1>
+  <header style="padding: 60px 20px 20px; display:flex; justify-content:space-between; align-items:center; background:#000;">
+    <h1 style="font-size:30px; font-weight:900;">Memories</h1>
+    <button onclick="closeLib()" style="background:none; border:none; color:var(--ios-blue); font-size:18px; font-weight:700;">Close</button>
   </header>
   <div id="galleryGrid"></div>
-  <button onclick="closeLib()" style="position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:#fff; color:#000; padding:15px 40px; border-radius:30px; font-weight:800; border:none; z-index:250;">Close</button>
 </div>
 
 <div id="photoViewer">
-  <header style="padding: max(var(--safe-top), 20px) 20px 10px; display:flex; justify-content:space-between; z-index:10;">
-    <button onclick="closeViewer()" style="color:var(--ios-blue); font-size:18px; background:none; border:none">Done</button>
-    <button onclick="deleteItem()" style="color:var(--ios-red); font-size:18px; background:none; border:none">Delete</button>
+  <header style="padding: max(var(--safe-top), 20px) 20px 10px; display:flex; justify-content:space-between; z-index:20;">
+    <button onclick="closeViewer()" style="color:var(--ios-blue); font-size:18px; background:none; border:none; font-weight:700;">Done</button>
+    <button onclick="deleteItem()" style="color:var(--ios-red); font-size:18px; background:none; border:none; font-weight:600;">Delete</button>
   </header>
   <div id="pvContainer">
-    <img id="pvMainImg">
-    <img id="pvSubImg">
+    <div id="pvBox" id="pvBox">
+        <img id="pvMainImg">
+        <div id="pvSubImgWrapper"><img id="pvSubImg"></div>
+    </div>
   </div>
+  <div style="text-align:center; padding: 20px; font-size: 12px; color: #555;">Double Tap to Swap Photos</div>
 </div>
 
 <div id="toast"></div>
@@ -201,15 +245,19 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 <script>
 (function() {
   let stream=null, facing='back', items=[], db=null;
-  let flashEnabled=false, bothMode=false, isProcessing=false;
+  let bothMode=false, isProcessing=false;
+  let currentRatio = '3:4';
   
   const mainVid = document.getElementById('mainVid');
   const canvas = document.getElementById('canvas');
   const overlayMsg = document.getElementById('overlayMsg');
   const flashEffect = document.getElementById('flashEffect');
   const thumbImg = document.getElementById('thumbImg');
+  const ratioBtn = document.getElementById('ratioBtn');
+  const ratioMenu = document.getElementById('ratioMenu');
 
-  const req = indexedDB.open("BeReal_Camera_App_Final_v1", 1);
+  // DB Setup
+  const req = indexedDB.open("BeReal_Camera_App_Final_Fixed_v4", 1);
   req.onupgradeneeded = e => { 
     db = e.target.result; 
     db.createObjectStore("media", {keyPath:"id"}); 
@@ -227,11 +275,16 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     } catch(e) { msg('Camera Error'); }
   }
 
-  window.toggleFlash = () => {
-    flashEnabled = !flashEnabled;
-    const btn = document.getElementById('flashBtn');
-    btn.textContent = flashEnabled ? '⚡️ ON' : '⚡️ OFF';
-    btn.classList.toggle('active', flashEnabled);
+  window.toggleRatioMenu = () => ratioMenu.classList.toggle('show');
+  window.setRatio = r => {
+    currentRatio = r;
+    ratioBtn.textContent = r;
+    ratioMenu.classList.remove('show');
+    const vf = document.getElementById('vf');
+    if(r==='1:1') vf.style.aspectRatio = '1/1';
+    else if(r==='9:16') vf.style.aspectRatio = '9/16';
+    else vf.style.aspectRatio = '3/4';
+    document.querySelectorAll('.ratio-opt').forEach(opt => opt.classList.toggle('selected', opt.textContent === r));
   };
 
   window.toggleBoth = () => {
@@ -246,65 +299,57 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     isProcessing = true;
 
     if(bothMode) {
-      // 1. First Shot
-      await triggerFlash();
-      const firstShot = grab();
-      
-      // 2. Change!
-      overlayMsg.textContent = "CHANGE!";
+      overlayMsg.textContent = "SMILE!";
       overlayMsg.style.display = "block";
-      facing = facing === 'back' ? 'front' : 'back';
-      await startCam();
-      
-      setTimeout(() => {
-        // 3. Countdown
-        let count = 3;
-        overlayMsg.textContent = count;
-        const cdInt = setInterval(async () => {
-          count--;
-          if(count > 0) {
-            overlayMsg.textContent = count;
-          } else {
-            clearInterval(cdInt);
-            overlayMsg.style.display = 'none';
-            // 4. Second Shot
-            await triggerFlash();
-            const secondShot = grab();
-            saveItem({ type:'photo', main: firstShot, sub: secondShot });
-            msg('SAVED');
-            isProcessing = false;
-          }
-        }, 1000);
-      }, 1000);
+      setTimeout(async () => {
+        overlayMsg.style.display = "none";
+        triggerFlashUI();
+        const firstShot = grab();
+        
+        overlayMsg.textContent = "CHANGE!";
+        overlayMsg.style.display = "block";
+        facing = facing === 'back' ? 'front' : 'back';
+        await startCam();
+        
+        setTimeout(() => {
+          let count = 3;
+          overlayMsg.textContent = count;
+          const cdInt = setInterval(async () => {
+            count--;
+            if(count > 0) { overlayMsg.textContent = count; } 
+            else {
+              clearInterval(cdInt);
+              overlayMsg.style.display = 'none';
+              triggerFlashUI();
+              const secondShot = grab();
+              saveItem({ type:'photo', main: firstShot, sub: secondShot, ratio: currentRatio });
+              msg('MEMORIES SAVED');
+              isProcessing = false;
+            }
+          }, 1000);
+        }, 800);
+      }, 600);
     } else {
-      await triggerFlash();
+      triggerFlashUI();
       const data = grab();
-      saveItem({ type:'photo', main: data });
+      saveItem({ type:'photo', main: data, ratio: currentRatio });
       msg('SAVED');
       isProcessing = false;
     }
   };
 
-  async function triggerFlash() {
-    if(!flashEnabled) return;
+  function triggerFlashUI() {
     flashEffect.style.display = 'block';
-    setTimeout(() => { flashEffect.style.display = 'none'; }, 150);
-    
-    const track = stream.getVideoTracks()[0];
-    try {
-      if(track.getCapabilities().torch) {
-        await track.applyConstraints({ advanced: [{ torch: true }] });
-        setTimeout(async () => {
-          await track.applyConstraints({ advanced: [{ torch: false }] });
-        }, 150);
-      }
-    } catch(e) {}
+    setTimeout(() => { flashEffect.style.display = 'none'; }, 100);
   }
 
   function grab() {
     const ctx = canvas.getContext('2d');
     const vW = mainVid.videoWidth, vH = mainVid.videoHeight;
-    canvas.width = 1080; canvas.height = 1440; 
+    
+    if(currentRatio === '1:1') { canvas.width = 1080; canvas.height = 1080; }
+    else if(currentRatio === '9:16') { canvas.width = 1080; canvas.height = 1920; }
+    else { canvas.width = 1080; canvas.height = 1440; }
     
     const vAspect = vW / vH, tAspect = canvas.width / canvas.height;
     let sW, sH, sX, sY;
@@ -341,20 +386,59 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     items.forEach((it, i) => {
       const div = document.createElement('div');
       div.className = 'gItem';
-      div.innerHTML = `<img src="${it.main}" class="main">${it.sub ? `<img src="${it.sub}" class="sub">` : ''}`;
+      div.innerHTML = `
+        <img src="${it.main}" class="main">
+        ${it.sub ? `<div class="sub-pip"><img src="${it.sub}"></div>` : ''}
+      `;
       div.onclick = () => openViewer(i);
       grid.appendChild(div);
     });
   }
 
+  // Double Tap Logic
+  let lastTap = 0;
+  let isSwapped = false;
   let vIdx = 0;
+
+  const pvBox = document.getElementById('pvBox');
+  pvBox.addEventListener('click', e => {
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      swapPhotos();
+    }
+    lastTap = now;
+  });
+
+  function swapPhotos() {
+    const it = items[vIdx];
+    if (!it.sub) return;
+    isSwapped = !isSwapped;
+    const mainEl = document.getElementById('pvMainImg');
+    const subEl = document.getElementById('pvSubImg');
+    
+    if (isSwapped) {
+      mainEl.src = it.sub;
+      subEl.src = it.main;
+    } else {
+      mainEl.src = it.main;
+      subEl.src = it.sub;
+    }
+  }
+
   window.openViewer = i => {
     vIdx = i; const it = items[i];
+    isSwapped = false; // Reset swap state
     document.getElementById('photoViewer').classList.add('active');
     document.getElementById('pvMainImg').src = it.main;
-    const sub = document.getElementById('pvSubImg');
-    if(it.sub) { sub.src = it.sub; sub.style.display = 'block'; } else { sub.style.display = 'none'; }
+    const subWrapper = document.getElementById('pvSubImgWrapper');
+    if(it.sub) {
+        document.getElementById('pvSubImg').src = it.sub;
+        subWrapper.style.display = 'block';
+    } else {
+        subWrapper.style.display = 'none';
+    }
   };
+
   window.closeViewer = () => document.getElementById('photoViewer').classList.remove('active');
   window.deleteItem = () => {
     db.transaction("media", "readwrite").objectStore("media").delete(items[vIdx].id).oncomplete = () => {
