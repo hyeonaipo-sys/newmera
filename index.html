@@ -11,91 +11,83 @@
   --ios-secondary: #8e8e93;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{width:100%;height:100%;background:#000;font-family:-apple-system, system-ui, sans-serif;overflow:hidden;color:#fff}
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-/* Screen Management */
-.screen{position:fixed;inset:0;display:none;flex-direction:column;z-index:10}
-.screen.active{display:flex}
-
-/* ══════════════════════════════
-   CAMERA HOME (Original UI)
-   ══════════════════════════════ */
-#vf{position:relative;flex:1;background:#111;overflow:hidden}
-#mainVid{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
-#mainVid.mirror{transform:scaleX(-1)}
-
-#topbar{position:absolute;top:max(env(safe-area-inset-top), 20px);left:0;right:0;padding:0 20px;display:flex;justify-content:space-between;align-items:center;z-index:100}
-.tbtn{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(15px);border:0.5px solid rgba(255,255,255,0.1)}
-#bothBtn.on{background:var(--ios-blue);border-color:var(--ios-blue)}
-
-#capturePreview{position:absolute;top:80px;right:20px;width:90px;height:120px;border-radius:12px;overflow:hidden;border:2px solid #fff;display:none;z-index:150;box-shadow:0 8px 25px rgba(0,0,0,0.5)}
-#capturePreview img{width:100%;height:100%;object-fit:cover}
-
-#cameraBottom{background:#000;padding:20px 0 calc(env(safe-area-inset-bottom) + 20px);flex-shrink:0}
-#modes{display:flex;justify-content:center;gap:20px;margin-bottom:20px}
-.mode{font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.5px}
-.mode.on{color:#ffd60a}
-
-#shutterRow{display:flex;align-items:center;justify-content:space-between;padding:0 40px}
-#thumb{width:52px;height:52px;border-radius:12px;border:2px solid #fff;background:#1a1a1a;overflow:hidden;cursor:pointer;position:relative}
-#thumb img{width:100%;height:100%;object-fit:cover;display:none}
-#shutter{width:76px;height:76px;border-radius:50%;border:4px solid #fff;display:flex;align-items:center;justify-content:center}
-#shutterInner{width:62px;height:62px;border-radius:50%;background:#fff;transition:transform 0.1s}
-#shutter:active #shutterInner{transform:scale(0.9)}
-#flipBtn{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:24px}
+/* 공통 화면 구조 */
+.screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: #000; }
+.screen.active { display: flex; }
 
 /* ══════════════════════════════
-   LIBRARY GRID (Photos App Style)
+   CAMERA UI (버튼 위치 수정)
    ══════════════════════════════ */
-#libraryScreen{background:#000;z-index:200}
-#libHeader{padding:max(env(safe-area-inset-top), 40px) 20px 15px; flex-shrink:0}
-#libTitleRow{display:flex;justify-content:space-between;align-items:center}
-#libTitle{font-size:34px;font-weight:800;letter-spacing:-1.5px}
-#libSelectBtn{color:var(--ios-blue);font-size:17px;font-weight:500;background:none;border:none;cursor:pointer}
-#libCount{color:var(--ios-secondary);font-size:15px;margin-top:2px;font-weight:500}
+#vf { position: relative; flex: 1; background: #111; overflow: hidden; border-radius: 0 0 40px 40px; }
+#mainVid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+#mainVid.mirror { transform: scaleX(-1); }
 
-#galleryGrid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3, 1fr);gap:2px;padding:2px}
-.gItem{aspect-ratio:1;background:#1c1c1e;position:relative;cursor:pointer}
-.gItem img{width:100%;height:100%;object-fit:cover}
-.gItem.selected::after{content:'✓';position:absolute;top:8px;right:8px;width:22px;height:22px;background:var(--ios-blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;border:2px solid #fff}
+/* 상단바: 왼쪽 플래시, 오른쪽 Both */
+#topbar { position: absolute; top: max(env(safe-area-inset-top), 20px); left: 0; right: 0; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+.tbtn { width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); border: 0.5px solid rgba(255,255,255,0.1); color: #fff; font-size: 18px; }
+#bothBtn { width: auto; padding: 0 16px; border-radius: 20px; font-weight: 800; font-size: 13px; }
+#bothBtn.on { background: var(--ios-blue); border-color: var(--ios-blue); }
 
-/* iPhone Style Tab Bar */
-#libTabBar{height:84px;background:rgba(20,20,20,0.94);backdrop-filter:blur(25px);display:flex;justify-content:space-around;padding-top:10px;border-top:0.3px solid rgba(255,255,255,0.2);padding-bottom:env(safe-area-inset-bottom)}
-.tab{display:flex;flex-direction:column;align-items:center;color:var(--ios-secondary);font-size:10px;font-weight:600;gap:4px;width:25%}
-.tab.active{color:var(--ios-blue)}
-.tab-icon{font-size:22px}
+#cameraBottom { background: #000; padding: 15px 0 calc(env(safe-area-inset-bottom) + 20px); flex-shrink: 0; }
+#modes { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
+.mode { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; }
+.mode.on { color: #ffd60a; }
+
+#shutterRow { display: flex; align-items: center; justify-content: space-between; padding: 0 35px; }
+#thumb { width: 52px; height: 52px; border-radius: 12px; border: 2.5px solid #fff; background: #1a1a1a; overflow: hidden; cursor: pointer; }
+#thumb img { width: 100%; height: 100%; object-fit: cover; display: none; }
+#shutter { width: 74px; height: 74px; border-radius: 50%; border: 4.5px solid #fff; display: flex; align-items: center; justify-content: center; }
+#shutterInner { width: 58px; height: 58px; border-radius: 50%; background: #fff; transition: transform 0.1s; }
+#flipBtn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff; }
+
+/* ══════════════════════════════
+   LIBRARY GRID
+   ══════════════════════════════ */
+#libraryScreen { z-index: 200; overflow: hidden; }
+#libHeader { padding: max(env(safe-area-inset-top), 40px) 20px 15px; background: #000; }
+#libTitleRow { display: flex; justify-content: space-between; align-items: flex-start; }
+#libTitle { font-size: 34px; font-weight: 800; letter-spacing: -1.2px; color: #fff; }
+#libSelectBtn { background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 6px 16px; border-radius: 20px; font-size: 15px; font-weight: 600; }
+#libCount { font-size: 16px; font-weight: 600; color: var(--ios-secondary); margin-top: -2px; }
+
+#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 0 2px 100px; }
+.gItem { aspect-ratio: 1; background: #1c1c1e; position: relative; }
+.gItem img { width: 100%; height: 100%; object-fit: cover; }
+
+#backToCam { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 700; font-size: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); z-index: 220; border: none; }
 
 /* ══════════════════════════════
    DETAIL VIEWER
    ══════════════════════════════ */
-#photoViewer{position:fixed;inset:0;background:#000;display:none;flex-direction:column;z-index:300}
-#photoViewer.show{display:flex}
-#pvHeader{padding:max(env(safe-area-inset-top), 20px) 20px 10px; display:flex; justify-content:space-between; align-items:center; z-index:10}
-#pvContainer{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#pvMainImg{width:100%;height:100%;object-fit:contain}
+#photoViewer { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 300; }
+#photoViewer.show { display: flex; }
+#pvHeader { padding: max(env(safe-area-inset-top), 20px) 20px 10px; display: flex; justify-content: space-between; align-items: center; }
+#pvContainer { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+#pvMainImg { width: 100%; height: 100%; object-fit: contain; }
 
-/* Utilities */
-#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.9);color:#000;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:1000;opacity:0;transition:0.3s;pointer-events:none}
-#toast.show{opacity:1}
-#countdownOverlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:none;align-items:center;justify-content:center;z-index:200}
-#countdownOverlay.show{display:flex}
-#countdownNum{font-size:120px;font-weight:800;text-shadow:0 4px 20px rgba(0,0,0,0.5)}
+#capturePreview { position: absolute; top: 120px; right: 20px; width: 90px; height: 120px; border-radius: 12px; overflow: hidden; border: 2px solid #fff; display:none; z-index: 150; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+#capturePreview img { width: 100%; height: 100%; object-fit: cover; }
+#countdownOverlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; z-index: 200; pointer-events: none; }
+#countdownOverlay.show { display: flex; }
+#countdownNum { font-size: 120px; font-weight: 800; color: #fff; text-shadow: 0 0 30px rgba(0,0,0,0.5); }
 
-@keyframes pop{0%{transform:scale(1.4)}100%{transform:scale(1)}}
+#toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); color: #000; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; }
+#toast.show { opacity: 1; }
 </style>
 </head>
 <body>
 
-<!-- Camera Screen -->
+<!-- 카메라 -->
 <div class="screen active" id="cameraScreen">
   <div id="vf">
     <video id="mainVid" autoplay playsinline muted></video>
     <div id="capturePreview"><img id="capturePreviewImg"></div>
     <div id="countdownOverlay"><div id="countdownNum">3</div></div>
     <div id="topbar">
-      <div class="tbtn">⚡</div>
-      <div class="tbtn" id="bothBtn" onclick="toggleBoth()" style="width:auto;padding:0 14px;border-radius:20px;font-weight:800;font-size:12px;color:#fff">Both</div>
-      <div style="width:40px"></div>
+      <div class="tbtn" id="flashBtn">⚡</div>
+      <div class="tbtn" id="bothBtn" onclick="toggleBoth()">Both</div>
     </div>
   </div>
   <div id="cameraBottom">
@@ -108,7 +100,7 @@ body{width:100%;height:100%;background:#000;font-family:-apple-system, system-ui
   </div>
 </div>
 
-<!-- Library Grid Screen -->
+<!-- 갤러리 -->
 <div class="screen" id="libraryScreen">
   <header id="libHeader">
     <div id="libTitleRow">
@@ -119,21 +111,13 @@ body{width:100%;height:100%;background:#000;font-family:-apple-system, system-ui
   </header>
   
   <div id="galleryGrid"></div>
-
-  <nav id="libTabBar">
-    <div class="tab active">
-      <span class="tab-icon">🖼️</span><span>Library</span>
-    </div>
-    <div class="tab"><span class="tab-icon">📂</span><span>Albums</span></div>
-    <div class="tab"><span class="tab-icon">🔍</span><span>Search</span></div>
-    <div class="tab" onclick="closeLibrary()"><span class="tab-icon">📷</span><span>Camera</span></div>
-  </nav>
+  <button id="backToCam" onclick="closeLibrary()">카메라로 돌아가기</button>
 </div>
 
-<!-- Photo Detail Viewer -->
+<!-- 상세 보기 -->
 <div id="photoViewer">
   <div id="pvHeader">
-    <button onclick="closeViewer()" style="background:none;border:none;color:var(--ios-blue);font-size:18px;font-weight:500">Done</button>
+    <button onclick="closeViewer()" style="background:none;border:none;color:var(--ios-blue);font-size:18px;font-weight:600">Done</button>
     <button onclick="deleteCurrent()" style="background:none;border:none;color:#ff3b30;font-size:18px">🗑️</button>
   </div>
   <div id="pvContainer" ontouchstart="handleViewerTouch(event)">
@@ -152,7 +136,7 @@ const mainVid = document.getElementById('mainVid');
 const canvas = document.getElementById('canvas');
 
 window.onload = () => {
-  photos = JSON.parse(localStorage.getItem('newmera_vfinal') || '[]');
+  photos = JSON.parse(localStorage.getItem('newmera_v_final_v2') || '[]');
   startCamera();
   updateThumb();
 };
@@ -163,42 +147,36 @@ async function startCamera() {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing==='back'?'environment':'user' } });
     mainVid.srcObject = stream;
     mainVid.className = facing==='front'?'mirror':'';
-  } catch(e) { showToast('Camera permission needed!'); }
+  } catch(e) { showToast('카메라를 찾을 수 없어!'); }
 }
 
 function handleShutter() {
   if(bothMode) {
     if(bothPhase !== 0) return;
     bothPhase=1;
-    const firstURL = grabFrame();
-    document.getElementById('capturePreviewImg').src = firstURL;
+    const f1 = grabFrame();
+    document.getElementById('capturePreviewImg').src = f1;
     document.getElementById('capturePreview').style.display = 'block';
-    
-    let cnt=3;
-    const overlay = document.getElementById('countdownOverlay');
-    const num = document.getElementById('countdownNum');
-    overlay.classList.add('show'); num.textContent=cnt;
-    
+    let c=3;
+    const o = document.getElementById('countdownOverlay');
+    const n = document.getElementById('countdownNum');
+    o.classList.add('show'); n.textContent=c;
     facing = facing==='back'?'front':'back';
     startCamera();
-
     const iv = setInterval(() => {
-      cnt--;
-      if(cnt>0) num.textContent=cnt;
+      c--; if(c>0) n.textContent=c;
       else {
-        clearInterval(iv);
-        overlay.classList.remove('show');
-        document.getElementById('capturePreview').style.display = 'none';
+        clearInterval(iv); o.classList.remove('show');
+        document.getElementById('capturePreview').style.display='none';
         setTimeout(() => {
-          savePhoto({ main: firstURL, sub: grabFrame(), isBoth: true });
-          bothPhase=0;
-          showToast('📸 Both Captured!');
+          savePhoto({ main: f1, sub: grabFrame(), isBoth: true });
+          bothPhase=0; showToast('📸 Both 촬영 완료!');
         }, 300);
       }
     }, 1000);
   } else {
     savePhoto({ main: grabFrame(), isBoth: false });
-    showToast('📸 Saved');
+    showToast('📸 저장됨');
   }
 }
 
@@ -212,7 +190,7 @@ function grabFrame() {
 
 function savePhoto(data) {
   photos.unshift({ id: Date.now(), ...data });
-  localStorage.setItem('newmera_vfinal', JSON.stringify(photos));
+  localStorage.setItem('newmera_v_final_v2', JSON.stringify(photos));
   updateThumb();
 }
 
@@ -220,7 +198,7 @@ function updateThumb() {
   const thumb = document.getElementById('thumbImg');
   if(photos.length>0) {
     compose(photos[0], false, (url) => { thumb.src=url; thumb.style.display='block'; });
-  } else { thumb.style.display='none'; }
+  } else thumb.style.display='none';
 }
 
 function openLibrary() {
@@ -233,22 +211,15 @@ function closeLibrary() { document.getElementById('libraryScreen').classList.rem
 
 function renderGrid() {
   const grid = document.getElementById('galleryGrid');
-  const countLabel = document.getElementById('libCount');
+  const cnt = document.getElementById('libCount');
   grid.innerHTML = '';
-  countLabel.textContent = photos.length.toLocaleString() + ' Items';
-  
+  cnt.textContent = photos.length.toLocaleString() + ' Items';
   photos.forEach((p, i) => {
     const div = document.createElement('div');
-    div.className = 'gItem' + (selectedIds.has(p.id) ? ' selected' : '');
+    div.className = 'gItem';
     const img = document.createElement('img');
     compose(p, false, (url) => img.src = url);
-    div.onclick = () => {
-      if(isSelectMode) {
-        if(selectedIds.has(p.id)) selectedIds.delete(p.id);
-        else selectedIds.add(p.id);
-        renderGrid();
-      } else { openViewer(i); }
-    };
+    div.onclick = () => openViewer(i);
     div.appendChild(img);
     grid.appendChild(div);
   });
@@ -283,8 +254,7 @@ function handleViewerTouch(e) {
 }
 
 function closeViewer() { document.getElementById('photoViewer').classList.remove('show'); }
-function deleteCurrent() { if(confirm('Delete this photo?')) { photos.splice(viewerIdx,1); localStorage.setItem('newmera_vfinal',JSON.stringify(photos)); closeViewer(); renderGrid(); } }
-function toggleSelectMode() { isSelectMode=!isSelectMode; document.getElementById('libSelectBtn').textContent=isSelectMode?'Cancel':'Select'; if(!isSelectMode) selectedIds.clear(); renderGrid(); }
+function deleteCurrent() { if(confirm('삭제할까?')) { photos.splice(viewerIdx,1); localStorage.setItem('newmera_v_final_v2',JSON.stringify(photos)); closeViewer(); renderGrid(); } }
 function toggleBoth() { bothMode=!bothMode; document.getElementById('bothBtn').classList.toggle('on', bothMode); showToast(bothMode?'Both ON':'Both OFF'); }
 function flipCamera() { facing=facing==='back'?'front':'back'; startCamera(); }
 function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
