@@ -46,28 +46,30 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 }
 .top-btn.active { background: #fff; color: #000; }
 
-/* VIEWPORT CONTAINER - Needs to fit between top and bottom bar */
-#vfWrapper {
-  flex: 1;
-  position: relative;
+/* VIEWPORT - Adjust height to ensure bottom bar is visible */
+#vfContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 200px; /* Space for bottom bar */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  margin-top: 60px; /* Below Top Bar */
+  padding: 15px;
+  padding-top: 80px;
 }
 #vf { 
   position: relative; 
   width: 100%; 
   height: 100%;
-  max-height: calc(100vh - 280px); /* Leave space for bottom UI */
   overflow: hidden; 
   background: #111;
   border-radius: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
 }
 #mainVid { width: 100%; height: 100%; object-fit: cover; }
 #mainVid.mirror { transform: scaleX(-1); }
@@ -82,17 +84,21 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   color: #fff;
   z-index: 150;
   display: none;
-  text-shadow: 0 0 20px rgba(0,0,0,0.8);
+  text-shadow: 0 0 30px rgba(0,0,0,1);
 }
 #flashEffect {
   position: absolute; inset: 0; background: #fff; z-index: 200; display: none;
 }
 
-/* BOTTOM CONTROLS - Fixed at bottom */
+/* BOTTOM BAR - Fixed at the very bottom */
 #cameraBottom { 
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: 200px;
   background: #000; 
-  padding-bottom: var(--safe-bottom);
+  padding-bottom: max(var(--safe-bottom), 20px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -114,19 +120,19 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   justify-content: space-evenly; 
 }
 #thumb { 
-  width: 54px; height: 54px; border-radius: 50%; background: #1a1a1a; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); 
+  width: 54px; height: 54px; border-radius: 12px; background: #1a1a1a; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); 
 }
 #thumb img { width: 100%; height: 100%; object-fit: cover; }
 #shutter { 
   width: 76px; height: 76px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; 
 }
 #shutterInner { 
-  width: 60px; height: 60px; border-radius: 50%; background: #fff; transition: transform 0.1s;
+  width: 60px; height: 60px; border-radius: 50%; background: #fff; transition: 0.1s;
 }
-#shutter:active #shutterInner { transform: scale(0.9); }
+#shutter:active #shutterInner { transform: scale(0.85); }
 
 /* GALLERY & VIEWER */
-#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; }
+#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; padding-top: 20px;}
 .gItem { width: 100%; aspect-ratio: 1; position: relative; background: #111; }
 .gItem img.main { width: 100%; height: 100%; object-fit: cover; }
 .gItem img.sub { position: absolute; top: 4px; left: 4px; width: 30%; border: 1px solid #fff; border-radius: 4px; }
@@ -135,7 +141,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 #photoViewer.active { display: flex; }
 #pvContainer { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
 #pvMainImg { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 20px; }
-#pvSubImg { position: absolute; top: 40px; left: 40px; width: 30%; border: 2px solid #fff; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+#pvSubImg { position: absolute; top: 40px; left: 40px; width: 30%; border: 2px solid #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.8); }
 
 #toast { position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 25px; border-radius: 25px; font-size: 14px; font-weight: 800; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
 #toast.show { opacity: 1; }
@@ -149,7 +155,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     <button class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH OFF</button>
   </div>
 
-  <div id="vfWrapper">
+  <div id="vfContainer">
     <div id="vf">
       <video id="mainVid" autoplay playsinline muted></video>
       <div id="overlayMsg"></div>
@@ -171,7 +177,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 </div>
 
 <div class="screen" id="libraryScreen">
-  <header style="padding: 50px 20px 20px; background: #000;">
+  <header style="padding: 60px 20px 20px; background: #000;">
     <h1 style="font-size:32px; font-weight:800;">Gallery</h1>
   </header>
   <div id="galleryGrid"></div>
@@ -179,7 +185,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 </div>
 
 <div id="photoViewer">
-  <header style="padding: max(var(--safe-top), 20px) 20px 10px; display:flex; justify-content:space-between;">
+  <header style="padding: max(var(--safe-top), 20px) 20px 10px; display:flex; justify-content:space-between; z-index:10;">
     <button onclick="closeViewer()" style="color:var(--ios-blue); font-size:18px; background:none; border:none">Done</button>
     <button onclick="deleteItem()" style="color:var(--ios-red); font-size:18px; background:none; border:none">Delete</button>
   </header>
@@ -203,7 +209,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   const flashEffect = document.getElementById('flashEffect');
   const thumbImg = document.getElementById('thumbImg');
 
-  const req = indexedDB.open("BeReal_Camera_App_v4", 1);
+  const req = indexedDB.open("BeReal_Camera_App_Final_v1", 1);
   req.onupgradeneeded = e => { 
     db = e.target.result; 
     db.createObjectStore("media", {keyPath:"id"}); 
@@ -282,20 +288,17 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   async function triggerFlash() {
     if(!flashEnabled) return;
     flashEffect.style.display = 'block';
+    setTimeout(() => { flashEffect.style.display = 'none'; }, 150);
+    
     const track = stream.getVideoTracks()[0];
     try {
       if(track.getCapabilities().torch) {
         await track.applyConstraints({ advanced: [{ torch: true }] });
         setTimeout(async () => {
           await track.applyConstraints({ advanced: [{ torch: false }] });
-          flashEffect.style.display = 'none';
         }, 150);
-      } else {
-        setTimeout(() => flashEffect.style.display = 'none', 150);
       }
-    } catch(e) {
-      setTimeout(() => flashEffect.style.display = 'none', 150);
-    }
+    } catch(e) {}
   }
 
   function grab() {
