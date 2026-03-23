@@ -555,7 +555,7 @@ transition:.2s;white-space:nowrap;
   req.onsuccess = e => {
     db = e.target.result;
     loadPhotos();
-    startCam();
+    startCam().then(() => { camStarted = true; });
   };
   req.onerror = () => showToast('DB 오류');
 
@@ -595,18 +595,18 @@ transition:.2s;white-space:nowrap;
     mainVid.classList.remove('ready');
   }
 
+  // DB 초기화 완료 후에만 visibilitychange 등록
+  let camStarted = false;
   document.addEventListener('visibilitychange', () => {
+    if (!camStarted) return;
     if (document.hidden) {
-      // 앱 백그라운드 → 카메라 즉시 종료
       if (isRecording) stopRec();
       stopCam();
     } else {
-      // 앱 복귀 → 카메라 재시작
-      startCam();
+      setTimeout(() => startCam(), 300);
     }
   });
 
-  // 페이지 떠날 때도 종료
   window.addEventListener('pagehide', stopCam);
   window.addEventListener('beforeunload', stopCam);
 
