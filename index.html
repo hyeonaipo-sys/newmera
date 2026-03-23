@@ -3,127 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Newmera</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; object-src 'none';">
+<title>Newmera Pro</title>
 <style>
 :root {
   --ios-blue: #007aff;
-  --ios-bg: #000;
-  --ios-secondary: #8e8e93;
+  --ios-yellow: #ffd60a;
+  --ios-red: #ff3b30;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; }
 
-/* 화면 관리 */
 .screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: #000; }
 .screen.active { display: flex; }
 
-/* ══════════════════════════════
-   CAMERA UI
-   ══════════════════════════════ */
+/* CAMERA VIEWPORT */
 #vf { position: relative; flex: 1; background: #111; overflow: hidden; border-radius: 0 0 40px 40px; }
 #mainVid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 #mainVid.mirror { transform: scaleX(-1); }
 
+/* Cinematic Guide Line (Only for Video Mode) */
+#guide { position: absolute; top: 50%; left: 0; width: 100%; height: 56.25vw; transform: translateY(-50%); border: 1.5px solid rgba(255,255,255,0.4); pointer-events: none; z-index: 50; display: none; }
+#guide.active { display: block; }
+
 #topbar { position: absolute; top: max(env(safe-area-inset-top), 20px); left: 0; right: 0; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-.tbtn { width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); border: 0.5px solid rgba(255,255,255,0.1); color: #fff; font-size: 20px; }
-#bothBtn { width: auto; padding: 0 16px; border-radius: 22px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px; }
+.tbtn { width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); color: #fff; font-size: 20px; }
+#bothBtn { width: auto; padding: 0 16px; border-radius: 22px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px; transition: 0.2s; border: 1px solid rgba(255,255,255,0.2); }
 #bothBtn.on { background: var(--ios-blue); border-color: var(--ios-blue); }
 
-#cameraBottom { background: #000; padding: 15px 0 calc(env(safe-area-inset-bottom) + 15px); flex-shrink: 0; }
-#modes { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
-.mode { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; }
-.mode.on { color: #ffd60a; }
+/* BOTTOM UI */
+#cameraBottom { background: #000; padding: 10px 0 calc(env(safe-area-inset-bottom) + 10px); flex-shrink: 0; }
+#modesContainer { overflow: hidden; margin-bottom: 15px; }
+#modes { display: flex; justify-content: center; gap: 30px; transition: 0.3s; }
+.mode { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.8px; cursor: pointer; transition: 0.2s; }
+.mode.active { color: var(--ios-yellow); }
 
 #shutterRow { display: flex; align-items: center; justify-content: space-between; padding: 0 35px; }
-#thumb { width: 54px; height: 54px; border-radius: 12px; border: 2px solid #fff; background: #1a1a1a; overflow: hidden; cursor: pointer; }
+#thumb { width: 54px; height: 54px; border-radius: 12px; border: 2.5px solid #fff; background: #1a1a1a; overflow: hidden; }
 #thumb img { width: 100%; height: 100%; object-fit: cover; display: none; }
 #shutter { width: 76px; height: 76px; border-radius: 50%; border: 4.5px solid #fff; display: flex; align-items: center; justify-content: center; }
-#shutterInner { width: 60px; height: 60px; border-radius: 50%; background: #fff; transition: transform 0.1s; }
-#shutter:active #shutterInner { transform: scale(0.9); }
-#flipBtn { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff; }
+#shutterInner { width: 60px; height: 60px; border-radius: 50%; background: #fff; transition: 0.1s; }
+#shutter.recording #shutterInner { background: var(--ios-red); border-radius: 8px; transform: scale(0.6); }
+#flipBtn { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 26px; }
 
-/* ══════════════════════════════
-   LIBRARY GRID (무조건 전체 사진 3열)
-   ══════════════════════════════ */
-#libraryScreen { z-index: 200; overflow: hidden; display: none; flex-direction: column; background: #000; }
+/* LIBRARY GRID */
+#libraryScreen { z-index: 200; display: none; flex-direction: column; background: #000; }
 #libraryScreen.active { display: flex; }
-
-#libHeader { padding: max(env(safe-area-inset-top), 40px) 20px 10px; background: #000; flex-shrink: 0; }
-#libTitleRow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-#libTitle { font-size: 34px; font-weight: 800; letter-spacing: -1.2px; }
-#libSelectBtn { background: rgba(255,255,255,0.15); color: #fff; border: none; padding: 6px 14px; border-radius: 18px; font-size: 14px; font-weight: 700; }
-#libCount { font-size: 16px; font-weight: 600; color: var(--ios-secondary); }
-
-#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px 2px 120px; }
+#libHeader { padding: max(env(safe-area-inset-top), 40px) 20px 10px; flex-shrink: 0; }
+#libTitleRow { display: flex; justify-content: space-between; align-items: center; }
+#libTitle { font-size: 34px; font-weight: 800; }
+#libCount { font-size: 16px; color: #8e8e93; margin-top: 5px; }
+#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px 2px 100px; }
 .gItem { aspect-ratio: 1; background: #1c1c1e; position: relative; overflow: hidden; }
 .gItem img { width: 100%; height: 100%; object-fit: cover; }
-.gItem.selected::after { content: '✓'; position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; background: var(--ios-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; border: 2px solid #fff; }
+.video-badge { position: absolute; bottom: 5px; right: 5px; font-size: 10px; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; }
 
-#backToCam { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 800; font-size: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); z-index: 250; border: none; }
+#backToCam { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 800; z-index: 250; }
 
-/* 상세 보기 (그리드에서 클릭 시) */
+/* PHOTO VIEWER */
 #photoViewer { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 300; }
 #photoViewer.show { display: flex; }
-#pvHeader { padding: max(env(safe-area-inset-top), 20px) 20px 10px; display: flex; justify-content: space-between; align-items: center; }
-#pvContainer { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-#pvMainImg { width: 100%; height: 100%; object-fit: contain; }
+#pvHeader { padding: max(env(safe-area-inset-top), 20px) 20px; display: flex; justify-content: space-between; }
+#pvContainer { flex: 1; display: flex; align-items: center; justify-content: center; }
+#pvMainImg, #pvMainVid { max-width: 100%; max-height: 100%; }
 
-/* 캡쳐 미리보기 & 효과 */
-#capturePreview { position: absolute; top: 120px; right: 20px; width: 90px; height: 120px; border-radius: 12px; overflow: hidden; border: 2px solid #fff; display:none; z-index: 150; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-#capturePreview img { width: 100%; height: 100%; object-fit: cover; }
-#countdownOverlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; z-index: 200; pointer-events: none; }
-#countdownOverlay.show { display: flex; }
-#countdownNum { font-size: 120px; font-weight: 800; color: #fff; text-shadow: 0 0 30px rgba(0,0,0,0.5); }
-
-#toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); color: #000; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; }
+#toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; }
 #toast.show { opacity: 1; }
 </style>
 </head>
 <body>
 
-<!-- 카메라 화면 -->
 <div class="screen active" id="cameraScreen">
   <div id="vf">
     <video id="mainVid" autoplay playsinline muted></video>
-    <div id="capturePreview"><img id="capturePreviewImg"></div>
-    <div id="countdownOverlay"><div id="countdownNum">3</div></div>
+    <div id="guide"></div>
     <div id="topbar">
       <div class="tbtn">⚡</div>
       <div class="tbtn" id="bothBtn" onclick="toggleBoth()">Both</div>
     </div>
   </div>
   <div id="cameraBottom">
-    <div id="modes"><div class="mode on">PHOTO</div></div>
+    <div id="modesContainer">
+      <div id="modes">
+        <div class="mode active" id="modePhoto" onclick="setMode('PHOTO')">PHOTO</div>
+        <div class="mode" id="modeVideo" onclick="setMode('VIDEO')">VIDEO</div>
+      </div>
+    </div>
     <div id="shutterRow">
       <div id="thumb" onclick="openLibrary()"><img id="thumbImg"></div>
-      <div id="shutter" onclick="handleShutter()"><div id="shutterInner"></div></div>
+      <div id="shutter" onclick="handleAction()"><div id="shutterInner"></div></div>
       <div id="flipBtn" onclick="flipCamera()">🔄</div>
     </div>
   </div>
 </div>
 
-<!-- 라이브러리 (그리드) -->
 <div class="screen" id="libraryScreen">
   <header id="libHeader">
-    <div id="libTitleRow">
-      <h1 id="libTitle">Library</h1>
-      <button id="libSelectBtn" onclick="toggleSelectMode()">Select</button>
-    </div>
+    <div id="libTitleRow"><h1 id="libTitle">Library</h1></div>
     <div id="libCount">0 Items</div>
   </header>
-  
   <div id="galleryGrid"></div>
   <button id="backToCam" onclick="closeLibrary()">카메라로 돌아가기</button>
 </div>
 
-<!-- 상세 뷰어 -->
 <div id="photoViewer">
   <div id="pvHeader">
     <button onclick="closeViewer()" style="background:none;border:none;color:var(--ios-blue);font-size:18px;font-weight:700">Done</button>
-    <button onclick="deleteCurrent()" style="background:none;border:none;color:#ff3b30;font-size:18px">🗑️</button>
+    <button onclick="deleteCurrent()" style="background:none;border:none;color:var(--ios-red);font-size:18px">🗑️</button>
   </div>
   <div id="pvContainer" ontouchstart="handleViewerTouch(event)">
-    <img id="pvMainImg">
+    <img id="pvMainImg" style="display:none">
+    <video id="pvMainVid" controls style="display:none"></video>
   </div>
 </div>
 
@@ -131,143 +121,212 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 <canvas id="canvas" style="display:none"></canvas>
 
 <script>
-let stream=null, facing='back', bothMode=false, bothPhase=0, photos=[];
-let viewerIdx=0, isSwapped=false, lastTap=0, isSelectMode=false, selectedIds=new Set();
+(function() {
+  let stream=null, facing='back', bothMode=false, currentMode='PHOTO', photos=[];
+  let viewerIdx=0, isSwapped=false, lastTap=0;
+  let mediaRecorder=null, recordedChunks=[], isRecording=false;
 
-const mainVid = document.getElementById('mainVid');
-const canvas = document.getElementById('canvas');
+  const mainVid = document.getElementById('mainVid');
+  const canvas = document.getElementById('canvas');
 
-window.onload = () => {
-  photos = JSON.parse(localStorage.getItem('newmera_v_grid') || '[]');
-  startCamera();
-  updateThumb();
-};
-
-async function startCamera() {
-  if(stream) stream.getTracks().forEach(t=>t.stop());
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing==='back'?'environment':'user' } });
-    mainVid.srcObject = stream;
-    mainVid.className = facing==='front'?'mirror':'';
-  } catch(e) { showToast('카메라 오류!'); }
-}
-
-function handleShutter() {
-  if(bothMode) {
-    if(bothPhase !== 0) return;
-    bothPhase=1;
-    const f1 = grabFrame();
-    document.getElementById('capturePreviewImg').src = f1;
-    document.getElementById('capturePreview').style.display = 'block';
-    let c=3;
-    const o = document.getElementById('countdownOverlay');
-    const n = document.getElementById('countdownNum');
-    o.classList.add('show'); n.textContent=c;
-    facing = (facing==='back')?'front':'back';
+  window.onload = () => {
+    photos = JSON.parse(localStorage.getItem('newmera_v_pro') || '[]');
     startCamera();
-    const iv = setInterval(() => {
-      c--; if(c>0) n.textContent=c;
-      else {
-        clearInterval(iv); o.classList.remove('show');
-        document.getElementById('capturePreview').style.display='none';
-        setTimeout(() => {
-          savePhoto({ main: f1, sub: grabFrame(), isBoth: true });
-          bothPhase=0; showToast('📸 Both 촬영 완료!');
-        }, 300);
-      }
-    }, 1000);
-  } else {
-    savePhoto({ main: grabFrame(), isBoth: false });
-    showToast('📸 저장됨');
+    updateThumb();
+  };
+
+  async function startCamera() {
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    try {
+      const constraints = { 
+        video: { facingMode: facing==='back'?'environment':'user', width: { ideal: 3840 }, height: { ideal: 2160 } }
+      };
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      mainVid.srcObject = stream;
+      mainVid.className = facing==='front'?'mirror':'';
+    } catch(e) { showToast('카메라를 시작할 수 없어.'); }
   }
-}
 
-function grabFrame() {
-  canvas.width = mainVid.videoWidth; canvas.height = mainVid.videoHeight;
-  const ctx = canvas.getContext('2d');
-  if(facing==='front') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
-  ctx.drawImage(mainVid, 0, 0);
-  return canvas.toDataURL('image/jpeg', 0.85);
-}
+  window.setMode = function(m) {
+    if(isRecording) return;
+    currentMode = m;
+    document.querySelectorAll('.mode').forEach(el => el.classList.remove('active'));
+    document.getElementById('mode' + m.charAt(0) + m.slice(1).toLowerCase()).classList.add('active');
+    document.getElementById('guide').classList.toggle('active', m === 'VIDEO');
+    showToast(m + ' 모드');
+  }
 
-function savePhoto(data) {
-  photos.unshift({ id: Date.now(), ...data });
-  localStorage.setItem('newmera_v_grid', JSON.stringify(photos));
-  updateThumb();
-}
+  window.handleAction = function() {
+    if(currentMode === 'PHOTO') takePhoto();
+    else handleVideo();
+  }
 
-function updateThumb() {
-  const thumb = document.getElementById('thumbImg');
-  if(photos.length>0) {
-    compose(photos[0], false, (url) => { thumb.src=url; thumb.style.display='block'; });
-  } else thumb.style.display='none';
-}
+  function takePhoto() {
+    if(bothMode) {
+      const f1 = grabCinematic(false);
+      facing = (facing==='back')?'front':'back';
+      startCamera();
+      showToast('📸 Switching...');
+      setTimeout(() => {
+        saveItem({ type:'photo', main: f1, sub: grabCinematic(false), isBoth: true });
+        showToast('📸 Both 사진 저장!');
+      }, 1200);
+    } else {
+      saveItem({ type:'photo', main: grabCinematic(false), isBoth: false });
+      showToast('📸 사진 저장!');
+    }
+  }
 
-function openLibrary() {
-  isSelectMode = false; selectedIds.clear();
-  document.getElementById('libraryScreen').classList.add('active');
-  renderGrid();
-}
+  function handleVideo() {
+    if(!isRecording) {
+      startRecording();
+    } else {
+      stopRecording();
+    }
+  }
 
-function closeLibrary() { document.getElementById('libraryScreen').classList.remove('active'); updateThumb(); }
-
-function renderGrid() {
-  const grid = document.getElementById('galleryGrid');
-  const cnt = document.getElementById('libCount');
-  grid.innerHTML = '';
-  cnt.textContent = photos.length.toLocaleString() + ' Items';
-  
-  photos.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'gItem' + (selectedIds.has(p.id) ? ' selected' : '');
-    const img = document.createElement('img');
-    compose(p, false, (url) => img.src = url);
-    div.onclick = () => {
-      if(isSelectMode) {
-        if(selectedIds.has(p.id)) selectedIds.delete(p.id);
-        else selectedIds.add(p.id);
-        renderGrid();
-      } else openViewer(i);
+  async function startRecording() {
+    isRecording = true;
+    recordedChunks = [];
+    document.getElementById('shutter').classList.add('recording');
+    
+    // 가로 영상 캡처용 캔버스 스트림 생성
+    const canvasStream = canvas.captureStream(30);
+    mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm;codecs=vp8' });
+    
+    mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        saveItem({ type:'video', data: reader.result });
+        showToast('🎥 가로 영상 저장 완료!');
+      };
+      reader.readAsDataURL(blob);
     };
-    div.appendChild(img);
-    grid.appendChild(div);
-  });
-}
 
-function compose(p, swapped, cb) {
-  if(!p.isBoth) { cb(p.main); return; }
-  const m=new Image(), s=new Image();
-  m.onload=()=>{ s.onload=()=>{
-    canvas.width=m.width; canvas.height=m.height;
-    const ctx=canvas.getContext('2d'); ctx.drawImage(m,0,0);
-    const pw=canvas.width*0.3, ph=pw*(s.height/s.width), margin=canvas.width*0.04;
-    const rx=canvas.width-pw-margin, ry=margin;
-    ctx.save(); ctx.beginPath(); ctx.roundRect(rx,ry,pw,ph,15); ctx.clip(); ctx.drawImage(s,rx,ry,pw,ph); ctx.restore();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=4; ctx.beginPath(); ctx.roundRect(rx,ry,pw,ph,15); ctx.stroke();
-    cb(canvas.toDataURL('image/jpeg',0.8));
-  }; s.src=swapped?p.main:p.sub; }; m.src=swapped?p.sub:p.main;
-}
+    mediaRecorder.start();
+    requestAnimationFrame(drawVideoFrame);
+  }
 
-function openViewer(idx) {
-  viewerIdx=idx; isSwapped=false;
-  document.getElementById('photoViewer').classList.add('show');
-  updateViewer();
-}
+  function stopRecording() {
+    isRecording = false;
+    document.getElementById('shutter').classList.remove('recording');
+    mediaRecorder.stop();
+  }
 
-function updateViewer() { compose(photos[viewerIdx], isSwapped, (url) => { document.getElementById('pvMainImg').src = url; }); }
+  function drawVideoFrame() {
+    if(!isRecording) return;
+    grabCinematic(true); // 캔버스에 그리기만 함
+    requestAnimationFrame(drawVideoFrame);
+  }
 
-function handleViewerTouch(e) {
-  const now = Date.now();
-  if(now - lastTap < 300) { if(photos[viewerIdx].isBoth) { isSwapped=!isSwapped; updateViewer(); } }
-  lastTap = now;
-}
+  // 가로 16:9 크롭 캡처 (가로 영상 모드의 핵심)
+  function grabCinematic(drawOnly) {
+    const vw = mainVid.videoWidth, vh = mainVid.videoHeight;
+    const targetAspect = 16/9;
+    let dW, dH;
+    if (vw / vh > targetAspect) { dH = vh; dW = vh * targetAspect; }
+    else { dW = vw; dH = vw / targetAspect; }
 
-function closeViewer() { document.getElementById('photoViewer').classList.remove('show'); }
-function deleteCurrent() { if(confirm('삭제할까?')) { photos.splice(viewerIdx,1); localStorage.setItem('newmera_v_grid',JSON.stringify(photos)); closeViewer(); renderGrid(); } }
-function toggleBoth() { bothMode=!bothMode; document.getElementById('bothBtn').classList.toggle('on', bothMode); showToast(bothMode?'Both ON':'Both OFF'); }
-function flipCamera() { facing=(facing==='back')?'front':'back'; startCamera(); }
-function toggleSelectMode() { isSelectMode=!isSelectMode; document.getElementById('libSelectBtn').textContent=isSelectMode?'Cancel':'Select'; if(!isSelectMode) selectedIds.clear(); renderGrid(); }
-function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+    canvas.width = dW; canvas.height = dH;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if(facing==='front') { ctx.translate(dW, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(mainVid, (vw - dW)/2, (vh - dH)/2, dW, dH, 0, 0, dW, dH);
+    
+    return drawOnly ? null : canvas.toDataURL('image/jpeg', 0.92);
+  }
+
+  function saveItem(item) {
+    photos.unshift({ id: Date.now(), ...item });
+    localStorage.setItem('newmera_v_pro', JSON.stringify(photos));
+    updateThumb();
+  }
+
+  function updateThumb() {
+    const thumb = document.getElementById('thumbImg');
+    if(photos.length>0) {
+      const p = photos[0];
+      if(p.type==='video') thumb.src = p.data; // 영상은 첫 프레임 데이터 (실제론 썸네일 처리 필요하지만 간소화)
+      else compose(p, false, url => thumb.src = url);
+      thumb.style.display='block';
+    } else thumb.style.display='none';
+  }
+
+  window.openLibrary = function() {
+    document.getElementById('libraryScreen').classList.add('active');
+    renderGrid();
+  }
+
+  window.closeLibrary = function() { document.getElementById('libraryScreen').classList.remove('active'); updateThumb(); }
+
+  function renderGrid() {
+    const grid = document.getElementById('galleryGrid');
+    grid.innerHTML = '';
+    document.getElementById('libCount').textContent = photos.length + ' Items';
+    
+    photos.forEach((p, i) => {
+      const div = document.createElement('div');
+      div.className = 'gItem';
+      const img = document.createElement('img');
+      if(p.type === 'video') {
+        img.src = p.data;
+        const badge = document.createElement('div');
+        badge.className = 'video-badge'; badge.textContent = 'VIDEO';
+        div.appendChild(badge);
+      } else {
+        compose(p, false, url => img.src = url);
+      }
+      div.onclick = () => openViewer(i);
+      div.appendChild(img);
+      grid.appendChild(div);
+    });
+  }
+
+  function compose(p, swapped, cb) {
+    if(!p.isBoth) { cb(p.main); return; }
+    const m=new Image(), s=new Image();
+    m.onload=()=>{ s.onload=()=>{
+      canvas.width=m.width; canvas.height=m.height;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(swapped?s:m, 0, 0);
+      const sub = swapped?m:s;
+      const pw=canvas.width*0.3, ph=pw*(9/16), marg=canvas.width*0.03;
+      ctx.save(); ctx.beginPath(); ctx.roundRect(canvas.width-pw-marg, marg, pw, ph, 15); ctx.clip();
+      ctx.drawImage(sub, canvas.width-pw-marg, marg, pw, ph); ctx.restore();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.stroke();
+      cb(canvas.toDataURL('image/jpeg', 0.85));
+    }; s.src=p.sub; }; m.src=p.main;
+  }
+
+  window.openViewer = function(idx) {
+    viewerIdx = idx; const p = photos[idx];
+    document.getElementById('photoViewer').classList.add('show');
+    const imgEl = document.getElementById('pvMainImg');
+    const vidEl = document.getElementById('pvMainVid');
+    if(p.type === 'video') {
+      imgEl.style.display='none'; vidEl.style.display='block'; vidEl.src = p.data;
+    } else {
+      vidEl.style.display='none'; imgEl.style.display='block'; updateViewer();
+    }
+  }
+
+  function updateViewer() { 
+    compose(photos[viewerIdx], isSwapped, url => document.getElementById('pvMainImg').src = url); 
+  }
+
+  window.handleViewerTouch = function() {
+    const now = Date.now();
+    if(now - lastTap < 300 && photos[viewerIdx].isBoth) { isSwapped = !isSwapped; updateViewer(); }
+    lastTap = now;
+  }
+
+  window.closeViewer = function() { document.getElementById('photoViewer').classList.remove('show'); document.getElementById('pvMainVid').pause(); }
+  window.deleteCurrent = function() { if(confirm('삭제할까?')) { photos.splice(viewerIdx,1); localStorage.setItem('newmera_v_pro',JSON.stringify(photos)); closeViewer(); renderGrid(); } }
+  window.toggleBoth = function() { bothMode=!bothMode; document.getElementById('bothBtn').classList.toggle('on', bothMode); }
+  window.flipCamera = function() { facing=(facing==='back')?'front':'back'; startCamera(); }
+  function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+})();
 </script>
 </body>
 </html>
