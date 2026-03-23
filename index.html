@@ -81,30 +81,40 @@ position:absolute;
 top:0;left:0;right:0;
 z-index:20;
 padding-top:max(var(–safe-top),10px);
-padding-left:18px;
-padding-right:18px;
+padding-left:16px;
+padding-right:16px;
 padding-bottom:8px;
-display:flex;
-justify-content:space-between;
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
 align-items:center;
 }
-.topBtn{
-width:32px;height:32px;
+#topBar .tLeft{ display:flex; justify-content:flex-start; }
+#topBar .tCenter{ display:flex; justify-content:center; }
+#topBar .tRight{ display:flex; justify-content:flex-end; }
+
+.topIcon{
+width:34px;height:34px;
 display:flex;align-items:center;justify-content:center;
-font-size:20px;
-color:#fff;
-opacity:.9;
+color:rgba(255,255,255,.85);
 }
+/* flash icon — X through bolt when off */
+#flashIcon{ font-size:20px; }
+
 #bothBtn{
 font-size:12px;
 font-weight:700;
-letter-spacing:.06em;
-color:rgba(255,255,255,.75);
-padding:5px 10px;
-border-radius:7px;
-border:1px solid rgba(255,255,255,.25);
+letter-spacing:.05em;
+color:rgba(255,255,255,.8);
+padding:4px 9px;
+border-radius:6px;
+border:1px solid rgba(255,255,255,.22);
+background:none;
 }
-#bothBtn.on{color:#000;background:var(–yellow);border-color:var(–yellow);}
+#bothBtn.on{
+color:#000;
+background:var(–yellow);
+border-color:var(–yellow);
+}
 
 /* Flash badge */
 #flashBadge{
@@ -112,17 +122,17 @@ position:absolute;
 top:max(var(–safe-top),10px);
 left:50%;transform:translateX(-50%);
 background:var(–yellow);color:#000;
-font-size:14px;font-weight:800;
-padding:4px 14px;border-radius:7px;
+font-size:13px;font-weight:800;
+padding:4px 13px;border-radius:6px;
 display:none;z-index:25;
 }
 
 /* Focus ring */
 #focusRing{
 position:absolute;
-width:60px;height:60px;
+width:58px;height:58px;
 border:1.5px solid var(–yellow);
-border-radius:6px;
+border-radius:5px;
 pointer-events:none;display:none;z-index:15;
 transform:translate(-50%,-50%);
 }
@@ -148,8 +158,8 @@ text-shadow:0 2px 24px rgba(0,0,0,.5);
 
 /* PIP */
 #pipWrap{
-position:absolute;bottom:20px;left:14px;
-width:80px;aspect-ratio:3/4;
+position:absolute;bottom:18px;left:14px;
+width:76px;aspect-ratio:3/4;
 border-radius:12px;overflow:hidden;
 border:2px solid #fff;
 box-shadow:0 3px 16px rgba(0,0,0,.6);
@@ -164,23 +174,23 @@ position:absolute;
 bottom:0;left:0;right:0;
 z-index:20;
 background:#000;
-padding-bottom:max(var(–safe-bottom),22px);
-padding-top:8px;
+padding-bottom:max(var(–safe-bottom),20px);
+padding-top:10px;
 }
 
 /* Mode rail */
 #modeRail{
 display:flex;
 justify-content:center;
-gap:34px;
-margin-bottom:16px;
+gap:30px;
+margin-bottom:14px;
 }
 .modeBtn{
 font-size:13px;
-letter-spacing:1.5px;
+letter-spacing:1.4px;
 font-weight:500;
-color:rgba(255,255,255,.4);
-padding:2px 0;
+color:rgba(255,255,255,.38);
+padding:1px 0;
 transition:color .15s;
 }
 .modeBtn.active{
@@ -193,31 +203,32 @@ font-weight:700;
 display:grid;
 grid-template-columns:1fr auto 1fr;
 align-items:center;
-padding:0 32px;
+padding:0 28px;
 }
 .sideCtl{display:flex;align-items:center}
 .sideCtl.left{justify-content:flex-start}
 .sideCtl.right{justify-content:flex-end}
 
-/* Thumb — plain square like iPhone */
+/* Thumb — plain square like reference */
 #thumbBtn{
-width:48px;height:48px;
+width:52px;height:52px;
 border-radius:8px;
 overflow:hidden;
-background:#1a1a1a;
-border:1px solid rgba(255,255,255,.15);
+background:#1c1c1c;
+border:none;
 flex-shrink:0;
 }
 #thumbBtn img{width:100%;height:100%;object-fit:cover;display:none}
 #thumbPlaceholder{
 width:100%;height:100%;
 display:flex;align-items:center;justify-content:center;
-font-size:20px;
+font-size:0; /* hide emoji, just show blank */
+background:#1c1c1c;
 }
 
-/* Shutter — same proportions as iPhone */
+/* Shutter */
 #shutter{
-width:72px;height:72px;
+width:68px;height:68px;
 border-radius:50%;
 border:3px solid #fff;
 display:flex;align-items:center;justify-content:center;
@@ -226,23 +237,23 @@ transition:transform .1s;
 }
 #shutter:active{transform:scale(.92)}
 #shutterInner{
-width:58px;height:58px;
+width:55px;height:55px;
 border-radius:50%;
 background:#fff;
 transition:all .18s;
 }
 #shutter.video #shutterInner{background:#ff3b30}
 #shutter.recording #shutterInner{
-width:28px;height:28px;
-border-radius:7px;
+width:26px;height:26px;
+border-radius:6px;
 background:#ff3b30;
 }
 
-/* Flip — circle icon like iPhone */
+/* Flip — dark circle like reference */
 #flipBtn{
 width:44px;height:44px;
 border-radius:50%;
-background:rgba(255,255,255,.15);
+background:rgba(255,255,255,.14);
 display:flex;align-items:center;justify-content:center;
 flex-shrink:0;
 }
@@ -399,13 +410,17 @@ transition:.2s;white-space:nowrap;
 ```
 <!-- top bar -->
 <div id="topBar">
-  <!-- Flash -->
-  <button class="topBtn" id="flashBtn">
-    <span style="font-size:22px;color:var(--yellow)">⚡</span>
-  </button>
-
-  <!-- BOTH toggle -->
-  <button class="topBtn" id="bothBtn" style="font-size:13px;font-weight:700;width:auto;letter-spacing:.02em;color:rgba(255,255,255,.7)">BOTH</button>
+  <div class="tLeft">
+    <button class="topIcon" id="flashBtn">
+      <svg id="flashIcon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="rgba(255,255,255,0.85)"/>
+      </svg>
+    </button>
+  </div>
+  <div class="tCenter"></div>
+  <div class="tRight">
+    <button id="bothBtn">BOTH</button>
+  </div>
 </div>
 
 <!-- Flash badge -->
@@ -626,9 +641,11 @@ transition:.2s;white-space:nowrap;
     if (flashMode === 'off') {
       flashMode = 'on';
       flashBadge.style.display = 'block';
+      document.querySelector('#flashIcon path').setAttribute('fill', '#ffd60a');
     } else {
       flashMode = 'off';
       flashBadge.style.display = 'none';
+      document.querySelector('#flashIcon path').setAttribute('fill', 'rgba(255,255,255,0.85)');
       try { await setTorch(false); } catch {}
     }
   };
@@ -768,13 +785,19 @@ transition:.2s;white-space:nowrap;
       mode = btn.dataset.mode;
       shutter.classList.remove('video','recording');
       const vf = document.getElementById('vf');
+      const flashBtn = document.getElementById('flashBtn');
+      const bothBtn2 = document.getElementById('bothBtn');
       if (mode === 'video') {
         shutter.classList.add('video');
         document.getElementById('vfInner').classList.add('landscape');
-        vf.style.bottom = '140px'; // 하단 UI 위로 중앙 정렬
+        vf.style.bottom = '140px';
+        flashBtn.style.visibility = 'hidden';
+        bothBtn2.style.visibility = 'hidden';
       } else {
         document.getElementById('vfInner').classList.remove('landscape');
-        vf.style.bottom = '0'; // 전체화면
+        vf.style.bottom = '0';
+        flashBtn.style.visibility = 'visible';
+        bothBtn2.style.visibility = 'visible';
       }
     };
   });
