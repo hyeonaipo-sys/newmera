@@ -29,30 +29,20 @@ CAMERA SCREEN
 #countdownOverlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:30;pointer-events:none}
 #countdownOverlay.show{display:flex}
 #countdownNum{font-size:120px;font-weight:700;color:#fff;line-height:1;animation:pop .3s ease;text-shadow: 0 4px 20px rgba(0,0,0,0.5)}
-#countdownLabel{font-size:16px;color:#fff;font-weight:600;text-shadow: 0 2px 10px rgba(0,0,0,0.5)}
 
-/* pip preview */
-#capturePreview{position:absolute;bottom:20px;left:16px;width:96px;height:128px;border-radius:16px;overflow:hidden;border:2.5px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.65);z-index:40;display:none}
+/* pip preview (촬영 중) */
+#capturePreview{position:absolute;top:70px;right:16px;width:96px;height:128px;border-radius:12px;overflow:hidden;border:2px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.6);z-index:40;display:none}
 #capturePreview.show{display:block}
 #capturePreviewImg{width:100%;height:100%;object-fit:cover}
 
 /* focus / flash */
-#focus{position:absolute;width:62px;height:62px;border:2px solid #ffd60a;border-radius:8px;pointer-events:none;display:none;z-index:15;transform:translate(-50%,-50%)}
+#focus{position:absolute;width:60px;height:60px;border:2px solid #ffd60a;border-radius:8px;pointer-events:none;display:none;z-index:15;transform:translate(-50%,-50%)}
 #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50;transition:opacity .05s}
 
 /* zoom */
 #zoomRow{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
 .zbtn{min-width:36px;height:34px;border-radius:17px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.75);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0 10px}
 .zbtn.on{background:rgba(255,214,10,0.18);border-color:#ffd60a;color:#ffd60a}
-
-/* pills */
-#recPill,#landPill{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;padding:5px 14px;border-radius:20px;display:none;align-items:center;gap:7px;font-size:13px;font-weight:600;z-index:20;white-space:nowrap}
-#recPill.show,#landPill.show{display:flex}
-.reddot{width:8px;height:8px;border-radius:50%;background:#ff3b30;animation:blink 1s infinite}
-.yellowdot{width:7px;height:7px;border-radius:50%;background:#ffd60a;animation:pulse 1.5s infinite}
-#landBtn{position:absolute;bottom:24px;right:14px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);display:none;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:15}
-#landBtn.show{display:flex}
-#landBtn.on{background:#ffd60a}
 
 /* bottom */
 #bottom{background:#000;flex-shrink:0;padding-bottom:max(env(safe-area-inset-bottom),16px)}
@@ -64,113 +54,58 @@ CAMERA SCREEN
 #thumb{width:50px;height:50px;border-radius:10px;border:2.5px solid #fff;background:#1a1a1a;overflow:hidden;flex-shrink:0;cursor:pointer;position:relative}
 #thumb img{width:100%;height:100%;object-fit:cover;display:none}
 #thumbCount{position:absolute;bottom:2px;right:4px;color:#fff;font-size:9px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.8)}
-#shutter{width:76px;height:76px;border-radius:50%;border:4px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:border-color 0.2s}
-#shutter.rec{border-color:#ff3b30}
-#shutter.disabled{opacity:0.4;pointer-events:none}
-#shutterInner{width:60px;height:60px;border-radius:50%;background:#fff;transition:all 0.18s ease}
-#shutter.rec #shutterInner{width:28px;height:28px;border-radius:8px;background:#ff3b30}
-#flipBtn{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;flex-shrink:0}
+#shutter{width:70px;height:70px;border-radius:50%;border:4px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+#shutterInner{width:56px;height:56px;border-radius:50%;background:#fff}
+#shutter.disabled{opacity:0.3;pointer-events:none}
+#flipBtn{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:20px}
 
-/* 갤러리 */
-#galleryScreen{background:#000}
-#galleryHeader{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;padding-top:max(env(safe-area-inset-top),16px);flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.07)}
-#galleryTitle{color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.02em}
-#galleryCount{color:rgba(255,255,255,0.4);font-size:13px;margin-top:2px}
-#galleryActions{display:flex;gap:10px;align-items:center}
-.gBtn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:#fff;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
-.gBtn.primary{background:#fff;color:#000;border-color:#fff}
-.gBtn.danger{background:rgba(255,59,48,0.15);border-color:rgba(255,59,48,0.3);color:#ff3b30}
-#galleryGrid{flex:1;overflow-y:auto;padding:2px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;align-content:start}
-#galleryGrid::-webkit-scrollbar{display:none}
-.gItem{aspect-ratio:1;position:relative;overflow:hidden;cursor:pointer;background:#1a1a1a}
-.gItem img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity 0.2s}
-.gItem .sel{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:transparent;display:none;align-items:center;justify-content:center;font-size:13px;transition:all 0.2s}
-.gItem.selecting .sel{display:flex}
-.gItem.selected .sel{background:#ffd60a;border-color:#ffd60a;color:#000}
-.gItem.selected img{opacity:0.7}
-#galleryEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:rgba(255,255,255,0.3);font-size:14px}
-#selectionBar{display:none;align-items:center;justify-content:space-between;padding:12px 18px;padding-bottom:max(env(safe-area-inset-bottom),12px);background:#000;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0}
-#selectionBar.show{display:flex}
-#selCount{color:#fff;font-size:14px;font-weight:600}
+/* ══════════════════════════════
+GALLERY & VIEWER
+══════════════════════════════ */
+#galleryGrid{flex:1;overflow-y:auto;padding:2px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.gItem{aspect-ratio:1;background:#1a1a1a;position:relative}
+.gItem img{width:100%;height:100%;object-fit:cover}
 
-/* 뷰어 */
 #photoViewer{position:fixed;inset:0;background:#000;display:none;flex-direction:column;z-index:100}
 #photoViewer.show{display:flex}
-#photoViewerHeader{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;padding-top:max(env(safe-area-inset-top),14px);flex-shrink:0}
-#photoViewerImg{flex:1;object-fit:contain;width:100%;min-height:0}
-#photoViewerFooter{display:flex;justify-content:center;gap:16px;padding:14px 18px;padding-bottom:max(env(safe-area-inset-bottom),14px);flex-shrink:0}
-.pvBtn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:12px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer}
-.pvBtn.danger{background:rgba(255,59,48,0.15);border-color:rgba(255,59,48,0.3);color:#ff3b30}
+#pvContainer{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#pvMainImg{width:100%;height:100%;object-fit:contain}
+#pvToast{position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;pointer-events:none;opacity:0;transition:opacity 0.3s}
 
-/* 토스트 */
-#toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(22,22,22,0.93);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all 0.25s;pointer-events:none;z-index:999;white-space:nowrap}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;z-index:1000;opacity:0;transition:opacity 0.3s;pointer-events:none}
+#toast.show{opacity:1}
 
-/* 시작화면 */
-#permScreen{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px;z-index:999}
-#permScreen .icon{font-size:54px}
-#permScreen h2{color:#fff;font-size:21px;font-weight:700;letter-spacing:-0.02em}
-#permScreen p{color:rgba(255,255,255,0.55);font-size:14px;text-align:center;line-height:1.6}
-#startBtn{background:#fff;color:#000;border:none;border-radius:14px;padding:15px 40px;font-size:16px;font-weight:600;cursor:pointer;margin-top:6px}
-
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-@keyframes pop{0%{transform:scale(1.4)}100%{transform:scale(1)}}
+@keyframes pop{0%{transform:scale(1.3)}100%{transform:scale(1)}}
 </style>
 </head>
 <body>
 
-<div id="permScreen">
-  <div class="icon">📷</div>
+<div id="permScreen" style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;color:#fff">
   <h2>Newmera</h2>
-  <p>카메라 권한을 허용해주세요</p>
-  <button id="startBtn" onclick="startCamera()">시작하기</button>
+  <p style="margin:20px 0;opacity:0.7">카메라 권한을 허용해줘!</p>
+  <button onclick="startCamera()" style="padding:12px 30px;border-radius:10px;border:none;font-weight:600">시작하기</button>
 </div>
 
 <div class="screen active" id="cameraScreen">
   <div id="vf" onclick="handleVfClick(event)">
     <video id="mainVid" autoplay playsinline muted></video>
-    
-    <div id="countdownOverlay">
-      <div id="countdownNum">3</div>
-      <div id="countdownLabel">카메라 전환 중...</div>
-    </div>
-
+    <div id="countdownOverlay"><div id="countdownNum">3</div></div>
     <div id="capturePreview"><img id="capturePreviewImg"></div>
-
     <div id="topbar">
-      <div class="tbtn" id="flashBtn" onclick="event.stopPropagation();toggleFlash()">⚡</div>
+      <div class="tbtn" onclick="toggleFlash()">⚡</div>
       <div id="appTitle">newmera</div>
-      <!-- BeReal -> Both 로 명칭 변경 -->
-      <div class="tbtn" id="bothBtn" onclick="event.stopPropagation();toggleBoth()" style="font-size:10px;font-weight:800;width:auto;padding:0 10px;border-radius:10px;letter-spacing:-0.02em">Both</div>
+      <div class="tbtn" id="bothBtn" onclick="toggleBoth()" style="width:auto;padding:0 12px;border-radius:12px;font-weight:800;font-size:11px">Both</div>
     </div>
-
-    <div id="recPill"><div class="reddot"></div><span id="recTime">00:00</span></div>
-    <div id="landPill"><div class="yellowdot"></div>가로 모드 촬영 중</div>
-    <div id="focus"></div>
-    <div id="flash"></div>
-
-    <div id="zoomRow">
-      <div class="zbtn on" onclick="event.stopPropagation();setZoom(1)">1×</div>
-      <div class="zbtn" onclick="event.stopPropagation();setZoom(2)">2×</div>
-      <div class="zbtn" onclick="event.stopPropagation();setZoom(3)">3×</div>
-    </div>
-    <div id="landBtn" onclick="event.stopPropagation();toggleLandscape()">↔️</div>
+    <div id="focus" style="position:absolute;border:1px solid #ffd60a;display:none"></div>
+    <div id="flash" style="position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none"></div>
   </div>
 
   <div id="bottom">
     <div id="modes">
-      <button class="mode" onclick="setMode(this,'SLO-MO')">SLO-MO</button>
-      <button class="mode" onclick="setMode(this,'VIDEO')">VIDEO</button>
-      <button class="mode on" onclick="setMode(this,'FOTO')">FOTO</button>
-      <button class="mode" onclick="setMode(this,'PORTRAIT')">PORTRAIT</button>
-      <button class="mode" onclick="setMode(this,'1:1')">1:1</button>
+      <div class="mode on">FOTO</div>
     </div>
     <div id="controls">
-      <div id="thumb" onclick="openGallery()">
-        <img id="thumbImg">
-        <span id="thumbCount"></span>
-      </div>
+      <div id="thumb" onclick="openGallery()"><img id="thumbImg"><span id="thumbCount"></span></div>
       <div id="shutter" onclick="handleShutter()"><div id="shutterInner"></div></div>
       <div id="flipBtn" onclick="flipCamera()">🔄</div>
     </div>
@@ -178,39 +113,21 @@ CAMERA SCREEN
 </div>
 
 <div class="screen" id="galleryScreen">
-  <div id="galleryHeader">
-    <div>
-      <div id="galleryTitle">갤러리</div>
-      <div id="galleryCount"></div>
-    </div>
-    <div id="galleryActions">
-      <button class="gBtn" id="selectModeBtn" onclick="toggleSelectMode()">선택</button>
-      <button class="gBtn" onclick="closeGallery()">✕</button>
-    </div>
+  <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;color:#fff">
+    <div style="font-weight:700">갤러리</div>
+    <button onclick="closeGallery()" style="background:none;border:none;color:#fff;font-size:20px">✕</button>
   </div>
   <div id="galleryGrid"></div>
-  <div id="galleryEmpty" style="display:none">
-    <div class="emIcon">📷</div>
-    <div>아직 찍은 사진이 없어요</div>
-  </div>
-  <div id="selectionBar">
-    <span id="selCount">0장 선택됨</span>
-    <div style="display:flex;gap:8px">
-      <button class="gBtn danger" onclick="deleteSelected()">삭제</button>
-      <button class="gBtn primary" onclick="downloadSelected()">저장</button>
-    </div>
-  </div>
 </div>
 
 <div id="photoViewer">
-  <div id="photoViewerHeader">
-    <button class="gBtn" onclick="closePhotoViewer()">← 뒤로</button>
-    <span style="color:rgba(255,255,255,0.5);font-size:13px" id="photoViewerIdx"></span>
-    <button class="gBtn" onclick="downloadCurrentPhoto()">저장</button>
+  <div style="padding:14px;display:flex;justify-content:space-between;z-index:101">
+    <button onclick="closePhotoViewer()" style="color:#fff;background:none;border:none">← 뒤로</button>
+    <button onclick="deleteCurrent()" style="color:#ff3b30;background:none;border:none">삭제</button>
   </div>
-  <img id="photoViewerImg">
-  <div id="photoViewerFooter">
-    <button class="pvBtn danger" onclick="deleteCurrentPhoto()">삭제</button>
+  <div id="pvContainer" ontouchstart="handlePvTouch(event)">
+    <img id="pvMainImg">
+    <div id="pvToast">더블 탭하여 화면 전환</div>
   </div>
 </div>
 
@@ -218,160 +135,193 @@ CAMERA SCREEN
 <canvas id="canvas" style="display:none"></canvas>
 
 <script>
-var camStream=null, mode='FOTO';
-var bothMode=false, bothPhase=0, bothFirstURL=null, bothFirstFacing=null;
-var landscape=false, recording=false, mediaRec=null, chunks=[], recTimer=null, recSec=0;
-var flashOn=false, facing='back';
-var photos=[], selectMode=false, selectedIds=new Set(), viewerIdx=0;
+let camStream=null, facing='back', bothMode=false, bothPhase=0, bothFirstURL=null, photos=[];
+let lastTap = 0, viewerIdx = 0, isSwapped = false;
 
-var mainVid=document.getElementById('mainVid');
-var canvas=document.getElementById('canvas');
+const mainVid = document.getElementById('mainVid');
+const canvas = document.getElementById('canvas');
 
-window.addEventListener('load', function(){ loadPhotos(); startCamera(); });
+window.onload = () => {
+  photos = JSON.parse(localStorage.getItem('newmera_v2') || '[]');
+  updateThumb();
+};
 
-function loadPhotos(){ try{ photos=JSON.parse(localStorage.getItem('newmera_photos')||'[]'); }catch(e){ photos=[]; } }
-function savePhotos(){ try{ localStorage.setItem('newmera_photos', JSON.stringify(photos)); }catch(e){ showToast('저장 공간 부족'); } }
-
-async function startCamera(){
-  try{ await openCamera(facing); document.getElementById('permScreen').style.display='none'; }
-  catch(e){ document.querySelector('#permScreen p').textContent='카메라 허용이 필요합니다.'; }
+async function startCamera() {
+  document.getElementById('permScreen').style.display='none';
+  await openCamera(facing);
 }
 
-async function openCamera(dir){
-  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
-  var constraints={
-    video: dir==='back' ? {facingMode:{exact:'environment'}} : {facingMode:{exact:'user'}},
-    audio: mode==='VIDEO'
-  };
-  try{ camStream=await navigator.mediaDevices.getUserMedia(constraints); }
-  catch(e){ constraints.video=dir==='back'?{facingMode:'environment'}:{facingMode:'user'}; camStream=await navigator.mediaDevices.getUserMedia(constraints); }
-  mainVid.srcObject=camStream; mainVid.play();
-  mainVid.className=dir==='front'?'mirror':'';
-  facing=dir;
+async function openCamera(dir) {
+  if(camStream) camStream.getTracks().forEach(t=>t.stop());
+  const constraints = { video: { facingMode: dir==='back'?'environment':'user' } };
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia(constraints);
+    mainVid.srcObject = camStream;
+    mainVid.className = dir==='front'?'mirror':'';
+    facing = dir;
+  } catch(e) { alert('카메라를 켤 수 없어!'); }
 }
 
-function handleShutter(){ if(recording){ stopRec(); return; } bothMode?bothCapture():normalCapture(); }
-function normalCapture(){ doFlash(); var url=grabFrame(); addPhoto(url); showToast('📸 저장됨'); }
+function handleShutter() {
+  if(bothMode) startBothCapture();
+  else {
+    const url = grabFrame();
+    addPhoto({ main: url, isBoth: false });
+    showToast('📸 저장됨');
+  }
+}
 
-/* ── BOTH CAPTURE 로직 ── */
-function bothCapture(){
-  if(bothPhase!==0) return;
-  bothFirstURL=grabFrame();
-  bothFirstFacing=facing;
-  document.getElementById('capturePreviewImg').src=bothFirstURL;
+function startBothCapture() {
+  if(bothPhase !== 0) return;
+  bothPhase = 1;
+  bothFirstURL = grabFrame();
+  document.getElementById('capturePreviewImg').src = bothFirstURL;
   document.getElementById('capturePreview').classList.add('show');
   document.getElementById('shutter').classList.add('disabled');
-  bothPhase=1;
 
-  var count=3;
-  var overlay=document.getElementById('countdownOverlay');
-  var numEl=document.getElementById('countdownNum');
+  let count = 3;
+  const overlay = document.getElementById('countdownOverlay');
+  const num = document.getElementById('countdownNum');
   overlay.classList.add('show');
-  numEl.textContent=count;
+  num.textContent = count;
 
-  // 전환된 화면을 바로 보여줌
-  var next=bothFirstFacing==='back'?'front':'back';
-  openCamera(next);
+  // 반대편 미리 켜기
+  openCamera(facing === 'back' ? 'front' : 'back');
 
-  var iv=setInterval(function(){
+  const iv = setInterval(() => {
     count--;
-    if(count>0){
-      numEl.style.animation='none'; void numEl.offsetWidth; numEl.style.animation='pop .3s ease';
-      numEl.textContent=count;
-    }else{
+    if(count > 0) {
+      num.textContent = count;
+    } else {
       clearInterval(iv);
       overlay.classList.remove('show');
       document.getElementById('capturePreview').classList.remove('show');
-      
-      setTimeout(function(){
-        var secondURL=grabFrame();
-        composeFinalPhoto(bothFirstURL, bothFirstFacing, secondURL, next);
-        bothPhase=0; bothFirstURL=null;
+      setTimeout(() => {
+        const secondURL = grabFrame();
+        // Both 사진은 두 장의 원본을 모두 저장 (스왑을 위해)
+        addPhoto({ main: bothFirstURL, sub: secondURL, isBoth: true });
+        bothPhase = 0;
         document.getElementById('shutter').classList.remove('disabled');
+        showToast('📸 Both 촬영 완료!');
       }, 300);
     }
-  },1000);
+  }, 1000);
 }
 
-function grabFrame(){
-  var vw=mainVid.videoWidth||1280, vh=mainVid.videoHeight||720;
-  var cw=vw, ch=vh;
-  if(mode==='1:1'){ cw=Math.min(vw,vh); ch=cw; }
-  canvas.width=cw; canvas.height=ch;
-  var ctx=canvas.getContext('2d');
-  var ox=(vw-cw)/2, oy=(vh-ch)/2;
-  if(facing==='front'){ ctx.translate(cw,0); ctx.scale(-1,1); }
-  ctx.drawImage(mainVid,ox,oy,cw,ch,0,0,cw,ch);
-  return canvas.toDataURL('image/jpeg',0.88);
+function grabFrame() {
+  canvas.width = mainVid.videoWidth;
+  canvas.height = mainVid.videoHeight;
+  const ctx = canvas.getContext('2d');
+  if(facing==='front') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+  ctx.drawImage(mainVid, 0, 0);
+  return canvas.toDataURL('image/jpeg', 0.8);
 }
 
-function composeFinalPhoto(url1, face1, url2, face2){
-  var i1=new Image(), i2=new Image();
-  i1.onload=function(){
-    i2.onload=function(){
-      var W=i1.width, H=i1.height;
-      canvas.width=W; canvas.height=H;
-      var ctx=canvas.getContext('2d');
-      ctx.drawImage(i1,0,0,W,H);
-      var pw=W*0.3, ph=pw*(i2.height/i2.width);
-      var mg=W*0.04, rx=mg, ry=H-mg-ph, r=16;
+function addPhoto(data) {
+  photos.unshift({ id: Date.now(), ...data });
+  localStorage.setItem('newmera_v2', JSON.stringify(photos));
+  updateThumb();
+}
+
+function updateThumb() {
+  const thumb = document.getElementById('thumbImg');
+  if(photos.length > 0) {
+    // 썸네일은 항상 합성된 결과물로 표시
+    renderToCanvas(photos[0], false, (url) => {
+      thumb.src = url;
+      thumb.style.display = 'block';
+    });
+  }
+}
+
+// 사진 합성 로직 (isSwapped 상태에 따라 메인/서브 교체)
+function renderToCanvas(photo, swapped, callback) {
+  if(!photo.isBoth) { callback(photo.main); return; }
+  
+  const imgMain = new Image();
+  const imgSub = new Image();
+  imgMain.onload = () => {
+    imgSub.onload = () => {
+      canvas.width = imgMain.width;
+      canvas.height = imgMain.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(imgMain, 0, 0);
+      
+      const pw = canvas.width * 0.3;
+      const ph = pw * (imgSub.height / imgSub.width);
+      // 우측 상단 배치 (margin 4%)
+      const margin = canvas.width * 0.04;
+      const rx = canvas.width - pw - margin;
+      const ry = margin;
+      
       ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(rx, ry, pw, ph, r);
-      ctx.clip();
-      ctx.drawImage(i2,rx,ry,pw,ph);
+      ctx.beginPath(); ctx.roundRect(rx, ry, pw, ph, 15); ctx.clip();
+      ctx.drawImage(imgSub, rx, ry, pw, ph);
       ctx.restore();
-      ctx.strokeStyle='#fff'; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.roundRect(rx, ry, pw, ph, r); ctx.stroke();
-      addPhoto(canvas.toDataURL('image/jpeg',0.88));
-      showToast('📸 Both 촬영 완료!');
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.roundRect(rx, ry, pw, ph, 15); ctx.stroke();
+      
+      callback(canvas.toDataURL('image/jpeg', 0.8));
     };
-    i2.src=url2;
+    imgSub.src = swapped ? photo.main : photo.sub;
   };
-  i1.src=url1;
+  imgMain.src = swapped ? photo.sub : photo.main;
 }
 
-function addPhoto(url){ photos.unshift({id:Date.now()+'_'+Math.random().toString(36).slice(2), dataURL:url, ts:Date.now()}); savePhotos(); updateThumb(); }
-function updateThumb(){ var img=document.getElementById('thumbImg'), cnt=document.getElementById('thumbCount'); if(photos.length>0){ img.src=photos[0].dataURL; img.style.display='block'; cnt.textContent=photos.length>1?photos.length:''; }else{ img.style.display='none'; cnt.textContent=''; } }
-function openGallery(){ selectMode=false; selectedIds.clear(); renderGallery(); document.getElementById('cameraScreen').classList.remove('active'); document.getElementById('galleryScreen').classList.add('active'); }
-function closeGallery(){ document.getElementById('galleryScreen').classList.remove('active'); document.getElementById('cameraScreen').classList.add('active'); updateThumb(); }
-
-function renderGallery(){
-  var grid=document.getElementById('galleryGrid'), empty=document.getElementById('galleryEmpty'), cnt=document.getElementById('galleryCount'), selBar=document.getElementById('selectionBar');
-  cnt.textContent=photos.length+'장'; selBar.classList.toggle('show', selectMode&&selectedIds.size>0);
-  document.getElementById('selCount').textContent=selectedIds.size+'장 선택됨'; document.getElementById('selectModeBtn').textContent=selectMode?'취소':'선택';
-  if(photos.length===0){ grid.style.display='none'; empty.style.display='flex'; return; }
-  grid.style.display='grid'; empty.style.display='none'; grid.innerHTML='';
-  photos.forEach((p,i)=>{
-    var div=document.createElement('div'); div.className='gItem'+(selectMode?' selecting':'')+(selectedIds.has(p.id)?' selected':'');
-    div.innerHTML='<img src="'+p.dataURL+'" loading="lazy"><div class="sel">✓</div>';
-    div.onclick=()=>{ if(selectMode) toggleSelect(p.id); else openPhotoViewer(i); }; grid.appendChild(div);
+function openGallery() {
+  document.getElementById('cameraScreen').classList.remove('active');
+  document.getElementById('galleryScreen').classList.add('active');
+  const grid = document.getElementById('galleryGrid');
+  grid.innerHTML = '';
+  photos.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'gItem';
+    const img = document.createElement('img');
+    renderToCanvas(p, false, (url) => img.src = url);
+    div.onclick = () => openViewer(i);
+    div.appendChild(img);
+    grid.appendChild(div);
   });
 }
 
-function toggleSelectMode(){ selectMode=!selectMode; selectedIds.clear(); renderGallery(); }
-function toggleSelect(id){ if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id); renderGallery(); }
-function downloadSelected(){ selectedIds.forEach(id=>{ var p=photos.find(x=>x.id===id); var a=document.createElement('a'); a.href=p.dataURL; a.download='newmera_'+p.id+'.jpg'; a.click(); }); showToast('저장 중...'); }
-function deleteSelected(){ if(!confirm(selectedIds.size+'장을 삭제할까요?')) return; photos=photos.filter(p=>!selectedIds.has(p.id)); selectedIds.clear(); selectMode=false; savePhotos(); renderGallery(); }
+function openViewer(idx) {
+  viewerIdx = idx;
+  isSwapped = false;
+  document.getElementById('photoViewer').classList.add('show');
+  updateViewerImg();
+  
+  const vt = document.getElementById('pvToast');
+  if(photos[idx].isBoth) {
+    vt.style.opacity = '1';
+    setTimeout(() => vt.style.opacity = '0', 2000);
+  }
+}
 
-function openPhotoViewer(idx){ viewerIdx=idx; var p=photos[idx]; document.getElementById('photoViewerImg').src=p.dataURL; document.getElementById('photoViewerIdx').textContent=(idx+1)+' / '+photos.length; document.getElementById('photoViewer').classList.add('show'); }
-function closePhotoViewer(){ document.getElementById('photoViewer').classList.remove('show'); }
-function downloadCurrentPhoto(){ var p=photos[viewerIdx]; var a=document.createElement('a'); a.href=p.dataURL; a.download='newmera_'+p.id+'.jpg'; a.click(); }
-function deleteCurrentPhoto(){ if(!confirm('삭제할까요?')) return; photos.splice(viewerIdx,1); savePhotos(); closePhotoViewer(); renderGallery(); }
+function updateViewerImg() {
+  renderToCanvas(photos[viewerIdx], isSwapped, (url) => {
+    document.getElementById('pvMainImg').src = url;
+  });
+}
 
-function startRec(){ chunks=[]; mediaRec=new MediaRecorder(camStream); mediaRec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)}; mediaRec.onstop=()=>{ var blob=new Blob(chunks,{type:'video/webm'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='newmera_vid.webm'; a.click(); showToast('🎬 영상 저장됨'); }; mediaRec.start(); recording=true; document.getElementById('shutter').classList.add('rec'); recSec=0; document.getElementById('recPill').classList.add('show'); recTimer=setInterval(()=>{recSec++; var m=String(Math.floor(recSec/60)).padStart(2,'0'),s=String(recSec%60).padStart(2,'0'); document.getElementById('recTime').textContent=m+':'+s;},1000); }
-function stopRec(){ if(mediaRec) mediaRec.stop(); recording=false; document.getElementById('shutter').classList.remove('rec'); document.getElementById('recPill').classList.remove('show'); clearInterval(recTimer); }
+function handlePvTouch(e) {
+  const now = Date.now();
+  if(now - lastTap < 300) {
+    if(photos[viewerIdx].isBoth) {
+      isSwapped = !isSwapped;
+      updateViewerImg();
+    }
+  }
+  lastTap = now;
+}
 
-function doFlash(){ var fl=document.getElementById('flash'); fl.style.opacity='0.7'; setTimeout(()=>fl.style.opacity='0',120); }
-/* 토스트 메시지도 Both 로 수정 */
-function toggleBoth(){ bothMode=!bothMode; document.getElementById('bothBtn').classList.toggle('on',bothMode); showToast(bothMode?'👁️ Both ON':'👁️ Both OFF'); }
-function toggleFlash(){ flashOn=!flashOn; document.getElementById('flashBtn').classList.toggle('on',flashOn); }
-function toggleLandscape(){ landscape=!landscape; document.getElementById('landBtn').classList.toggle('on',landscape); document.getElementById('landPill').classList.toggle('show',landscape); }
-function setMode(el,m){ mode=m; document.querySelectorAll('.mode').forEach(b=>b.classList.remove('on')); el.classList.add('on'); var lb=document.getElementById('landBtn'); if(m==='VIDEO') lb.classList.add('show'); else lb.classList.remove('show'); }
-function setZoom(z){ mainVid.style.transform=(facing==='front'?'scaleX(-1) ':'')+'scale('+z+')'; document.querySelectorAll('.zbtn').forEach(b=>b.classList.toggle('on',b.textContent.trim()===z+'×')); }
-function flipCamera(){ var btn=document.getElementById('flipBtn'); btn.style.transform='rotate(180deg)'; setTimeout(()=>btn.style.transform='',400); openCamera(facing==='back'?'front':'back'); }
-function handleVfClick(e){ var f=document.getElementById('focus'), rect=e.currentTarget.getBoundingClientRect(); f.style.left=(e.clientX-rect.left)+'px'; f.style.top=(e.clientY-rect.top)+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1100); }
-function showToast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function closePhotoViewer() { document.getElementById('photoViewer').classList.remove('show'); }
+function closeGallery() { document.getElementById('galleryScreen').classList.remove('active'); document.getElementById('cameraScreen').classList.add('active'); }
+function deleteCurrent() { if(confirm('이 사진을 지울까?')) { photos.splice(viewerIdx, 1); localStorage.setItem('newmera_v2', JSON.stringify(photos)); closePhotoViewer(); openGallery(); updateThumb(); } }
+function toggleBoth() { bothMode = !bothMode; document.getElementById('bothBtn').classList.toggle('on', bothMode); showToast(bothMode?'Both ON':'Both OFF'); }
+function flipCamera() { facing = (facing==='back'?'front':'back'); openCamera(facing); }
+function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+function toggleFlash() { showToast('플래시 기능은 준비 중이야!'); }
+function handleVfClick(e) { /* 초점 UI 로직 생략 가능 */ }
 </script>
 </body>
 </html>
