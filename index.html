@@ -60,56 +60,53 @@ button{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:
-    max(var(--safe-top), 14px)
-    18px
-    0;
+  padding:max(var(--safe-top), 14px) 18px 0;
   pointer-events:none;
 }
 .top-btn-wrap{
   pointer-events:auto;
 }
 .top-btn{
-  min-width:94px;
-  height:56px;
-  padding:0 18px;
-  border-radius:28px;
+  min-width:84px;
+  height:44px;
+  padding:0 16px;
+  border-radius:22px;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:rgba(255,255,255,0.14);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  font-size:18px;
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  font-size:15px;
   font-weight:800;
   color:#fff;
 }
 .top-btn.small{
-  min-width:82px;
+  min-width:72px;
 }
 .top-btn.active{
-  background:rgba(255,255,255,0.24);
+  background:rgba(255,255,255,0.22);
 }
 #ratioMenu{
   position:absolute;
-  top:66px;
+  top:54px;
   left:50%;
   transform:translateX(-50%);
   display:none;
   flex-direction:column;
   overflow:hidden;
-  border-radius:18px;
+  border-radius:16px;
   background:rgba(30,30,30,0.96);
   border:1px solid rgba(255,255,255,0.08);
-  min-width:110px;
+  min-width:92px;
 }
 #ratioMenu.show{
   display:flex;
 }
 .ratio-opt{
-  padding:14px 18px;
+  padding:13px 16px;
   text-align:center;
-  font-size:16px;
+  font-size:15px;
   font-weight:700;
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
@@ -123,9 +120,9 @@ button{
 #vfWrap{
   flex:1;
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:center;
-  padding:110px 18px 230px;
+  padding:96px 18px 0;
 }
 #vf{
   position:relative;
@@ -140,7 +137,6 @@ button{
   width:100%;
   height:100%;
   object-fit:cover;
-  transform:scaleX(-1);
   pointer-events:none;
 }
 #mainVid::-webkit-media-controls,
@@ -160,8 +156,8 @@ button{
   z-index:12;
 }
 #countdownBubble{
-  width:128px;
-  height:128px;
+  width:116px;
+  height:116px;
   border-radius:50%;
   background:rgba(70,70,70,0.72);
   backdrop-filter:blur(10px);
@@ -169,7 +165,7 @@ button{
   display:none;
   align-items:center;
   justify-content:center;
-  font-size:54px;
+  font-size:50px;
   font-weight:900;
   color:#fff;
 }
@@ -188,13 +184,14 @@ button{
   right:0;
   bottom:0;
   z-index:20;
-  padding:0 20px max(var(--safe-bottom), 24px);
+  background:#000;
+  padding:12px 20px max(var(--safe-bottom), 24px);
 }
 #modes{
   display:flex;
   justify-content:center;
   gap:42px;
-  margin-bottom:16px;
+  margin-bottom:18px;
 }
 .mode{
   font-size:16px;
@@ -274,10 +271,7 @@ button{
   z-index:40;
 }
 #galleryHeader{
-  padding:
-    max(var(--safe-top), 12px)
-    14px
-    12px;
+  padding:max(var(--safe-top), 12px) 14px 12px;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -343,10 +337,7 @@ button{
   display:flex;
 }
 #viewerHeader{
-  padding:
-    max(var(--safe-top), 12px)
-    16px
-    10px;
+  padding:max(var(--safe-top), 12px) 16px 10px;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -401,7 +392,7 @@ button{
 /* TOAST */
 #toast{
   position:fixed;
-  top:124px;
+  top:112px;
   left:50%;
   transform:translateX(-50%);
   z-index:100;
@@ -556,7 +547,7 @@ button{
   mainVid.controls = false;
   mainVid.removeAttribute('controls');
 
-  const req = indexedDB.open('newmera_local_db_v1', 1);
+  const req = indexedDB.open('newmera_local_db_v2', 1);
 
   req.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -592,7 +583,9 @@ button{
       mainVid.setAttribute('playsinline', 'true');
       mainVid.setAttribute('webkit-playsinline', 'true');
       mainVid.muted = true;
-      mainVid.style.transform = 'scaleX(-1)';
+
+      /* 전면만 반전 */
+      mainVid.style.transform = facing === 'front' ? 'scaleX(-1)' : 'scaleX(1)';
 
       const p = mainVid.play();
       if (p && typeof p.catch === 'function') p.catch(() => {});
@@ -678,9 +671,11 @@ button{
 
     ctx.save();
 
-    /* 저장본도 항상 좌우반전 */
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
+    /* 전면 저장만 반전 */
+    if (facing === 'front') {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
 
     ctx.drawImage(
       mainVid,
@@ -815,6 +810,8 @@ button{
   }
 
   async function handleBothShot() {
+    const first = grab();
+
     showToast('CHANGE');
 
     facing = facing === 'back' ? 'front' : 'back';
@@ -841,7 +838,8 @@ button{
 
     saveItem({
       type: 'photo',
-      main: second,
+      main: first,
+      sub: second,
       ratio: currentRatio
     });
 
