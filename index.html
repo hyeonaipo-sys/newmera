@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
 <title>Newmera</title>
-
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -48,16 +47,94 @@ button{
 
 #camScreen{overflow:hidden;}
 
-#topBar{
+#vfWrap{
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  bottom:184px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:calc(max(var(--safe-top), 10px) + 6px) 18px 0;
+}
+#vf{
+  position:relative;
+  width:100%;
+  max-width:430px;
+  aspect-ratio:3/4;
+  overflow:hidden;
+  border-radius:34px;
+  background:#000;
+}
+#mainVid{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  background:#000;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .12s ease;
+}
+#mainVid.ready{opacity:1;}
+#mainVid::-webkit-media-controls,
+#mainVid::-webkit-media-controls-panel,
+#mainVid::-webkit-media-controls-play-button,
+#mainVid::-webkit-media-controls-start-playback-button{
+  display:none !important;
+  -webkit-appearance:none;
+}
+#touchShield{
+  position:absolute;
+  inset:0;
+  z-index:6;
+  background:transparent;
+  touch-action:none;
+}
+#centerOverlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  z-index:10;
+}
+#countdownBubble{
+  min-width:104px;
+  height:104px;
+  padding:0 18px;
+  border-radius:52px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(70,70,70,.68);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  color:#fff;
+  font-size:44px;
+  font-weight:900;
+}
+#flashFx{
+  position:absolute;
+  inset:0;
+  background:#fff;
+  opacity:0;
+  pointer-events:none;
+  z-index:12;
+  transition:opacity .12s;
+}
+
+#vfTopBar{
   position:absolute;
   top:0;
   left:0;
   right:0;
-  z-index:20;
-  padding:max(var(--safe-top), 8px) 18px 0;
+  z-index:15;
+  padding:14px 16px 0;
 }
-#topRow{
-  height:32px;
+#vfTopRow{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
   align-items:center;
@@ -110,78 +187,14 @@ button{
 .ratioOpt:last-child{border-bottom:none;}
 .ratioOpt.selected{color:var(--yellow);}
 
-#vfWrap{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:flex-start;
-  justify-content:center;
-  padding:54px 18px 0;
-}
-#vf{
-  position:relative;
-  width:100%;
-  max-width:430px;
-  aspect-ratio:3/4;
-  overflow:hidden;
-  border-radius:34px;
-  background:#111;
-}
-#mainVid{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-  background:#111;
-  pointer-events:none;
-}
-#mainVid::-webkit-media-controls,
-#mainVid::-webkit-media-controls-panel,
-#mainVid::-webkit-media-controls-play-button,
-#mainVid::-webkit-media-controls-start-playback-button{
-  display:none !important;
-  -webkit-appearance:none;
-}
-#touchShield{
-  position:absolute;
-  inset:0;
-  z-index:5;
-  background:transparent;
-  touch-action:none;
-}
-#centerOverlay{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-  z-index:10;
-}
-#countdownBubble{
-  min-width:104px;
-  height:104px;
-  padding:0 18px;
-  border-radius:52px;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(70,70,70,.68);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  color:#fff;
-  font-size:44px;
-  font-weight:900;
-}
-
 #bottomUI{
   position:absolute;
   left:0;
   right:0;
   bottom:0;
   z-index:20;
-  background:linear-gradient(to top,#000 68%,rgba(0,0,0,0));
-  padding:20px 18px max(var(--safe-bottom), 26px);
+  background:#000;
+  padding:18px 18px max(var(--safe-bottom), 26px);
 }
 #modeRail{
   display:flex;
@@ -196,9 +209,7 @@ button{
   font-weight:400;
   color:rgba(255,255,255,.7);
 }
-.mode.active{
-  color:var(--yellow);
-}
+.mode.active{color:var(--yellow);}
 #controlsRow{
   display:grid;
   grid-template-columns:1fr auto 1fr;
@@ -222,7 +233,8 @@ button{
   align-items:center;
   justify-content:center;
 }
-#thumbBtn img{
+#thumbBtn img,
+#thumbBtn video{
   width:100%;
   height:100%;
   object-fit:cover;
@@ -255,6 +267,15 @@ button{
   border-radius:50%;
   background:#fff;
 }
+#shutter.video #shutterInner{
+  background:#ff3b30;
+}
+#shutter.recording #shutterInner{
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  background:#ff3b30;
+}
 #shutter:active{transform:scale(.97);}
 
 #galleryScreen{z-index:40;}
@@ -285,11 +306,23 @@ button{
   background:#111;
   overflow:hidden;
 }
-.gItem > img{
+.gItem > img,
+.gItem > video{
   width:100%;
   height:100%;
   object-fit:cover;
   display:block;
+}
+.gBadge{
+  position:absolute;
+  right:6px;
+  bottom:6px;
+  background:rgba(0,0,0,.64);
+  color:#fff;
+  font-size:11px;
+  font-weight:800;
+  border-radius:999px;
+  padding:4px 7px;
 }
 .gPip{
   position:absolute;
@@ -344,10 +377,16 @@ button{
   overflow:hidden;
   background:#111;
 }
-#viewerMain{
+#viewerMain,
+#viewerVideo{
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit:contain;
+  display:none;
+  background:#000;
+}
+#viewerMain.show,
+#viewerVideo.show{
   display:block;
 }
 #viewerSubWrap{
@@ -360,6 +399,7 @@ button{
   overflow:hidden;
   border:2px solid rgba(255,255,255,.96);
   background:#111;
+  display:none;
 }
 #viewerSub{
   width:100%;
@@ -391,30 +431,6 @@ button{
 <body>
 
 <div class="screen active" id="camScreen">
-  <div id="topBar">
-    <div id="topRow">
-      <div class="topCtl">
-        <button id="flashBtn" type="button">
-          <span class="bolt">⚡</span>
-          <span id="flashLabel">OFF</span>
-        </button>
-      </div>
-
-      <div class="topCtl center" id="ratioWrap">
-        <button id="ratioBtn" type="button">3:4</button>
-        <div id="ratioMenu">
-          <button class="ratioOpt" type="button" data-ratio="1:1">1:1</button>
-          <button class="ratioOpt selected" type="button" data-ratio="3:4">3:4</button>
-          <button class="ratioOpt" type="button" data-ratio="9:16">9:16</button>
-        </div>
-      </div>
-
-      <div class="topCtl right">
-        <button id="bothBtn" type="button">BOTH OFF</button>
-      </div>
-    </div>
-  </div>
-
   <div id="vfWrap">
     <div id="vf">
       <video
@@ -430,11 +446,37 @@ button{
         controlslist="nodownload nofullscreen noremoteplayback"
       ></video>
 
+      <div id="vfTopBar">
+        <div id="vfTopRow">
+          <div class="topCtl">
+            <button id="flashBtn" type="button">
+              <span class="bolt">⚡</span>
+              <span id="flashLabel">OFF</span>
+            </button>
+          </div>
+
+          <div class="topCtl center" id="ratioWrap">
+            <button id="ratioBtn" type="button">3:4</button>
+            <div id="ratioMenu">
+              <button class="ratioOpt" type="button" data-ratio="1:1">1:1</button>
+              <button class="ratioOpt selected" type="button" data-ratio="3:4">3:4</button>
+              <button class="ratioOpt" type="button" data-ratio="9:16">9:16</button>
+            </div>
+          </div>
+
+          <div class="topCtl right">
+            <button id="bothBtn" type="button">BOTH OFF</button>
+          </div>
+        </div>
+      </div>
+
       <div id="touchShield"></div>
 
       <div id="centerOverlay">
         <div id="countdownBubble"></div>
       </div>
+
+      <div id="flashFx"></div>
     </div>
   </div>
 
@@ -448,6 +490,7 @@ button{
       <div class="sideCtl left">
         <button id="thumbBtn" type="button" aria-label="gallery">
           <img id="thumbImg" alt="thumbnail">
+          <video id="thumbVid" muted playsinline></video>
           <div id="thumbPlaceholder">🖼️</div>
         </button>
       </div>
@@ -478,7 +521,8 @@ button{
   <div id="viewerBody">
     <div id="viewerBox">
       <img id="viewerMain" alt="photo">
-      <div id="viewerSubWrap" style="display:none;">
+      <video id="viewerVideo" controls playsinline></video>
+      <div id="viewerSubWrap">
         <img id="viewerSub" alt="sub photo">
       </div>
     </div>
@@ -487,6 +531,7 @@ button{
 
 <div id="toast"></div>
 <canvas id="canvas" style="display:none"></canvas>
+<canvas id="videoCanvas" style="display:none"></canvas>
 
 <script>
 (() => {
@@ -502,6 +547,12 @@ button{
   let viewerIndex = -1;
   let flashMode = 'off';
 
+  let mediaRecorder = null;
+  let recordingChunks = [];
+  let processedStream = null;
+  let videoDrawRAF = null;
+  let isRecording = false;
+
   const camScreen = document.getElementById('camScreen');
   const galleryScreen = document.getElementById('galleryScreen');
   const mainVid = document.getElementById('mainVid');
@@ -512,21 +563,26 @@ button{
   const flashBtn = document.getElementById('flashBtn');
   const flashLabel = document.getElementById('flashLabel');
   const shutter = document.getElementById('shutter');
+  const shutterInner = document.getElementById('shutterInner');
   const thumbBtn = document.getElementById('thumbBtn');
   const thumbImg = document.getElementById('thumbImg');
+  const thumbVid = document.getElementById('thumbVid');
   const thumbPlaceholder = document.getElementById('thumbPlaceholder');
   const flipBtn = document.getElementById('flipBtn');
   const galleryClose = document.getElementById('galleryClose');
   const galleryGrid = document.getElementById('galleryGrid');
   const canvas = document.getElementById('canvas');
+  const videoCanvas = document.getElementById('videoCanvas');
   const toast = document.getElementById('toast');
   const countdownBubble = document.getElementById('countdownBubble');
   const touchShield = document.getElementById('touchShield');
   const videoMode = document.getElementById('videoMode');
   const photoMode = document.getElementById('photoMode');
+  const flashFx = document.getElementById('flashFx');
 
   const viewer = document.getElementById('viewer');
   const viewerMain = document.getElementById('viewerMain');
+  const viewerVideo = document.getElementById('viewerVideo');
   const viewerSub = document.getElementById('viewerSub');
   const viewerSubWrap = document.getElementById('viewerSubWrap');
   const viewerDone = document.getElementById('viewerDone');
@@ -543,11 +599,11 @@ button{
     }, { passive:false });
   });
 
-  const req = indexedDB.open('newmera_local_db_v7', 1);
+  const req = indexedDB.open('newmera_local_db_v9', 1);
   req.onupgradeneeded = (e) => {
     db = e.target.result;
-    if (!db.objectStoreNames.contains('photos')) {
-      db.createObjectStore('photos', { keyPath: 'id' });
+    if (!db.objectStoreNames.contains('media')) {
+      db.createObjectStore('media', { keyPath: 'id' });
     }
   };
   req.onsuccess = (e) => {
@@ -559,14 +615,16 @@ button{
 
   async function startCam() {
     try {
+      mainVid.classList.remove('ready');
+
       if (stream) stream.getTracks().forEach(t => t.stop());
 
       stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
+        audio: true,
         video: {
           facingMode: facing === 'back' ? 'environment' : 'user',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          width: { ideal: 2560 },
+          height: { ideal: 1920 }
         }
       });
 
@@ -580,16 +638,8 @@ button{
       mainVid.disablePictureInPicture = true;
       mainVid.style.transform = facing === 'front' ? 'scaleX(-1)' : 'scaleX(1)';
 
-      if (flashMode === 'on') {
-        const ok = await setTorch(true);
-        if (!ok) {
-          flashMode = 'off';
-          updateFlashUI();
-          showToast(facing === 'front' ? 'FRONT NO TORCH' : 'TORCH UNSUPPORTED', 1100);
-        }
-      } else {
-        await setTorch(false);
-      }
+      const reveal = () => mainVid.classList.add('ready');
+      mainVid.addEventListener('canplay', reveal, { once:true });
 
       const p = mainVid.play();
       if (p && typeof p.catch === 'function') p.catch(() => {});
@@ -633,7 +683,6 @@ button{
 
   function updateFlashUI() {
     flashLabel.textContent = flashMode.toUpperCase();
-    flashBtn.classList.toggle('active', flashMode === 'on');
   }
 
   async function setTorch(on) {
@@ -648,76 +697,233 @@ button{
     }
   }
 
-  function grab() {
-    const ctx = canvas.getContext('2d');
+  async function triggerCaptureLight() {
+    if (flashMode !== 'on') return;
+    const ok = await setTorch(true);
+    if (!ok) {
+      flashFx.style.opacity = '1';
+      setTimeout(() => { flashFx.style.opacity = '0'; }, 120);
+      return;
+    }
+    setTimeout(async () => {
+      try { await setTorch(false); } catch {}
+    }, 130);
+  }
+
+  function getCaptureSize() {
+    const vW = mainVid.videoWidth || 1920;
+    const vH = mainVid.videoHeight || 1080;
+    let targetW, targetH;
 
     if (currentRatio === '1:1') {
-      canvas.width = 1080;
-      canvas.height = 1080;
+      const base = Math.min(2048, Math.max(1440, Math.min(vW, vH)));
+      targetW = base;
+      targetH = base;
     } else if (currentRatio === '9:16') {
-      canvas.width = 1080;
-      canvas.height = 1920;
+      targetH = Math.min(2048, Math.max(1600, Math.max(vW, vH)));
+      targetW = Math.round(targetH * 9 / 16);
     } else {
-      canvas.width = 1080;
-      canvas.height = 1440;
+      targetH = Math.min(2048, Math.max(1600, Math.max(vW, vH)));
+      targetW = Math.round(targetH * 3 / 4);
     }
 
-    const vW = mainVid.videoWidth || 1080;
-    const vH = mainVid.videoHeight || 1440;
-    const vAspect = vW / vH;
-    const tAspect = canvas.width / canvas.height;
+    return { targetW, targetH };
+  }
 
+  function drawCover(ctx, source, srcW, srcH, destW, destH, mirror = false) {
+    const srcAspect = srcW / srcH;
+    const destAspect = destW / destH;
     let sW, sH, sX, sY;
-    if (vAspect > tAspect) {
-      sH = vH;
-      sW = vH * tAspect;
-      sX = (vW - sW) / 2;
+
+    if (srcAspect > destAspect) {
+      sH = srcH;
+      sW = srcH * destAspect;
+      sX = (srcW - sW) / 2;
       sY = 0;
     } else {
-      sW = vW;
-      sH = vW / tAspect;
+      sW = srcW;
+      sH = srcW / destAspect;
       sX = 0;
-      sY = (vH - sH) / 2;
+      sY = (srcH - sH) / 2;
     }
 
     ctx.save();
-    if (facing === 'front') {
-      ctx.translate(canvas.width, 0);
+    if (mirror) {
+      ctx.translate(destW, 0);
       ctx.scale(-1, 1);
     }
-    ctx.drawImage(mainVid, sX, sY, sW, sH, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(source, sX, sY, sW, sH, 0, 0, destW, destH);
     ctx.restore();
+  }
 
-    return canvas.toDataURL('image/jpeg', 0.84);
+  function grab() {
+    const ctx = canvas.getContext('2d');
+    const { targetW, targetH } = getCaptureSize();
+
+    canvas.width = targetW;
+    canvas.height = targetH;
+
+    const vW = mainVid.videoWidth || 1920;
+    const vH = mainVid.videoHeight || 1080;
+
+    drawCover(ctx, mainVid, vW, vH, canvas.width, canvas.height, facing === 'front');
+
+    return canvas.toDataURL('image/jpeg', 0.92);
+  }
+
+  function startProcessedVideoCanvas() {
+    const ctx = videoCanvas.getContext('2d');
+    videoCanvas.width = 1920;
+    videoCanvas.height = 1080;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
+
+      const vW = mainVid.videoWidth || 1920;
+      const vH = mainVid.videoHeight || 1080;
+
+      drawCover(ctx, mainVid, vW, vH, videoCanvas.width, videoCanvas.height, facing === 'front');
+
+      videoDrawRAF = requestAnimationFrame(draw);
+    };
+
+    draw();
+  }
+
+  function stopProcessedVideoCanvas() {
+    if (videoDrawRAF) {
+      cancelAnimationFrame(videoDrawRAF);
+      videoDrawRAF = null;
+    }
+  }
+
+  function getSupportedMimeType() {
+    const types = [
+      'video/mp4',
+      'video/webm;codecs=h264,opus',
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
+      'video/webm'
+    ];
+    return types.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+  }
+
+  async function startVideoRecording() {
+    if (!stream || isRecording) return;
+
+    const mimeType = getSupportedMimeType();
+    if (!window.MediaRecorder) {
+      showToast('VIDEO UNSUPPORTED');
+      return;
+    }
+
+    recordingChunks = [];
+    startProcessedVideoCanvas();
+
+    const canvasStream = videoCanvas.captureStream(30);
+    const audioTracks = stream.getAudioTracks();
+    processedStream = new MediaStream([
+      ...canvasStream.getVideoTracks(),
+      ...audioTracks
+    ]);
+
+    mediaRecorder = new MediaRecorder(processedStream, mimeType ? { mimeType } : undefined);
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) recordingChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      const finalType = mediaRecorder.mimeType || mimeType || 'video/webm';
+      const blob = new Blob(recordingChunks, { type: finalType });
+
+      saveItem({
+        type: 'video',
+        blob,
+        ratio: '16:9'
+      });
+
+      recordingChunks = [];
+      stopProcessedVideoCanvas();
+      if (processedStream) {
+        processedStream.getTracks().forEach(t => t.stop());
+        processedStream = null;
+      }
+      mediaRecorder = null;
+      isRecording = false;
+      updateShutterUI();
+      showToast('VIDEO SAVED', 1400);
+    };
+
+    mediaRecorder.start(200);
+    isRecording = true;
+    updateShutterUI();
+    showToast('REC', 700);
+  }
+
+  async function stopVideoRecording() {
+    if (!mediaRecorder || !isRecording) return;
+    mediaRecorder.stop();
+  }
+
+  function updateShutterUI() {
+    shutter.classList.remove('video', 'recording');
+
+    if (mode === 'video') {
+      shutter.classList.add('video');
+    }
+    if (isRecording) {
+      shutter.classList.add('recording');
+    }
   }
 
   function saveItem(item) {
     item.id = Date.now() + Math.floor(Math.random() * 1000);
-    const tx = db.transaction('photos', 'readwrite');
-    tx.objectStore('photos').add(item);
+    const tx = db.transaction('media', 'readwrite');
+    tx.objectStore('media').add(item);
     tx.oncomplete = loadItems;
     tx.onerror = () => showToast('SAVE ERROR');
   }
 
   function loadItems() {
     if (!db) return;
-    const tx = db.transaction('photos', 'readonly');
-    tx.objectStore('photos').getAll().onsuccess = (e) => {
+    const tx = db.transaction('media', 'readonly');
+    tx.objectStore('media').getAll().onsuccess = (e) => {
       items = e.target.result.sort((a, b) => b.id - a.id);
       renderThumb();
       renderGallery();
     };
   }
 
+  function getItemURL(item) {
+    if (item.type === 'video' && item.blob) {
+      return URL.createObjectURL(item.blob);
+    }
+    return item.main;
+  }
+
   function renderThumb() {
-    if (items.length > 0 && items[0].main) {
-      thumbImg.src = items[0].main;
+    thumbImg.style.display = 'none';
+    thumbVid.style.display = 'none';
+    thumbPlaceholder.style.display = 'block';
+    thumbImg.removeAttribute('src');
+    thumbVid.removeAttribute('src');
+
+    if (!items.length) return;
+
+    const item = items[0];
+    if (item.type === 'video' && item.blob) {
+      const url = getItemURL(item);
+      thumbVid.src = url;
+      thumbVid.style.display = 'block';
+      thumbPlaceholder.style.display = 'none';
+      thumbVid.muted = true;
+      thumbVid.playsInline = true;
+      thumbVid.currentTime = 0.1;
+    } else if (item.main) {
+      thumbImg.src = item.main;
       thumbImg.style.display = 'block';
       thumbPlaceholder.style.display = 'none';
-    } else {
-      thumbImg.removeAttribute('src');
-      thumbImg.style.display = 'none';
-      thumbPlaceholder.style.display = 'block';
     }
   }
 
@@ -729,17 +935,31 @@ button{
       div.className = 'gItem';
       div.type = 'button';
 
-      const main = document.createElement('img');
-      main.src = item.main;
-      div.appendChild(main);
+      if (item.type === 'video' && item.blob) {
+        const vid = document.createElement('video');
+        vid.src = getItemURL(item);
+        vid.muted = true;
+        vid.playsInline = true;
+        vid.preload = 'metadata';
+        div.appendChild(vid);
 
-      if (item.sub) {
-        const pip = document.createElement('div');
-        pip.className = 'gPip';
-        const sub = document.createElement('img');
-        sub.src = item.sub;
-        pip.appendChild(sub);
-        div.appendChild(pip);
+        const badge = document.createElement('div');
+        badge.className = 'gBadge';
+        badge.textContent = 'VIDEO';
+        div.appendChild(badge);
+      } else {
+        const main = document.createElement('img');
+        main.src = item.main;
+        div.appendChild(main);
+
+        if (item.sub) {
+          const pip = document.createElement('div');
+          pip.className = 'gPip';
+          const sub = document.createElement('img');
+          sub.src = item.sub;
+          pip.appendChild(sub);
+          div.appendChild(pip);
+        }
       }
 
       div.addEventListener('click', () => openViewer(index));
@@ -762,15 +982,27 @@ button{
     const item = items[index];
     if (!item) return;
 
-    viewerMain.src = item.main;
-    viewerBox.style.aspectRatio = getAspectValue(item.ratio || '3:4');
+    viewerMain.classList.remove('show');
+    viewerVideo.classList.remove('show');
+    viewerSubWrap.style.display = 'none';
+    viewerVideo.pause();
+    viewerVideo.removeAttribute('src');
 
-    if (item.sub) {
-      viewerSub.src = item.sub;
-      viewerSubWrap.style.display = 'block';
+    if (item.type === 'video' && item.blob) {
+      viewerBox.style.aspectRatio = '16 / 9';
+      viewerVideo.src = getItemURL(item);
+      viewerVideo.classList.add('show');
     } else {
-      viewerSubWrap.style.display = 'none';
-      viewerSub.removeAttribute('src');
+      viewerMain.src = item.main;
+      viewerBox.style.aspectRatio = getAspectValue(item.ratio || '3:4');
+      viewerMain.classList.add('show');
+
+      if (item.sub) {
+        viewerSub.src = item.sub;
+        viewerSubWrap.style.display = 'block';
+      } else {
+        viewerSub.removeAttribute('src');
+      }
     }
 
     viewer.classList.add('active');
@@ -778,14 +1010,14 @@ button{
 
   function closeViewer() {
     viewer.classList.remove('active');
+    viewerVideo.pause();
   }
 
   function deleteViewerItem() {
     const item = items[viewerIndex];
     if (!item) return;
-
-    const tx = db.transaction('photos', 'readwrite');
-    tx.objectStore('photos').delete(item.id);
+    const tx = db.transaction('media', 'readwrite');
+    tx.objectStore('media').delete(item.id);
     tx.oncomplete = () => {
       closeViewer();
       loadItems();
@@ -797,9 +1029,12 @@ button{
     mode = nextMode;
     videoMode.classList.toggle('active', mode === 'video');
     photoMode.classList.toggle('active', mode === 'photo');
+    bothBtn.style.opacity = mode === 'photo' ? '1' : '.35';
+    updateShutterUI();
   }
 
   async function handleBothShot() {
+    await triggerCaptureLight();
     const first = grab();
 
     showToast('CHANGE', 700);
@@ -821,6 +1056,7 @@ button{
       }, 1000);
     });
 
+    await triggerCaptureLight();
     const second = grab();
 
     saveItem({
@@ -833,13 +1069,14 @@ button{
     showToast('DONE ✓', 1300);
   }
 
-  async function handleShot() {
-    if (isProcessing || mode !== 'photo') return;
+  async function handlePhotoShot() {
+    if (isProcessing) return;
     isProcessing = true;
 
     if (bothMode) {
       await handleBothShot();
     } else {
+      await triggerCaptureLight();
       const shot = grab();
       saveItem({
         type:'photo',
@@ -849,32 +1086,26 @@ button{
       showToast('DONE ✓', 1100);
     }
 
-    setTimeout(() => {
-      isProcessing = false;
-    }, 260);
+    setTimeout(() => { isProcessing = false; }, 260);
+  }
+
+  async function handleShutter() {
+    if (mode === 'video') {
+      if (isRecording) await stopVideoRecording();
+      else await startVideoRecording();
+      return;
+    }
+    await handlePhotoShot();
   }
 
   flashBtn.addEventListener('click', async () => {
-    if (facing !== 'back') {
-      flashMode = 'off';
-      updateFlashUI();
-      showToast('FRONT NO TORCH', 1100);
-      return;
-    }
-
     if (flashMode === 'off') {
       flashMode = 'on';
       updateFlashUI();
-      const ok = await setTorch(true);
-      if (!ok) {
-        flashMode = 'off';
-        updateFlashUI();
-        showToast('TORCH UNSUPPORTED', 1100);
-      }
     } else {
       flashMode = 'off';
       updateFlashUI();
-      await setTorch(false);
+      try { await setTorch(false); } catch {}
     }
   });
 
@@ -887,19 +1118,19 @@ button{
   });
 
   bothBtn.addEventListener('click', () => {
+    if (mode !== 'photo') return;
     bothMode = !bothMode;
     bothBtn.textContent = bothMode ? 'BOTH ON' : 'BOTH OFF';
   });
 
-  shutter.addEventListener('click', handleShot);
+  shutter.addEventListener('click', handleShutter);
   thumbBtn.addEventListener('click', openGallery);
   galleryClose.addEventListener('click', closeGallery);
 
   flipBtn.addEventListener('click', async () => {
+    if (isRecording) return;
     if (flashMode === 'on') {
-      await setTorch(false);
-      flashMode = 'off';
-      updateFlashUI();
+      try { await setTorch(false); } catch {}
     }
     facing = facing === 'back' ? 'front' : 'back';
     await startCam();
@@ -910,10 +1141,11 @@ button{
 
   videoMode.addEventListener('click', () => {
     setMode('video');
-    showToast('VIDEO 준비중', 800);
+    showToast('VIDEO', 700);
   });
   photoMode.addEventListener('click', () => {
     setMode('photo');
+    showToast('PHOTO', 700);
   });
 
   document.addEventListener('click', (e) => {
@@ -923,6 +1155,7 @@ button{
 
   updateFlashUI();
   setRatio('3:4');
+  setMode('photo');
 })();
 </script>
 </body>
