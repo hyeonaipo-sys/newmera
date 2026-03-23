@@ -2,1026 +2,663 @@
 
 <html lang="ko">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no"/>
-<title>Newmera</title>
-<meta name="theme-color" content="#000">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<title>Newmera</title>
 <style>
-:root{
-  --safe-top:env(safe-area-inset-top);
-  --safe-bottom:env(safe-area-inset-bottom);
-  --yellow:#ffd60a;
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{
-  width:100%;height:100%;
-  overflow:hidden;
-  background:#000;
-}
-body{
-  width:100%;height:100%;
-  overflow:hidden;
-  background:#000;
-  color:#fff;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  touch-action:none;
-}
-button{border:none;background:none;color:inherit;font:inherit;cursor:pointer;outline:none}
+:root { --y:#ffd60a; --sb:env(safe-area-inset-bottom); --st:env(safe-area-inset-top); }
 
-/* ── SCREENS ── */
-.screen{position:fixed;inset:0;display:none;flex-direction:column;background:#000;z-index:10}
-.screen.active{display:flex}
-
-/* ════════════════════════════
-CAMERA SCREEN
-════════════════════════════ */
-#camScreen{
+/* ── RESET ── */
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html { height:100%; background:#000; }
+body {
+height:100%; width:100%;
+background:#000; color:#fff;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+-webkit-text-size-adjust:none;
 overflow:hidden;
-display:flex;
-flex-direction:column;
-width:100%;
 }
+button { border:none; background:none; color:inherit; font:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+img, video { display:block; }
 
-/* Top bar — sits in black area above viewfinder */
-#topBar{
+/* ── SCREEN SYSTEM ── */
+.pg { position:fixed; inset:0; background:#000; display:none; flex-direction:column; }
+.pg.on { display:flex; }
+
+/* ══════════════════
+CAMERA PAGE
+══════════════════ */
+#camPg { overflow:hidden; }
+
+/* topbar */
+#topBar {
 flex-shrink:0;
-padding-top:max(var(–safe-top),10px);
-padding-left:16px;
-padding-right:16px;
-padding-bottom:8px;
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
+width:100%;
+padding: max(var(–st), 12px) 18px 8px;
+display:flex;
 align-items:center;
+justify-content:space-between;
 background:#000;
-z-index:20;
 }
-#topBar .tLeft{ display:flex; justify-content:flex-start; }
-#topBar .tCenter{ display:flex; justify-content:center; }
-#topBar .tRight{ display:flex; justify-content:flex-end; }
+#flashBtn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
+#bothBtn {
+font-size:12px; font-weight:700; letter-spacing:.05em;
+color:rgba(255,255,255,.75);
+border:1px solid rgba(255,255,255,.25);
+border-radius:6px;
+padding:4px 10px;
+}
+#bothBtn.on { background:var(–y); color:#000; border-color:var(–y); }
 
-.topIcon{
-width:34px;height:34px;
-display:flex;align-items:center;justify-content:center;
-}
-#bothBtn{
-font-size:12px;font-weight:700;letter-spacing:.05em;
-color:rgba(255,255,255,.8);
-padding:4px 9px;border-radius:6px;
-border:1px solid rgba(255,255,255,.22);
-background:none;
-}
-#bothBtn.on{color:#000;background:var(–yellow);border-color:var(–yellow);}
-
-/* Viewfinder — fills remaining space */
-#vf{
+/* viewfinder */
+#vf {
 flex:1;
+width:100%;
 position:relative;
-overflow:hidden;
 background:#000;
-display:flex;
-align-items:center;
-justify-content:center;
+overflow:hidden;
 min-height:0;
-width:100%;
 }
-/* video inner */
-#vfInner{
-position:relative;
-width:100%;height:100%;
-overflow:hidden;
+#mainVid {
+position:absolute; inset:0;
+width:100%; height:100%;
+object-fit:cover;
+opacity:0; transition:opacity .15s;
 }
-#vfInner.landscape{
-height:auto;
-aspect-ratio:16/9;
-border-radius:18px;
-overflow:hidden;
-}
-#mainVid{
-position:absolute;inset:0;
-width:100%;height:100%;
-object-fit:cover;display:block;
-opacity:0;transition:opacity .15s;
-pointer-events:none;
-}
-#mainVid.ready{opacity:1}
+#mainVid.on { opacity:1; }
 
-/* Flash badge */
-#flashBadge{
-position:absolute;
-top:max(var(–safe-top),10px);
-left:50%;transform:translateX(-50%);
-background:var(–yellow);color:#000;
-font-size:13px;font-weight:800;
-padding:4px 13px;border-radius:6px;
-display:none;z-index:25;
-}
-
-/* Focus ring */
-#focusRing{
-position:absolute;
-width:58px;height:58px;
-border:1.5px solid var(–yellow);
-border-radius:5px;
-pointer-events:none;display:none;z-index:15;
+/* overlay elements inside vf */
+#flashFx { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:5; }
+#focusRing {
+position:absolute; width:58px; height:58px;
+border:1.5px solid var(–y); border-radius:5px;
 transform:translate(-50%,-50%);
+display:none; pointer-events:none; z-index:6;
 }
-
-/* Flash FX */
-#flashFx{
-position:absolute;inset:0;
-background:#fff;opacity:0;
-pointer-events:none;z-index:30;
-transition:opacity .08s;
+#cdOverlay {
+position:absolute; inset:0;
+background:rgba(0,0,0,.4);
+display:none; align-items:center; justify-content:center;
+z-index:8;
 }
-
-/* Countdown */
-#countdownBubble{
-position:absolute;inset:0;
-display:none;align-items:center;justify-content:center;
-z-index:28;background:rgba(0,0,0,.4);
-}
-#countdownNum{
-font-size:96px;font-weight:900;color:#fff;
-text-shadow:0 2px 24px rgba(0,0,0,.5);
-}
-
-/* PIP */
-#pipWrap{
-position:absolute;bottom:18px;left:14px;
-width:76px;aspect-ratio:3/4;
-border-radius:12px;overflow:hidden;
+#cdNum { font-size:96px; font-weight:900; color:#fff; }
+#pipWrap {
+position:absolute; bottom:16px; left:14px;
+width:76px; aspect-ratio:3/4;
+border-radius:12px; overflow:hidden;
 border:2px solid #fff;
-box-shadow:0 3px 16px rgba(0,0,0,.6);
-display:none;z-index:20;
+display:none; z-index:7;
 }
-#pipWrap.show{display:block}
-#pipImg{width:100%;height:100%;object-fit:cover}
+#pipWrap.on { display:block; }
+#pipImg { width:100%; height:100%; object-fit:cover; }
 
-/* ── BOTTOM UI ── */
-#bottomUI{
-position:relative;
-width:100%;
+/* bottom bar */
+#botBar {
 flex-shrink:0;
-z-index:20;
+width:100%;
 background:#000;
-padding-bottom:max(var(–safe-bottom),20px);
 padding-top:10px;
+padding-bottom:max(var(–sb), 22px);
 }
-
-/* Mode rail */
-#modeRail{
-display:flex;
-justify-content:center;
-gap:30px;
+#modeRow {
+display:flex; justify-content:center; gap:32px;
 margin-bottom:14px;
 }
-.modeBtn{
-font-size:13px;
-letter-spacing:1.4px;
-font-weight:500;
+.mBtn {
+font-size:13px; letter-spacing:1.4px; font-weight:500;
 color:rgba(255,255,255,.38);
-padding:1px 0;
-transition:color .15s;
 }
-.modeBtn.active{
-color:var(–yellow);
-font-weight:700;
+.mBtn.on { color:var(–y); font-weight:700; }
+#ctrlRow {
+display:flex; align-items:center; justify-content:space-between;
+padding:0 32px;
 }
-
-/* Controls row */
-#controlsRow{
-display:grid;
-grid-template-columns:1fr auto 1fr;
-align-items:center;
-padding:0 28px;
-}
-.sideCtl{display:flex;align-items:center}
-.sideCtl.left{justify-content:flex-start}
-.sideCtl.right{justify-content:flex-end}
-
-/* Thumb — plain square like reference */
-#thumbBtn{
-width:52px;height:52px;
-border-radius:8px;
-overflow:hidden;
-background:#1c1c1c;
-border:none;
+#thumbBtn {
+width:50px; height:50px;
+border-radius:8px; overflow:hidden;
+background:#1a1a1a;
 flex-shrink:0;
 }
-#thumbBtn img{width:100%;height:100%;object-fit:cover;display:none}
-#thumbPlaceholder{
-width:100%;height:100%;
-display:flex;align-items:center;justify-content:center;
-font-size:0; /* hide emoji, just show blank */
-background:#1c1c1c;
-}
-
-/* Shutter */
-#shutter{
-width:68px;height:68px;
-border-radius:50%;
+#thumbBtn img { width:100%; height:100%; object-fit:cover; display:none; }
+#shutter {
+width:70px; height:70px; border-radius:50%;
 border:3px solid #fff;
-display:flex;align-items:center;justify-content:center;
+display:flex; align-items:center; justify-content:center;
 flex-shrink:0;
-transition:transform .1s;
 }
-#shutter:active{transform:scale(.92)}
-#shutterInner{
-width:55px;height:55px;
-border-radius:50%;
-background:#fff;
+#shutter:active { transform:scale(.93); }
+#sInner {
+width:56px; height:56px; border-radius:50%; background:#fff;
 transition:all .18s;
 }
-#shutter.video #shutterInner{background:#ff3b30}
-#shutter.recording #shutterInner{
-width:26px;height:26px;
-border-radius:6px;
-background:#ff3b30;
-}
-
-/* Flip — dark circle like reference */
-#flipBtn{
-width:44px;height:44px;
-border-radius:50%;
+#shutter.vid #sInner { background:#ff3b30; }
+#shutter.rec #sInner { width:26px; height:26px; border-radius:6px; background:#ff3b30; }
+#flipBtn {
+width:46px; height:46px; border-radius:50%;
 background:rgba(255,255,255,.14);
-display:flex;align-items:center;justify-content:center;
+display:flex; align-items:center; justify-content:center;
 flex-shrink:0;
 }
 
-/* ════════════════════════════
-GALLERY SCREEN
-════════════════════════════ */
-#galleryScreen{z-index:40}
-#galleryHeader{
-flex-shrink:0;
-padding-top:max(var(–safe-top),14px);
-padding:max(var(–safe-top),14px) 16px 10px;
-display:flex;justify-content:space-between;align-items:center;
+/* ══════════════════
+GALLERY PAGE
+══════════════════ */
+#galPg { z-index:40; }
+#galHead {
+flex-shrink:0; width:100%;
+padding: max(var(–st),14px) 16px 10px;
+display:flex; justify-content:space-between; align-items:center;
 border-bottom:1px solid rgba(255,255,255,.07);
 }
-#galleryTitle{font-size:18px;font-weight:700}
-#galleryHeaderRight{display:flex;gap:10px}
-.gHBtn{
-background:rgba(255,255,255,.1);
-border:1px solid rgba(255,255,255,.12);
-border-radius:10px;
-padding:7px 14px;
-font-size:13px;font-weight:600;
-}
-.gHBtn.primary{background:#fff;color:#000}
-.gHBtn.danger{background:rgba(255,59,48,.15);color:#ff3b30;border-color:rgba(255,59,48,.3)}
+#galHead span { font-size:18px; font-weight:700; }
+#galHeadR { display:flex; gap:8px; }
+.ghBtn { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.12); border-radius:9px; padding:6px 13px; font-size:13px; font-weight:600; }
+.ghBtn.pri { background:#fff; color:#000; border-color:#fff; }
+.ghBtn.del { background:rgba(255,59,48,.12); color:#ff3b30; border-color:rgba(255,59,48,.3); }
 
-#galleryGrid{
-flex:1;
+#galGrid {
+flex:1; min-height:0;
+display:grid; grid-template-columns:repeat(3,1fr); gap:2px;
 overflow-y:scroll;
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:2px;
--webkit-overflow-scrolling:touch;
 scrollbar-width:none;
--ms-overflow-style:none;
 }
-#galleryGrid::-webkit-scrollbar{display:none;width:0;height:0}
-#galleryEmpty{
-flex:1;display:flex;flex-direction:column;
-align-items:center;justify-content:center;
-gap:10px;color:rgba(255,255,255,.3);font-size:14px;
-}
+#galGrid::-webkit-scrollbar { display:none; }
 
-.gItem{
-position:relative;aspect-ratio:1;
-background:#111;overflow:hidden;cursor:pointer;
+#galEmpty {
+flex:1; display:flex; flex-direction:column;
+align-items:center; justify-content:center;
+gap:10px; color:rgba(255,255,255,.3); font-size:14px;
 }
-.gItem img{width:100%;height:100%;object-fit:cover;display:block}
-.gItem.selecting .gSel{display:flex}
-.gSel{
-position:absolute;top:6px;right:6px;
-width:22px;height:22px;border-radius:50%;
-border:2px solid #fff;
-background:transparent;
-display:none;align-items:center;justify-content:center;
+.gItem { position:relative; aspect-ratio:1; background:#111; overflow:hidden; cursor:pointer; }
+.gItem img { width:100%; height:100%; object-fit:cover; }
+.gItem.sel img { opacity:.65; }
+.gChk {
+position:absolute; top:6px; right:6px;
+width:22px; height:22px; border-radius:50%;
+border:2px solid #fff; background:transparent;
+display:none; align-items:center; justify-content:center;
 font-size:12px;
 }
-.gItem.selected .gSel{background:var(–yellow);border-color:var(–yellow);color:#000}
-.gItem.selected img{opacity:.7}
-.gPip{
-position:absolute;top:5px;left:5px;
-width:28%;aspect-ratio:3/4;
-border-radius:5px;overflow:hidden;
+.gItem.selMode .gChk { display:flex; }
+.gItem.sel .gChk { background:var(–y); border-color:var(–y); color:#000; }
+.gPip {
+position:absolute; top:5px; left:5px;
+width:28%; aspect-ratio:3/4;
+border-radius:5px; overflow:hidden;
 border:1.5px solid rgba(255,255,255,.9);
 }
-.gPip img{width:100%;height:100%;object-fit:cover;display:block}
+.gPip img { width:100%; height:100%; object-fit:cover; }
 
-#selBar{
-display:none;flex-shrink:0;
-align-items:center;justify-content:space-between;
-padding:10px 16px;
-padding-bottom:max(var(–safe-bottom),10px);
+#selBar {
+flex-shrink:0; display:none;
+align-items:center; justify-content:space-between;
+padding:10px 16px; padding-bottom:max(var(–sb),10px);
 border-top:1px solid rgba(255,255,255,.07);
 }
-#selBar.show{display:flex}
-#selCount{font-size:14px;font-weight:600}
+#selBar.on { display:flex; }
+#selN { font-size:14px; font-weight:600; }
 
-/* ════════════════════════════
-PHOTO VIEWER
-════════════════════════════ */
-#photoViewer{
-position:fixed;inset:0;z-index:60;
-background:#000;
-display:none;flex-direction:column;
-}
-#photoViewer.show{display:flex}
-#pvHeader{
+/* ══════════════════
+VIEWER
+══════════════════ */
+#viewer { position:fixed; inset:0; background:#000; display:none; flex-direction:column; z-index:60; }
+#viewer.on { display:flex; }
+#vwHead {
 flex-shrink:0;
-padding:max(var(–safe-top),14px) 16px 10px;
-display:flex;justify-content:space-between;align-items:center;
+padding: max(var(–st),14px) 16px 10px;
+display:flex; justify-content:space-between; align-items:center;
 }
-.pvBtn{font-size:16px;font-weight:600;color:#fff}
-.pvBtn.danger{color:#ff3b30}
-#pvBody{
-flex:1;display:flex;align-items:center;justify-content:center;
-padding:12px;overflow:hidden;
+.vwBtn { font-size:16px; font-weight:600; color:#fff; }
+.vwBtn.del { color:#ff3b30; }
+#vwBody { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:12px; overflow:hidden; }
+#vwWrap { position:relative; max-width:100%; max-height:100%; }
+#vwImg { max-width:100%; max-height:70vh; border-radius:14px; object-fit:contain; display:block; }
+#vwSub {
+position:absolute; top:10px; left:10px;
+width:28%; aspect-ratio:3/4;
+border-radius:10px; overflow:hidden;
+border:2px solid #fff; display:none;
 }
-#pvImgWrap{
-position:relative;
-max-width:100%;max-height:100%;
-}
-#pvImg{
-display:block;
-max-width:100%;max-height:70vh;
-border-radius:16px;object-fit:contain;
-}
-#pvSub{
-position:absolute;top:10px;left:10px;
-width:28%;aspect-ratio:3/4;
-border-radius:10px;overflow:hidden;
-border:2px solid #fff;display:none;
-}
-#pvSub img{width:100%;height:100%;object-fit:cover;display:block}
-#pvFooter{
+#vwSub img { width:100%; height:100%; object-fit:cover; }
+#vwFoot {
 flex-shrink:0;
-padding:12px 20px;
-padding-bottom:max(var(–safe-bottom),16px);
-display:flex;justify-content:center;gap:14px;
+padding:12px 20px; padding-bottom:max(var(–sb),16px);
+display:flex; justify-content:center;
 }
-.pvFootBtn{
-background:rgba(255,255,255,.1);
-border:1px solid rgba(255,255,255,.15);
-border-radius:12px;padding:10px 28px;
-font-size:14px;font-weight:600;
-}
-.pvFootBtn.primary{background:#fff;color:#000}
 
-/* TOAST */
-#toast{
-position:fixed;
-top:max(calc(var(–safe-top) + 54px),70px);
-left:50%;transform:translateX(-50%);
-z-index:99;
-background:#fff;color:#111;
-padding:9px 18px;border-radius:999px;
-font-size:13px;font-weight:800;
-opacity:0;pointer-events:none;
-transition:.2s;white-space:nowrap;
+/* ══════════════════
+TOAST
+══════════════════ */
+#toast {
+position:fixed; z-index:99;
+top: max(calc(var(–st) + 60px), 80px);
+left:50%; transform:translateX(-50%) translateY(-6px);
+background:#fff; color:#111;
+padding:8px 18px; border-radius:999px;
+font-size:13px; font-weight:800;
+opacity:0; pointer-events:none;
+transition:opacity .2s, transform .2s;
+white-space:nowrap;
 }
-#toast.show{opacity:1}
+#toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 
 </head>
 <body>
 
-<!-- ── CAMERA ── -->
+<!-- CAMERA -->
 
-<div class="screen active" id="camScreen">
-
-  <!-- Top bar — in black area ABOVE viewfinder -->
-
+<div class="pg on" id="camPg">
   <div id="topBar">
-    <div class="tLeft">
-      <button class="topIcon" id="flashBtn">
-        <svg id="flashIcon" width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="rgba(255,255,255,0.85)"/>
+    <button id="flashBtn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path id="flashPath" d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13Z" fill="rgba(255,255,255,0.85)"/>
+      </svg>
+    </button>
+    <button id="bothBtn">BOTH</button>
+  </div>
+
+  <div id="vf">
+    <video id="mainVid" autoplay playsinline muted disablepictureinpicture></video>
+    <div id="flashFx"></div>
+    <div id="focusRing"></div>
+    <div id="cdOverlay"><div id="cdNum">3</div></div>
+    <div id="pipWrap"><img id="pipImg"></div>
+  </div>
+
+  <div id="botBar">
+    <div id="modeRow">
+      <button class="mBtn" data-m="video">VIDEO</button>
+      <button class="mBtn on" data-m="photo">PHOTO</button>
+    </div>
+    <div id="ctrlRow">
+      <button id="thumbBtn"><img id="thumbImg" alt=""></button>
+      <button id="shutter"><div id="sInner"></div></button>
+      <button id="flipBtn">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <path d="M16 5l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6 9h14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M10 17l-4 4 4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20 21H6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
-    <div class="tCenter"></div>
-    <div class="tRight">
-      <button id="bothBtn">BOTH</button>
-    </div>
-  </div>
-
-  <!-- Viewfinder — fills space between topBar and bottomUI -->
-
-  <div id="vf">
-    <div id="vfInner">
-      <video id="mainVid" autoplay playsinline webkit-playsinline muted preload="none"
-        disablepictureinpicture x-webkit-airplay="deny"></video>
-
-```
-  <!-- Flash badge -->
-  <div id="flashBadge">⚡</div>
-  <!-- Focus ring -->
-  <div id="focusRing"></div>
-  <!-- Flash FX -->
-  <div id="flashFx"></div>
-  <!-- Countdown -->
-  <div id="countdownBubble"><div id="countdownNum">3</div></div>
-  <!-- PIP -->
-  <div id="pipWrap"><img id="pipImg"></div>
-</div>
-```
-
-  </div>
-
-  <!-- Bottom UI -->
-
-  <div id="bottomUI">
-    <div id="modeRail">
-      <button class="modeBtn" data-mode="video">VIDEO</button>
-      <button class="modeBtn active" data-mode="photo">PHOTO</button>
-    </div>
-
-```
-<div id="controlsRow">
-  <div class="sideCtl left">
-    <button id="thumbBtn" onclick="openGallery()">
-      <img id="thumbImg" alt="">
-    </button>
-  </div>
-
-  <button id="shutter" onclick="handleShutter()">
-    <div id="shutterInner"></div>
-  </button>
-
-  <div class="sideCtl right">
-    <button id="flipBtn" onclick="doFlip()">
-      <svg width="40" height="40" viewBox="0 0 36 36" fill="none">
-        <rect width="36" height="36" rx="18" fill="rgba(255,255,255,0.15)"/>
-        <path d="M22.5 10.5L25.5 13.5L22.5 16.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M10.5 13.5H25.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M13.5 19.5L10.5 22.5L13.5 25.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M25.5 22.5H10.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-    </button>
-  </div>
-</div>
-```
-
   </div>
 </div>
 
-<!-- ── GALLERY ── -->
+<!-- GALLERY -->
 
-<div class="screen" id="galleryScreen">
-  <div id="galleryHeader">
-    <div style="font-size:18px;font-weight:700">갤러리</div>
-    <div id="galleryHeaderRight">
-      <button class="gHBtn" id="selModeBtn" onclick="toggleSelMode()">선택</button>
-      <button class="gHBtn" onclick="closeGallery()">닫기</button>
+<div class="pg" id="galPg">
+  <div id="galHead">
+    <span>갤러리</span>
+    <div id="galHeadR">
+      <button class="ghBtn" id="selBtn">선택</button>
+      <button class="ghBtn" id="galClose">닫기</button>
     </div>
   </div>
-  <div id="galleryGrid"></div>
-  <div id="galleryEmpty"><span style="font-size:44px;opacity:.3">📷</span><span>사진이 없어요</span></div>
+  <div id="galGrid"></div>
+  <div id="galEmpty"><span style="font-size:44px;opacity:.25">📷</span><span>사진이 없어요</span></div>
   <div id="selBar">
-    <span id="selCount">0장 선택됨</span>
+    <span id="selN">0장 선택됨</span>
     <div style="display:flex;gap:8px">
-      <button class="gHBtn danger" onclick="deleteSelected()">삭제</button>
-      <button class="gHBtn primary" onclick="downloadSelected()">저장</button>
+      <button class="ghBtn del" id="delSelBtn">삭제</button>
+      <button class="ghBtn pri" id="dlSelBtn">저장</button>
     </div>
   </div>
 </div>
 
-<!-- ── PHOTO VIEWER ── -->
+<!-- VIEWER -->
 
-<div id="photoViewer">
-  <div id="pvHeader">
-    <button class="pvBtn" onclick="closeViewer()">← 뒤로</button>
-    <span id="pvIdx" style="color:rgba(255,255,255,.4);font-size:13px"></span>
-    <button class="pvBtn" onclick="downloadViewer()">저장</button>
+<div id="viewer">
+  <div id="vwHead">
+    <button class="vwBtn" id="vwBack">← 뒤로</button>
+    <span id="vwIdx" style="color:rgba(255,255,255,.4);font-size:13px"></span>
+    <button class="vwBtn" id="vwDl">저장</button>
   </div>
-  <div id="pvBody">
-    <div id="pvImgWrap">
-      <img id="pvImg">
-      <div id="pvSub"><img id="pvSubImg"></div>
+  <div id="vwBody" id="vwBodyEl">
+    <div id="vwWrap">
+      <img id="vwImg">
+      <div id="vwSub"><img id="vwSubImg"></div>
     </div>
   </div>
-  <div id="pvFooter">
-    <button class="pvFootBtn danger" onclick="deleteViewer()">삭제</button>
+  <div id="vwFoot">
+    <button class="vwBtn del" id="vwDel">삭제</button>
   </div>
 </div>
 
 <div id="toast"></div>
-<canvas id="canvas" style="display:none"></canvas>
-<canvas id="videoCanvas" style="display:none"></canvas>
+<canvas id="cv" style="display:none"></canvas>
 
 <script>
 (() => {
-  /* ── STATE ── */
-  let camStream = null, camTrack = null, facing = 'back';
-  let mode = 'photo', bothMode = false;
-  let flashMode = 'off';
-  let isProcessing = false, isRecording = false;
-  let berealFirstURL = null, berealFirstFacing = null;
-  let mediaRecorder = null, recChunks = [], videoRAF = null;
-  let db = null, photos = [];
-  let selMode = false, selIds = new Set();
-  let viewerIdx = 0;
+  /* STATE */
+  let cam=null, camTrack=null, facing='back';
+  let mode='photo', bothMode=false, flashMode='off';
+  let processing=false, recording=false;
+  let recorder=null, recChunks=[];
+  let db=null, items=[], selMode=false, selIds=new Set(), vwIdx=0;
+  let pvSwapped=false, pvTapTimer=null;
+  let bFirstURL=null, bFirstFacing=null;
 
-  /* ── DOM ── */
-  const mainVid    = document.getElementById('mainVid');
-  const flashBadge = document.getElementById('flashBadge');
-  const flashLabel = document.getElementById('flashLabel');
-  const flashFx    = document.getElementById('flashFx');
-  const bothBtn    = document.getElementById('bothBtn');
-  const focusRing  = document.getElementById('focusRing');
-  const shutter    = document.getElementById('shutter');
-  const flipBtn    = document.getElementById('flipBtn');
-  const thumbImg   = document.getElementById('thumbImg');
-  const countdownBubble = document.getElementById('countdownBubble');
-  const countdownNum    = document.getElementById('countdownNum');
-  const pipWrap    = document.getElementById('pipWrap');
-  const pipImg     = document.getElementById('pipImg');
-  const canvas     = document.getElementById('canvas');
-  const videoCanvas= document.getElementById('videoCanvas');
-  const toast      = document.getElementById('toast');
-  const galleryGrid= document.getElementById('galleryGrid');
-  const galleryEmpty=document.getElementById('galleryEmpty');
-  const selBar     = document.getElementById('selBar');
-  const selCount   = document.getElementById('selCount');
-  const pvImg      = document.getElementById('pvImg');
-  const pvSub      = document.getElementById('pvSub');
-  const pvSubImg   = document.getElementById('pvSubImg');
-  const pvIdx      = document.getElementById('pvIdx');
+  /* DOM */
+  const $ = id => document.getElementById(id);
+  const camPg=$('camPg'), galPg=$('galPg'), viewer=$('viewer');
+  const mainVid=$('mainVid'), flashFx=$('flashFx'), focusRing=$('focusRing');
+  const cdOverlay=$('cdOverlay'), cdNum=$('cdNum');
+  const pipWrap=$('pipWrap'), pipImg=$('pipImg');
+  const shutter=$('shutter'), sInner=$('sInner');
+  const thumbImg=$('thumbImg'), thumbBtn=$('thumbBtn');
+  const flashBtn=$('flashBtn'), flashPath=$('flashPath'), bothBtn=$('bothBtn');
+  const flipBtn=$('flipBtn'), vf=$('vf');
+  const galGrid=$('galGrid'), galEmpty=$('galEmpty'), selBar=$('selBar'), selN=$('selN');
+  const vwImg=$('vwImg'), vwSubImg=$('vwSubImg'), vwSub=$('vwSub'), vwIdxEl=$('vwIdx');
+  const toast=$('toast'), cv=$('cv');
 
-  /* ── INDEXEDDB ── */
-  const req = indexedDB.open('newmera_v2', 1);
-  req.onupgradeneeded = e => {
-    e.target.result.createObjectStore('media', { keyPath:'id' });
-  };
-  req.onsuccess = e => {
-    db = e.target.result;
-    loadPhotos();
-    startCam();
-  };
+  /* DB */
+  const req = indexedDB.open('newmera_v3', 1);
+  req.onupgradeneeded = e => e.target.result.createObjectStore('media',{keyPath:'id'});
+  req.onsuccess = e => { db=e.target.result; loadItems(); startCam(); };
   req.onerror = () => showToast('DB 오류');
 
-  /* ── CAMERA ── */
+  /* CAMERA */
   async function startCam() {
     try {
-      if (camStream) camStream.getTracks().forEach(t => t.stop());
-      mainVid.classList.remove('ready');
-
-      // iOS Safari는 facingMode: {exact:...} 가 실패하는 경우가 있어서 fallback 사용
-      let constraints = {
-        audio: false,
-        video: { facingMode: facing === 'back' ? 'environment' : 'user' }
-      };
-
-      try {
-        camStream = await navigator.mediaDevices.getUserMedia(constraints);
-      } catch(e) {
-        // fallback: 그냥 video:true
-        camStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
-      }
-
-      camTrack = camStream.getVideoTracks()[0] || null;
-      mainVid.srcObject = camStream;
-      mainVid.muted = true;
-      mainVid.style.transform = facing === 'front' ? 'scaleX(-1)' : 'scaleX(1)';
-      mainVid.addEventListener('canplay', () => mainVid.classList.add('ready'), { once: true });
-      mainVid.play().catch(() => {});
-    } catch(e) {
-      showToast('카메라 권한을 허용해주세요');
-    }
+      if (cam) cam.getTracks().forEach(t=>t.stop());
+      mainVid.classList.remove('on');
+      cam = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode: facing==='back'?'environment':'user' },
+        audio:false
+      });
+      camTrack = cam.getVideoTracks()[0]||null;
+      mainVid.srcObject = cam;
+      mainVid.style.transform = facing==='front'?'scaleX(-1)':'none';
+      mainVid.addEventListener('canplay',()=>mainVid.classList.add('on'),{once:true});
+      mainVid.play().catch(()=>{});
+    } catch(e) { showToast('카메라 권한을 허용해주세요'); }
   }
 
-  /* ── 앱 백그라운드/포그라운드 시 카메라 on/off ── */
   function stopCam() {
-    if (camStream) {
-      camStream.getTracks().forEach(t => t.stop());
-      camStream = null;
-      camTrack = null;
-    }
-    mainVid.srcObject = null;
-    mainVid.classList.remove('ready');
+    if(cam){ cam.getTracks().forEach(t=>t.stop()); cam=null; camTrack=null; }
+    mainVid.srcObject=null; mainVid.classList.remove('on');
   }
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      if (isRecording) stopRec();
-      stopCam();
-    } else {
-      startCam();
-    }
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){ if(recording)stopRec(); stopCam(); }
+    else startCam();
   });
-
   window.addEventListener('pagehide', stopCam);
 
-  /* Focus tap */
-  document.getElementById('vf').addEventListener('click', e => {
-    if (e.target.closest('#bottomUI') || e.target.closest('#topBar')) return;
-    focusRing.style.left = e.clientX + 'px';
-    focusRing.style.top  = e.clientY + 'px';
-    focusRing.style.display = 'block';
-    setTimeout(() => focusRing.style.display = 'none', 1000);
+  /* FOCUS TAP */
+  vf.addEventListener('click', e=>{
+    focusRing.style.left=e.clientX+'px'; focusRing.style.top=e.clientY+'px';
+    focusRing.style.display='block';
+    setTimeout(()=>focusRing.style.display='none',1000);
   });
 
-  /* ── FLASH ── */
-  document.getElementById('flashBtn').onclick = async () => {
-    if (flashMode === 'off') {
-      flashMode = 'on';
-      flashBadge.style.display = 'block';
-      document.querySelector('#flashIcon path').setAttribute('fill', '#ffd60a');
-    } else {
-      flashMode = 'off';
-      flashBadge.style.display = 'none';
-      document.querySelector('#flashIcon path').setAttribute('fill', 'rgba(255,255,255,0.85)');
-      try { await setTorch(false); } catch {}
-    }
+  /* FLASH */
+  flashBtn.onclick = async()=>{
+    flashMode = flashMode==='off'?'on':'off';
+    flashPath.setAttribute('fill', flashMode==='on'?'#ffd60a':'rgba(255,255,255,0.85)');
+    if(flashMode==='off') try{ await setTorch(false); }catch{}
   };
-
-  async function setTorch(on) {
-    if (!camTrack || facing !== 'back') return false;
-    const caps = camTrack.getCapabilities?.() || {};
-    if (!caps.torch) return false;
-    await camTrack.applyConstraints({ advanced:[{ torch:on }] });
+  async function setTorch(on){
+    if(!camTrack||facing!=='back') return false;
+    const caps=camTrack.getCapabilities?.()??{};
+    if(!caps.torch) return false;
+    await camTrack.applyConstraints({advanced:[{torch:on}]});
     return true;
   }
-
-  async function triggerFlash() {
-    if (flashMode !== 'on') return;
-    const ok = await setTorch(true);
-    if (!ok) {
-      flashFx.style.opacity = '1';
-      setTimeout(() => flashFx.style.opacity = '0', 100);
-      return;
-    }
-    setTimeout(() => setTorch(false).catch(() => {}), 130);
+  async function doFlash(){
+    if(flashMode!=='on') return;
+    const ok=await setTorch(true);
+    if(!ok){ flashFx.style.opacity='1'; setTimeout(()=>flashFx.style.opacity='0',100); return; }
+    setTimeout(()=>setTorch(false).catch(()=>{}),130);
   }
 
-  /* ── GRAB FRAME ── */
-  function grab() {
-    const vW = mainVid.videoWidth || 1280;
-    const vH = mainVid.videoHeight || 720;
-    canvas.width = vW; canvas.height = vH;
-    const ctx = canvas.getContext('2d');
-    if (facing === 'front') { ctx.translate(vW, 0); ctx.scale(-1, 1); }
-    ctx.drawImage(mainVid, 0, 0, vW, vH);
-    if (facing === 'front') ctx.setTransform(1,0,0,1,0,0);
-    return canvas.toDataURL('image/jpeg', 0.92);
+  /* BOTH */
+  bothBtn.onclick=()=>{
+    if(mode!=='photo'){ showToast('PHOTO 모드에서만 가능해요'); return; }
+    bothMode=!bothMode;
+    bothBtn.classList.toggle('on',bothMode);
+    showToast(bothMode?'BOTH ON':'BOTH OFF');
+  };
+
+  /* FLIP */
+  flipBtn.onclick=async()=>{
+    if(recording) return;
+    facing=facing==='back'?'front':'back';
+    await startCam();
+  };
+
+  /* MODE */
+  document.querySelectorAll('.mBtn').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('.mBtn').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); mode=b.dataset.m;
+      shutter.classList.remove('vid','rec');
+      if(mode==='video') shutter.classList.add('vid');
+      flashBtn.style.visibility = mode==='video'?'hidden':'visible';
+      bothBtn.style.visibility  = mode==='video'?'hidden':'visible';
+    };
+  });
+
+  /* SHUTTER */
+  shutter.onclick=()=>{ mode==='video'?(recording?stopRec():startRec()):handlePhoto(); };
+
+  /* PHOTO */
+  async function handlePhoto(){
+    if(processing) return; processing=true;
+    try{ bothMode?await doBoth():await doSnap(); }
+    finally{ setTimeout(()=>processing=false,300); }
   }
 
-  /* ── SHUTTER ── */
-  async function handleShutter() {
-    if (mode === 'video') {
-      isRecording ? stopRec() : startRec();
-      return;
-    }
-    if (isProcessing) return;
-    isProcessing = true;
-    try {
-      if (bothMode) await doBoth();
-      else await doPhoto();
-    } finally {
-      setTimeout(() => isProcessing = false, 300);
-    }
-  }
-  window.handleShutter = handleShutter;
-
-  async function doPhoto() {
-    await triggerFlash();
-    flashFx.style.opacity = '0.6';
-    setTimeout(() => flashFx.style.opacity = '0', 80);
-    const url = grab();
-    savePhoto({ type:'photo', main:url });
+  async function doSnap(){
+    await doFlash(); flashFx.style.opacity='0.6';
+    setTimeout(()=>flashFx.style.opacity='0',80);
+    saveItem({type:'photo',main:grab()});
     showToast('저장됨 ✓');
   }
 
-  async function doBoth() {
-    await triggerFlash();
-    flashFx.style.opacity = '0.6';
-    setTimeout(() => flashFx.style.opacity = '0', 80);
-    berealFirstURL = grab();
-    berealFirstFacing = facing;
-
-    pipImg.src = berealFirstURL;
-    pipWrap.classList.add('show');
-
-    // countdown
-    let c = 3;
-    countdownNum.textContent = c;
-    countdownBubble.style.display = 'flex';
-
-    await new Promise(resolve => {
-      const iv = setInterval(() => {
-        c--;
-        if (c > 0) { countdownNum.textContent = c; }
-        else { clearInterval(iv); countdownBubble.style.display = 'none'; resolve(); }
-      }, 1000);
+  async function doBoth(){
+    bFirstURL=grab(); bFirstFacing=facing;
+    pipImg.src=bFirstURL; pipWrap.classList.add('on');
+    let c=3; cdNum.textContent=c; cdOverlay.style.display='flex';
+    await new Promise(res=>{
+      const iv=setInterval(()=>{
+        c--; if(c>0) cdNum.textContent=c;
+        else{ clearInterval(iv); cdOverlay.style.display='none'; res(); }
+      },1000);
     });
-
-    facing = facing === 'back' ? 'front' : 'back';
-    await startCam();
-    await new Promise(r => setTimeout(r, 400));
-
-    await triggerFlash();
-    const second = grab();
-    pipWrap.classList.remove('show');
-
-    savePhoto({ type:'photo', main:berealFirstURL, sub:second });
-    showToast('BOTH 저장됨 ✓');
-
-    // restore
-    facing = berealFirstFacing;
-    await startCam();
+    facing=bFirstFacing==='back'?'front':'back';
+    await startCam(); await new Promise(r=>setTimeout(r,400));
+    const second=grab();
+    pipWrap.classList.remove('on');
+    composeBoth(bFirstURL,second);
+    facing=bFirstFacing; await startCam();
   }
 
-  /* ── VIDEO ── */
-  function startRec() {
-    if (!camStream || isRecording) return;
-    recChunks = [];
+  function grab(){
+    const vw=mainVid.videoWidth||1280, vh=mainVid.videoHeight||720;
+    cv.width=vw; cv.height=vh;
+    const ctx=cv.getContext('2d');
+    if(facing==='front'){ ctx.translate(vw,0); ctx.scale(-1,1); }
+    ctx.drawImage(mainVid,0,0,vw,vh);
+    if(facing==='front') ctx.setTransform(1,0,0,1,0,0);
+    return cv.toDataURL('image/jpeg',.92);
+  }
 
-    // 카메라 스트림 직접 녹화 (캔버스 X)
-    const mime = ['video/mp4','video/webm;codecs=h264,opus','video/webm;codecs=vp9,opus','video/webm'].find(t => MediaRecorder.isTypeSupported(t)) || '';
-    try {
-      mediaRecorder = new MediaRecorder(camStream, mime ? {mimeType:mime} : undefined);
-    } catch(e) {
-      mediaRecorder = new MediaRecorder(camStream);
-    }
-    mediaRecorder.ondataavailable = e => { if (e.data?.size > 0) recChunks.push(e.data); };
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(recChunks, { type: mediaRecorder.mimeType || 'video/webm' });
-      savePhoto({ type:'video', blob });
-      isRecording = false;
-      shutter.classList.remove('video','recording');
-      shutter.classList.add('video');
+  function composeBoth(url1,url2){
+    const i1=new Image(),i2=new Image();
+    i1.onload=()=>{ i2.onload=()=>{
+      const W=i1.width,H=i1.height;
+      cv.width=W; cv.height=H;
+      const ctx=cv.getContext('2d');
+      ctx.drawImage(i1,0,0,W,H);
+      const pw=W*.3,ph=pw*(i2.height/i2.width),mg=W*.04,rx=mg,ry=H-mg-ph,r=16;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(rx+r,ry); ctx.lineTo(rx+pw-r,ry); ctx.quadraticCurveTo(rx+pw,ry,rx+pw,ry+r);
+      ctx.lineTo(rx+pw,ry+ph-r); ctx.quadraticCurveTo(rx+pw,ry+ph,rx+pw-r,ry+ph);
+      ctx.lineTo(rx+r,ry+ph); ctx.quadraticCurveTo(rx,ry+ph,rx,ry+ph-r);
+      ctx.lineTo(rx,ry+r); ctx.quadraticCurveTo(rx,ry,rx+r,ry);
+      ctx.closePath(); ctx.clip();
+      ctx.drawImage(i2,rx,ry,pw,ph);
+      ctx.restore();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.moveTo(rx+r,ry); ctx.lineTo(rx+pw-r,ry); ctx.quadraticCurveTo(rx+pw,ry,rx+pw,ry+r);
+      ctx.lineTo(rx+pw,ry+ph-r); ctx.quadraticCurveTo(rx+pw,ry+ph,rx+pw-r,ry+ph);
+      ctx.lineTo(rx+r,ry+ph); ctx.quadraticCurveTo(rx,ry+ph,rx,ry+ph-r);
+      ctx.lineTo(rx,ry+r); ctx.quadraticCurveTo(rx,ry,rx+r,ry);
+      ctx.closePath(); ctx.stroke();
+      saveItem({type:'photo',main:cv.toDataURL('image/jpeg',.92),sub:url2});
+      showToast('BOTH 저장됨 ✓');
+    }; i2.src=url2; }; i1.src=url1;
+  }
+
+  /* VIDEO */
+  function startRec(){
+    if(!cam||recording) return; recChunks=[];
+    const mime=['video/mp4','video/webm;codecs=h264','video/webm'].find(t=>MediaRecorder.isTypeSupported(t))||'';
+    try{ recorder=new MediaRecorder(cam,mime?{mimeType:mime}:undefined); }
+    catch(e){ recorder=new MediaRecorder(cam); }
+    recorder.ondataavailable=e=>{ if(e.data?.size>0) recChunks.push(e.data); };
+    recorder.onstop=()=>{
+      const blob=new Blob(recChunks,{type:recorder.mimeType||'video/webm'});
+      saveItem({type:'video',blob});
+      recording=false; shutter.classList.remove('rec'); shutter.classList.add('vid');
       showToast('영상 저장됨 ✓');
     };
-    mediaRecorder.start(200);
-    isRecording = true;
-    shutter.classList.add('recording');
-    showToast('● REC');
+    recorder.start(200); recording=true;
+    shutter.classList.add('rec'); showToast('● REC');
   }
+  function stopRec(){ if(recorder&&recording) recorder.stop(); }
 
-  function stopRec() {
-    if (mediaRecorder && isRecording) mediaRecorder.stop();
+  /* STORAGE */
+  function saveItem(item){
+    item.id=Date.now()+Math.floor(Math.random()*999);
+    const tx=db.transaction('media','readwrite');
+    tx.objectStore('media').add(item);
+    tx.oncomplete=loadItems;
   }
-
-  /* ── MODE ── */
-  document.querySelectorAll('.modeBtn').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.modeBtn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      mode = btn.dataset.mode;
-      shutter.classList.remove('video','recording');
-      const vf = document.getElementById('vf');
-      const flashBtn = document.getElementById('flashBtn');
-      const bothBtn2 = document.getElementById('bothBtn');
-      if (mode === 'video') {
-        shutter.classList.add('video');
-        document.getElementById('vfInner').classList.add('landscape');
-        flashBtn.style.visibility = 'hidden';
-        bothBtn2.style.visibility = 'hidden';
-      } else {
-        document.getElementById('vfInner').classList.remove('landscape');
-        flashBtn.style.visibility = 'visible';
-        bothBtn2.style.visibility = 'visible';
-      }
+  function loadItems(){
+    if(!db) return;
+    db.transaction('media','readonly').objectStore('media').getAll().onsuccess=e=>{
+      items=e.target.result.sort((a,b)=>b.id-a.id);
+      updateThumb(); renderGallery();
     };
-  });
+  }
+  function updateThumb(){
+    if(!items.length){ thumbImg.style.display='none'; return; }
+    const p=items[0];
+    if(p.type==='photo'&&p.main){ thumbImg.src=p.main; thumbImg.style.display='block'; }
+  }
 
-  /* ── BOTH ── */
-  bothBtn.onclick = () => {
-    if (mode !== 'photo') { showToast('PHOTO 모드에서만 가능해요'); return; }
-    bothMode = !bothMode;
-    bothBtn.classList.toggle('on', bothMode);
-    bothBtn.textContent = bothMode ? 'BOTH ON' : 'BOTH';
-    showToast(bothMode ? 'BOTH 모드 ON' : 'BOTH 모드 OFF');
+  /* GALLERY */
+  thumbBtn.onclick=()=>openGallery();
+  $('galClose').onclick=()=>closeGallery();
+
+  function openGallery(){
+    selMode=false; selIds.clear(); renderGallery();
+    camPg.classList.remove('on'); galPg.classList.add('on');
+  }
+  function closeGallery(){
+    galPg.classList.remove('on'); camPg.classList.add('on'); updateThumb();
+  }
+
+  $('selBtn').onclick=()=>{
+    selMode=!selMode; selIds.clear();
+    $('selBtn').textContent=selMode?'취소':'선택';
+    renderGallery();
   };
 
-  /* ── FLIP ── */
-  async function doFlip() {
-    if (isRecording) return;
-    facing = facing === 'back' ? 'front' : 'back';
-    await startCam();
-  }
-  window.doFlip = doFlip;
-
-  /* ── STORAGE ── */
-  function savePhoto(item) {
-    item.id = Date.now() + Math.floor(Math.random()*1000);
-    const tx = db.transaction('media','readwrite');
-    tx.objectStore('media').add(item);
-    tx.oncomplete = loadPhotos;
-    tx.onerror = () => showToast('저장 오류');
-  }
-
-  function loadPhotos() {
-    if (!db) return;
-    const tx = db.transaction('media','readonly');
-    tx.objectStore('media').getAll().onsuccess = e => {
-      photos = e.target.result.sort((a,b) => b.id - a.id);
-      updateThumb();
-      renderGallery();
-    };
-  }
-
-  function updateThumb() {
-    if (!photos.length) { thumbImg.style.display='none'; return; }
-    const p = photos[0];
-    if (p.type === 'video' && p.blob) {
-      thumbImg.style.display='none'; return;
-    }
-    if (p.main) {
-      thumbImg.src = p.main;
-      thumbImg.style.display = 'block';
-    }
-  }
-
-  /* ── GALLERY ── */
-  function openGallery() {
-    selMode = false; selIds.clear();
-    renderGallery();
-    document.getElementById('camScreen').classList.remove('active');
-    document.getElementById('galleryScreen').classList.add('active');
-  }
-  window.openGallery = openGallery;
-
-  function closeGallery() {
-    document.getElementById('galleryScreen').classList.remove('active');
-    document.getElementById('camScreen').classList.add('active');
-  }
-  window.closeGallery = closeGallery;
-
-  function toggleSelMode() {
-    selMode = !selMode; selIds.clear();
-    document.getElementById('selModeBtn').textContent = selMode ? '취소' : '선택';
-    renderGallery();
-  }
-  window.toggleSelMode = toggleSelMode;
-
-  function renderGallery() {
-    galleryGrid.innerHTML = '';
-    selBar.classList.toggle('show', selMode && selIds.size > 0);
-    selCount.textContent = selIds.size + '장 선택됨';
-
-    if (!photos.length) {
-      galleryGrid.style.display = 'none';
-      galleryEmpty.style.display = 'flex';
-      return;
-    }
-    galleryGrid.style.display = 'grid';
-    galleryEmpty.style.display = 'none';
-
-    photos.forEach((p, i) => {
-      const div = document.createElement('div');
-      div.className = 'gItem' + (selMode ? ' selecting' : '') + (selIds.has(p.id) ? ' selected' : '');
-
-      if (p.type === 'video' && p.blob) {
-        const vid = document.createElement('video');
-        vid.src = URL.createObjectURL(p.blob);
-        vid.muted = true; vid.playsInline = true; vid.preload = 'metadata';
-        div.appendChild(vid);
-        const badge = document.createElement('div');
-        badge.className = 'gPip'; badge.style.cssText='background:rgba(0,0,0,.6);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:none;border-radius:4px;width:auto;padding:2px 5px;aspect-ratio:unset';
-        badge.textContent = '▶ VIDEO'; div.appendChild(badge);
+  function renderGallery(){
+    galGrid.innerHTML='';
+    selBar.classList.toggle('on', selMode&&selIds.size>0);
+    selN.textContent=selIds.size+'장 선택됨';
+    if(!items.length){ galGrid.style.display='none'; galEmpty.style.display='flex'; return; }
+    galGrid.style.display='grid'; galEmpty.style.display='none';
+    items.forEach((p,i)=>{
+      const div=document.createElement('div');
+      div.className='gItem'+(selMode?' selMode':'')+(selIds.has(p.id)?' sel':'');
+      if(p.type==='video'&&p.blob){
+        const v=document.createElement('video');
+        v.src=URL.createObjectURL(p.blob); v.muted=true; v.playsInline=true; v.preload='metadata';
+        div.appendChild(v);
       } else {
-        const img = document.createElement('img');
-        img.src = p.main; div.appendChild(img);
-        if (p.sub) {
-          const pip = document.createElement('div'); pip.className = 'gPip';
-          const si = document.createElement('img'); si.src = p.sub;
-          pip.appendChild(si); div.appendChild(pip);
-        }
+        const img=document.createElement('img'); img.src=p.main; div.appendChild(img);
+        if(p.sub){ const pip=document.createElement('div'); pip.className='gPip';
+          const si=document.createElement('img'); si.src=p.sub; pip.appendChild(si); div.appendChild(pip); }
       }
-
-      const sel = document.createElement('div'); sel.className = 'gSel'; sel.textContent = '✓';
-      div.appendChild(sel);
-
-      div.onclick = () => {
-        if (selMode) {
-          selIds.has(p.id) ? selIds.delete(p.id) : selIds.add(p.id);
-          renderGallery();
-        } else {
-          openViewer(i);
-        }
-      };
-      galleryGrid.appendChild(div);
+      const chk=document.createElement('div'); chk.className='gChk'; chk.textContent='✓'; div.appendChild(chk);
+      div.onclick=()=>{ if(selMode){ selIds.has(p.id)?selIds.delete(p.id):selIds.add(p.id); renderGallery(); } else openViewer(i); };
+      galGrid.appendChild(div);
     });
   }
 
-  function deleteSelected() {
-    if (!selIds.size) return;
-    if (!confirm(selIds.size + '장을 삭제할까요?')) return;
-    const tx = db.transaction('media','readwrite');
-    const store = tx.objectStore('media');
-    selIds.forEach(id => store.delete(id));
-    tx.oncomplete = () => { selIds.clear(); selMode=false; loadPhotos(); showToast('삭제됨'); };
-  }
-  window.deleteSelected = deleteSelected;
-
-  function downloadSelected() {
-    if (!selIds.size) { showToast('사진을 선택해주세요'); return; }
-    const sel = photos.filter(p => selIds.has(p.id));
-    if (/iPhone|iPad/.test(navigator.userAgent)) {
-      sel.forEach(p => {
-        if (p.type === 'video') return;
-        const w = window.open();
-        if (w) w.document.write('<img src="'+p.main+'" style="max-width:100%"><p style="font-family:sans-serif;text-align:center;color:#888;padding:12px">이미지 꾹 누르기 → 사진 저장</p>');
-      });
+  $('delSelBtn').onclick=()=>{
+    if(!selIds.size) return;
+    if(!confirm(selIds.size+'장을 삭제할까요?')) return;
+    const tx=db.transaction('media','readwrite'), store=tx.objectStore('media');
+    selIds.forEach(id=>store.delete(id));
+    tx.oncomplete=()=>{ selIds.clear(); selMode=false; loadItems(); showToast('삭제됨'); };
+  };
+  $('dlSelBtn').onclick=()=>{
+    if(!selIds.size){ showToast('사진을 선택해주세요'); return; }
+    const sel=items.filter(p=>selIds.has(p.id));
+    if(/iPhone|iPad/.test(navigator.userAgent)){
+      sel.forEach(p=>{ if(p.type==='video') return;
+        const w=window.open(); if(w) w.document.write('<img src="'+p.main+'" style="max-width:100%"><p style="font-family:sans-serif;text-align:center;color:#888;padding:12px">꾹 눌러서 저장</p>'); });
     } else {
-      sel.forEach((p, i) => {
-        if (p.type === 'video') return;
-        setTimeout(() => {
-          const a = document.createElement('a');
-          a.href = p.main; a.download = 'newmera_'+p.id+'.jpg'; a.click();
-        }, i * 150);
-      });
+      sel.forEach((p,i)=>{ if(p.type==='video') return;
+        setTimeout(()=>{ const a=document.createElement('a'); a.href=p.main; a.download='newmera_'+p.id+'.jpg'; a.click(); },i*150); });
     }
-    showToast(sel.length + '장 저장 중...');
+    showToast(sel.length+'장 저장 중...');
+  };
+
+  /* VIEWER */
+  function openViewer(idx){
+    vwIdx=idx; pvSwapped=false;
+    const p=items[idx]; if(!p) return;
+    vwImg.src=p.main||'';
+    vwIdxEl.textContent=(idx+1)+' / '+items.length;
+    if(p.sub){ vwSubImg.src=p.sub; vwSub.style.display='block'; }
+    else vwSub.style.display='none';
+    viewer.classList.add('on');
+    if(p.sub) showToast('더블탭으로 전환 👆');
   }
-  window.downloadSelected = downloadSelected;
+  $('vwBack').onclick=()=>{ viewer.classList.remove('on'); pvSwapped=false; };
+  $('vwDl').onclick=()=>{
+    const p=items[vwIdx]; if(!p||p.type==='video') return;
+    if(/iPhone|iPad/.test(navigator.userAgent)){
+      const w=window.open(); if(w) w.document.write('<img src="'+p.main+'" style="max-width:100%"><p style="font-family:sans-serif;text-align:center;color:#888;padding:12px">꾹 눌러서 저장</p>');
+    } else { const a=document.createElement('a'); a.href=p.main; a.download='newmera_'+p.id+'.jpg'; a.click(); }
+  };
+  $('vwDel').onclick=()=>{
+    const p=items[vwIdx]; if(!p||!confirm('삭제할까요?')) return;
+    const tx=db.transaction('media','readwrite'); tx.objectStore('media').delete(p.id);
+    tx.oncomplete=()=>{ viewer.classList.remove('on'); loadItems(); showToast('삭제됨'); };
+  };
 
-  /* ── VIEWER ── */
-  let pvSwapped = false;
-
-  function openViewer(idx) {
-    viewerIdx = idx;
-    pvSwapped = false;
-    const p = photos[idx];
-    if (!p) return;
-    pvImg.src = p.main || '';
-    pvIdx.textContent = (idx+1) + ' / ' + photos.length;
-    if (p.sub) {
-      pvSubImg.src = p.sub;
-      pvSub.style.display = 'block';
-      // hint
-      showToast('더블탭으로 전환 👆');
-    } else {
-      pvSub.style.display = 'none';
-    }
-    document.getElementById('photoViewer').classList.add('show');
-  }
-
-  // double-tap to swap main/sub
-  let pvTapTimer = null;
-  document.getElementById('pvBody').addEventListener('click', () => {
-    const p = photos[viewerIdx];
-    if (!p || !p.sub) return;
-    if (pvTapTimer) {
-      // double tap!
-      clearTimeout(pvTapTimer);
-      pvTapTimer = null;
-      pvSwapped = !pvSwapped;
-      const mainSrc = pvSwapped ? p.sub : p.main;
-      const subSrc  = pvSwapped ? p.main : p.sub;
-      // animate swap
-      pvImg.style.transition = 'opacity .15s';
-      pvImg.style.opacity = '0';
-      setTimeout(() => {
-        pvImg.src = mainSrc;
-        pvSubImg.src = subSrc;
-        pvImg.style.opacity = '1';
-      }, 150);
-    } else {
-      pvTapTimer = setTimeout(() => { pvTapTimer = null; }, 280);
-    }
+  /* double tap swap */
+  $('vwBody')||document.getElementById('vwBody');
+  document.getElementById('vwBodyEl')?.addEventListener('click',()=>{
+    const p=items[vwIdx]; if(!p?.sub) return;
+    if(pvTapTimer){ clearTimeout(pvTapTimer); pvTapTimer=null;
+      pvSwapped=!pvSwapped;
+      vwImg.style.opacity='0';
+      setTimeout(()=>{ vwImg.src=pvSwapped?p.sub:p.main; vwSubImg.src=pvSwapped?p.main:p.sub; vwImg.style.opacity='1'; },150);
+    } else pvTapTimer=setTimeout(()=>pvTapTimer=null,280);
   });
 
-  function closeViewer() {
-    document.getElementById('photoViewer').classList.remove('show');
-    pvSwapped = false;
-    pvTapTimer = null;
-  }
-  window.closeViewer = closeViewer;
-
-  function downloadViewer() {
-    const p = photos[viewerIdx]; if (!p || p.type === 'video') return;
-    if (/iPhone|iPad/.test(navigator.userAgent)) {
-      const w = window.open();
-      if (w) w.document.write('<img src="'+p.main+'" style="max-width:100%"><p style="font-family:sans-serif;text-align:center;color:#888;padding:12px">이미지 꾹 누르기 → 사진 저장</p>');
-    } else {
-      const a = document.createElement('a'); a.href = p.main; a.download = 'newmera_'+p.id+'.jpg'; a.click();
-    }
-  }
-  window.downloadViewer = downloadViewer;
-
-  function deleteViewer() {
-    const p = photos[viewerIdx]; if (!p) return;
-    if (!confirm('삭제할까요?')) return;
-    const tx = db.transaction('media','readwrite');
-    tx.objectStore('media').delete(p.id);
-    tx.oncomplete = () => { closeViewer(); loadPhotos(); showToast('삭제됨'); };
-  }
-  window.deleteViewer = deleteViewer;
-
-  /* ── TOAST ── */
-  function showToast(msg, ms=1200) {
-    toast.textContent = msg; toast.classList.add('show');
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => toast.classList.remove('show'), ms);
+  /* TOAST */
+  let toastT;
+  function showToast(msg,ms=1400){
+    toast.textContent=msg; toast.classList.add('on');
+    clearTimeout(toastT); toastT=setTimeout(()=>toast.classList.remove('on'),ms);
   }
 })();
 </script>
