@@ -15,7 +15,6 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
 html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; }
 
-/* LAYOUT */
 .screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: #000; }
 .screen.active { display: flex; }
 
@@ -49,7 +48,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 #ratioBtn { width: auto; padding: 0 15px; border-radius: 22px; font-size: 13px; font-weight: 800; min-width: 60px; }
 #bothBtn { width: auto; padding: 0 15px; border-radius: 22px; font-size: 13px; font-weight: 800; }
 
-/* RATIO MENU - Positioned exactly under Ratio Button */
+/* RATIO MENU */
 #ratioMenu {
   position: absolute;
   top: 50px;
@@ -81,21 +80,19 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 #mainVid { width: 100%; height: 100%; object-fit: cover; background: #000; }
 #mainVid.mirror { transform: scaleX(-1); }
 
-/* BOTH OVERLAY (Front Camera Preview in Both mode) */
-#bothOverlay {
+/* COUNTDOWN */
+#countdown {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 30%;
-  aspect-ratio: 3/4;
-  background: #000;
-  border-radius: 15px;
-  border: 2px solid #fff;
-  overflow: hidden;
-  z-index: 50;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 120px;
+  font-weight: 900;
+  color: #fff;
+  z-index: 150;
   display: none;
+  text-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
-#bothOverlay video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
 /* REC UI */
 #recUI { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); background: rgba(255, 59, 48, 0.9); padding: 5px 15px; border-radius: 20px; display: none; align-items: center; gap: 8px; z-index: 110; }
@@ -111,27 +108,32 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 .mode.active { color: var(--ios-yellow); }
 
 #shutterRow { display: flex; align-items: center; justify-content: space-between; padding: 0 40px; margin-top: 5px; }
-#thumb { width: 54px; height: 54px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); background: #111; overflow: hidden; }
+#thumb { width: 54px; height: 54px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); background: #111; overflow: hidden; position: relative; }
 #thumb img { width: 100%; height: 100%; object-fit: cover; }
 #shutter { width: 72px; height: 72px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; }
 #shutterInner { width: 56px; height: 56px; border-radius: 50%; background: #fff; transition: 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); }
 #shutter.recording #shutterInner { background: var(--ios-red); border-radius: 12px; transform: scale(0.5); }
 
-/* GALLERY & VIEWER */
+/* GALLERY GRID */
 #galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; background: #000; }
 .gItem { width: 100%; aspect-ratio: 1; background: #1c1c1e; position: relative; overflow: hidden; }
-.gItem img { width: 100%; height: 100%; object-fit: cover; }
+.gItem img.main { width: 100%; height: 100%; object-fit: cover; }
+.gItem img.sub { position: absolute; top: 4px; left: 4px; width: 25%; border: 1px solid #fff; border-radius: 3px; }
+
+/* VIEWER */
+#photoViewer { background: #000; display: none; position: fixed; inset: 0; z-index: 300; flex-direction: column; }
+#photoViewer.active { display: flex; }
+#pvContainer { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; }
+#pvMainImg { max-width: 100%; max-height: 100%; object-fit: contain; }
+#pvSubImg { position: absolute; top: 20px; left: 20px; width: 28%; border: 2px solid #fff; border-radius: 12px; z-index: 10; display: none; }
 
 #toast { position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 25px; border-radius: 25px; font-size: 14px; font-weight: 800; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; }
 #toast.show { opacity: 1; }
-
-#photoViewer { background: #000; display: none; position: fixed; inset: 0; z-index: 300; flex-direction: column; }
-#photoViewer.active { display: flex; }
 </style>
 </head>
 <body>
 
-<div class="screen active" id="cameraScreen" data-mode="PHOTO">
+<div class="screen active" id="cameraScreen">
   <div id="topBar">
     <button class="top-btn" onclick="toggleFlash()" id="flashBtn">⚡️</button>
     <div id="ratioWrapper">
@@ -148,7 +150,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   <div id="vfContainer">
     <div id="vf" ontouchstart="handleSwipeStart(event)" ontouchend="handleSwipeEnd(event)">
       <video id="mainVid" autoplay playsinline muted></video>
-      <div id="bothOverlay"><video id="subVid" autoplay playsinline muted></video></div>
+      <div id="countdown">3</div>
       <div id="recUI"><div id="recDot"></div><div id="recTimer">00:00</div></div>
     </div>
   </div>
@@ -181,12 +183,10 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     <button onclick="closeViewer()" style="color:var(--ios-blue); font-size:17px; background:none; border:none">Close</button>
     <button onclick="deleteItem()" style="color:var(--ios-red); font-size:17px; background:none; border:none">Delete</button>
   </header>
-  <div style="flex:1; display:flex; align-items:center; justify-content:center; background:#000;">
-    <div id="pvMainContainer" style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
-        <img id="pvMainImg" style="max-width:100%; max-height:100%; display:none; object-fit:contain">
-        <img id="pvSubImg" style="position:absolute; top:20px; left:20px; width:25%; border:2px solid #fff; border-radius:10px; display:none; z-index:10;">
-        <video id="pvMainVid" controls style="max-width:100%; max-height:100%; display:none; object-fit:contain"></video>
-    </div>
+  <div id="pvContainer">
+    <img id="pvMainImg">
+    <img id="pvSubImg">
+    <video id="pvMainVid" controls style="display:none; max-width:100%; max-height:100%"></video>
   </div>
 </div>
 
@@ -195,13 +195,12 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 
 <script>
 (function() {
-  let stream=null, subStream=null, facing='back', currentMode='PHOTO', items=[];
+  let stream=null, facing='back', currentMode='PHOTO', items=[];
   let isRec=false, recStart=0, recInt=null, drawInt=null, mediaRec=null, chunks=[];
   let db=null, flash=false, bothMode=false, isProcessing=false;
-  let ratioMode = '3:4'; 
+  let ratioMode = '3:4';
 
   const mainVid = document.getElementById('mainVid');
-  const subVid = document.getElementById('subVid');
   const canvas = document.getElementById('canvas');
   const thumbImg = document.getElementById('thumbImg');
   const cameraScreen = document.getElementById('cameraScreen');
@@ -209,9 +208,9 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   const ratioBtn = document.getElementById('ratioBtn');
   const ratioMenu = document.getElementById('ratioMenu');
   const bothBtn = document.getElementById('bothBtn');
-  const bothOverlay = document.getElementById('bothOverlay');
+  const countdownEl = document.getElementById('countdown');
 
-  const req = indexedDB.open("NewmeraPro_Perfect_V5", 1);
+  const req = indexedDB.open("NewmeraPro_BeReal_Official", 2);
   req.onupgradeneeded = e => { 
     db = e.target.result; 
     if(!db.objectStoreNames.contains("media")) db.createObjectStore("media", {keyPath:"id"}); 
@@ -229,22 +228,6 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     } catch(e) { msg('Camera Error'); }
   }
 
-  async function startSubCam() {
-    try {
-        subStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'user', width:{ideal:640}, height:{ideal:480} } 
-        });
-        subVid.srcObject = subStream;
-        bothOverlay.style.display = 'block';
-    } catch(e) { bothOverlay.style.display = 'none'; }
-  }
-
-  function stopSubCam() {
-    if(subStream) subStream.getTracks().forEach(t=>t.stop());
-    subStream = null;
-    bothOverlay.style.display = 'none';
-  }
-
   window.toggleFlash = () => {
     flash = !flash;
     document.getElementById('flashBtn').classList.toggle('active', flash);
@@ -255,26 +238,19 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   window.toggleRatioMenu = () => ratioMenu.classList.toggle('show');
 
   window.selectRatio = (r) => {
-    ratioMode = r;
-    ratioBtn.textContent = r;
+    ratioMode = r; ratioBtn.textContent = r;
     ratioMenu.classList.remove('show');
-    document.querySelectorAll('.ratio-opt').forEach(opt => {
-        opt.classList.toggle('selected', opt.textContent === r);
-    });
+    document.querySelectorAll('.ratio-opt').forEach(opt => opt.classList.toggle('selected', opt.textContent === r));
     updateVFRatio();
   };
 
   function updateVFRatio() {
-    if (currentMode === 'VIDEO') {
-      vf.style.width = '100vw';
-      vf.style.aspectRatio = '16/9';
-      vf.style.height = 'auto';
-    } else {
+    if (currentMode === 'VIDEO') { vf.style.width = '100vw'; vf.style.aspectRatio = '16/9'; }
+    else {
       vf.style.width = '100vw';
       if (ratioMode === '1:1') vf.style.aspectRatio = '1/1';
       else if (ratioMode === '9:16') vf.style.aspectRatio = '9/16';
       else vf.style.aspectRatio = '3/4';
-      vf.style.height = 'auto';
     }
   }
 
@@ -282,7 +258,6 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     bothMode = !bothMode;
     bothBtn.textContent = bothMode ? 'BOTH ON' : 'BOTH OFF';
     bothBtn.classList.toggle('active', bothMode);
-    if(bothMode) startSubCam(); else stopSubCam();
   };
 
   let startX=0, cIdx=1;
@@ -298,38 +273,61 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 
   window.setMode = idx => {
     cIdx=idx; currentMode = idx===0?'VIDEO':'PHOTO';
-    cameraScreen.setAttribute('data-mode', currentMode);
     document.getElementById('modesTrack').style.transform = `translateX(${idx===0?40:-40}px)`;
     document.querySelectorAll('.mode').forEach((m,i)=>m.classList.toggle('active', i===idx));
-    
     bothBtn.style.display = (currentMode === 'VIDEO') ? 'none' : 'flex';
     ratioBtn.style.display = (currentMode === 'VIDEO') ? 'none' : 'flex';
     document.getElementById('shutterInner').style.background = (currentMode === 'VIDEO') ? 'var(--ios-red)' : '#fff';
-    
-    if(currentMode === 'VIDEO') stopSubCam();
-    else if(bothMode) startSubCam();
-
     updateVFRatio();
   };
 
-  window.handleShutter = async () => { 
+  window.handleShutter = async () => {
     if(isProcessing) return;
     if(currentMode === 'PHOTO') {
-        isProcessing = true;
-        const mainData = grab(mainVid, facing==='front', 0.9);
-        let subData = null;
-        if(bothMode) {
-            subData = grab(subVid, true, 0.9);
-        }
-        saveItem({ type:'photo', thumb: mainData, main: mainData, sub: subData });
-        msg(bothMode ? 'BOTH SAVED' : 'PHOTO SAVED');
-        isProcessing = false;
+        if(bothMode) startBeRealCapture(); else takeSimplePhoto();
     } else {
-        handleVideo();
+        if(!isRec) startRec(); else stopRec();
     }
   };
 
-  function handleVideo() { if(!isRec) startRec(); else stopRec(); }
+  function takeSimplePhoto() {
+    isProcessing = true;
+    const data = grab(0.9);
+    saveItem({ type:'photo', main: data });
+    msg('PHOTO SAVED');
+    isProcessing = false;
+  }
+
+  async function startBeRealCapture() {
+    isProcessing = true;
+    // 1. Capture First Side (usually Back)
+    const firstSideData = grab(0.9);
+    msg('CAPTURED! SWITCHING...');
+
+    // 2. Flip Camera
+    facing = facing === 'back' ? 'front' : 'back';
+    await startCam();
+
+    // 3. Countdown for Second Side
+    countdownEl.style.display = 'block';
+    let count = 3;
+    countdownEl.textContent = count;
+    
+    const cdInt = setInterval(async () => {
+        count--;
+        if(count > 0) {
+            countdownEl.textContent = count;
+        } else {
+            clearInterval(cdInt);
+            countdownEl.style.display = 'none';
+            // 4. Capture Second Side
+            const secondSideData = grab(0.9);
+            saveItem({ type:'photo', main: firstSideData, sub: secondSideData });
+            msg('BEREAL SAVED');
+            isProcessing = false;
+        }
+    }, 1000);
+  }
 
   function startRec() {
     isRec=true; chunks=[];
@@ -346,13 +344,12 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     mediaRec.ondataavailable = e => chunks.push(e.data);
     mediaRec.onstop = () => {
       const blob = new Blob(chunks, {type:'video/webm'});
-      const thumb = canvas.toDataURL('image/jpeg', 0.5);
       const reader = new FileReader();
-      reader.onloadend = () => { saveItem({ type:'video', thumb, main: reader.result }); msg('VIDEO SAVED'); };
+      reader.onloadend = () => { saveItem({ type:'video', main: reader.result }); msg('VIDEO SAVED'); };
       reader.readAsDataURL(blob);
     };
     mediaRec.start();
-    drawInt = setInterval(() => grab(mainVid, facing==='front', 0, true), 1000/30);
+    drawInt = setInterval(() => grab(0, true), 1000/30);
   }
 
   function stopRec() { 
@@ -362,13 +359,8 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     mediaRec.stop(); 
   }
 
-  // Improved Grab Logic for 100% Aspect Match
-  function grab(vidObj, isMirror, q, drawOnly=false) {
+  function grab(q, drawOnly=false) {
     const ctx = canvas.getContext('2d');
-    const vW = vidObj.videoWidth;
-    const vH = vidObj.videoHeight;
-    if(!vW || !vH) return null;
-
     let outW, outH;
     if (currentMode === 'VIDEO') { outW = 1280; outH = 720; } 
     else {
@@ -376,24 +368,17 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
         else if (ratioMode === '3:4') { outW = 1080; outH = 1440; }
         else { outW = 1080; outH = 1920; }
     }
-    
     canvas.width = outW; canvas.height = outH;
-    
-    const vAspect = vW / vH;
-    const tAspect = outW / outH;
+    const vW = mainVid.videoWidth, vH = mainVid.videoHeight;
+    const vAspect = vW / vH, tAspect = outW / outH;
     let sW, sH, sX, sY;
-
-    if (vAspect > tAspect) {
-        sH = vH; sW = vH * tAspect; sX = (vW - sW) / 2; sY = 0;
-    } else {
-        sW = vW; sH = vW / tAspect; sX = 0; sY = (vH - sH) / 2;
-    }
+    if (vAspect > tAspect) { sH = vH; sW = vH * tAspect; sX = (vW - sW) / 2; sY = 0; } 
+    else { sW = vW; sH = vW / tAspect; sX = 0; sY = (vH - sH) / 2; }
 
     ctx.save();
-    if(isMirror) { ctx.translate(outW, 0); ctx.scale(-1, 1); }
-    ctx.drawImage(vidObj, sX, sY, sW, sH, 0, 0, outW, outH);
+    if(facing==='front') { ctx.translate(outW, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(mainVid, sX, sY, sW, sH, 0, 0, outW, outH);
     ctx.restore();
-
     return drawOnly ? null : canvas.toDataURL('image/jpeg', q);
   }
 
@@ -408,7 +393,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     const tx = db.transaction("media", "readonly");
     tx.objectStore("media").getAll().onsuccess = e => {
       items = e.target.result.sort((a,b)=>b.id-a.id);
-      if(items.length>0) { thumbImg.src = items[0].thumb; thumbImg.style.display='block'; }
+      if(items.length>0) { thumbImg.src = items[0].main; }
       renderGrid();
     };
   }
@@ -423,24 +408,31 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     items.forEach((it, i) => {
       const div = document.createElement('div');
       div.className = 'gItem';
-      div.innerHTML = `<img src="${it.thumb}">${it.sub?'<div style="position:absolute; top:5px; left:5px; width:20%; border:1px solid #fff; border-radius:3px; overflow:hidden;"><img src="'+it.sub+'"></div>':''}`;
+      div.innerHTML = `<img src="${it.main}" class="main">${it.sub ? `<img src="${it.sub}" class="sub">` : ''}`;
       div.onclick = () => openViewer(i);
       grid.appendChild(div);
     });
   }
 
-  let vIdx=0;
-  window.openViewer = i => { vIdx=i; document.getElementById('photoViewer').classList.add('active'); updateViewer(); };
-  function updateViewer() {
-    const it = items[vIdx], img=document.getElementById('pvMainImg'), sub=document.getElementById('pvSubImg'), vid=document.getElementById('pvMainVid');
-    if(it.type==='video') { 
-        img.style.display='none'; sub.style.display='none'; vid.style.display='block'; 
-        vid.src=it.main; vid.play(); 
-    } else { 
-        vid.style.display='none'; img.style.display='block'; img.src=it.main; 
-        if(it.sub) { sub.style.display='block'; sub.src=it.sub; } else { sub.style.display='none'; }
+  window.openViewer = i => {
+    const it = items[i];
+    const pv = document.getElementById('photoViewer');
+    const mainImg = document.getElementById('pvMainImg');
+    const subImg = document.getElementById('pvSubImg');
+    const vid = document.getElementById('pvMainVid');
+    
+    pv.classList.add('active');
+    if(it.type === 'video') {
+        mainImg.style.display = 'none'; subImg.style.display = 'none'; vid.style.display = 'block';
+        vid.src = it.main; vid.play();
+    } else {
+        vid.style.display = 'none'; mainImg.style.display = 'block'; mainImg.src = it.main;
+        if(it.sub) { subImg.style.display = 'block'; subImg.src = it.sub; } 
+        else { subImg.style.display = 'none'; }
     }
-  }
+    vIdx = i;
+  };
+  let vIdx = 0;
   window.closeViewer = () => { document.getElementById('photoViewer').classList.remove('active'); document.getElementById('pvMainVid').pause(); };
   window.deleteItem = () => {
     const tx = db.transaction("media", "readwrite");
