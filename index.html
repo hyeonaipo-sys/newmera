@@ -275,44 +275,42 @@ window.addEventListener('load', function(){ startCamera(); });
 
 async function startCamera(){
   try{
-    // 전면 카메라 먼저 시작 (iOS는 첫 번째 권한 요청에서 둘 다 허용)
-    try{
-      frontStream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:'user'},
-        audio:false
-      });
-      frontVid.srcObject=frontStream;
-      frontVid.play();
-    }catch(e){}
+    // 1) 권한 먼저 획득
+    var tempStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    tempStream.getTracks().forEach(function(t){t.stop();});
 
-    // 후면 카메라
+    // 2) 카메라 목록 가져오기
     var devices=await navigator.mediaDevices.enumerateDevices();
-    var backCam=devices.find(function(d){
-      return d.kind==='videoinput'&&d.label.toLowerCase().indexOf('back')>-1;
+    var cams=devices.filter(function(d){return d.kind==='videoinput';});
+
+    // 후면: label에 'back' 포함 or 목록 마지막
+    var backCam=cams.find(function(d){return d.label.toLowerCase().indexOf('back')>-1;});
+    if(!backCam) backCam=cams[cams.length-1];
+
+    // 전면: label에 'front' 포함 or 목록 첫 번째
+    var frontCam=cams.find(function(d){return d.label.toLowerCase().indexOf('front')>-1;});
+    if(!frontCam) frontCam=cams[0];
+
+    // 3) 후면 스트림
+    backStream=await navigator.mediaDevices.getUserMedia({
+      video:{deviceId:{exact:backCam.deviceId},width:{ideal:1920},height:{ideal:1080}},
+      audio:true
     });
-
-    if(backCam){
-      backStream=await navigator.mediaDevices.getUserMedia({
-        video:{deviceId:{exact:backCam.deviceId},width:{ideal:1920},height:{ideal:1080}},
-        audio:true
-      });
-    }else{
-      // deviceId 못 찾으면 facingMode로 시도
-      try{
-        backStream=await navigator.mediaDevices.getUserMedia({
-          video:{facingMode:{exact:'environment'}},
-          audio:true
-        });
-      }catch(e){
-        backStream=await navigator.mediaDevices.getUserMedia({
-          video:{facingMode:'environment'},
-          audio:true
-        });
-      }
-    }
-
     mainVid.srcObject=backStream;
     mainVid.play();
+
+    // 4) 전면 스트림 (후면과 다른 경우만)
+    if(frontCam&&frontCam.deviceId!==backCam.deviceId){
+      try{
+        frontStream=await navigator.mediaDevices.getUserMedia({
+          video:{deviceId:{exact:frontCam.deviceId}},
+          audio:false
+        });
+        frontVid.srcObject=frontStream;
+        frontVid.play();
+      }catch(e){}
+    }
+
     document.getElementById('permScreen').style.display='none';
 
   }catch(e){
