@@ -555,7 +555,7 @@ transition:.2s;white-space:nowrap;
   req.onsuccess = e => {
     db = e.target.result;
     loadPhotos();
-    startCam().then(() => { camStarted = true; });
+    startCam();
   };
   req.onerror = () => showToast('DB 오류');
 
@@ -565,22 +565,27 @@ transition:.2s;white-space:nowrap;
       if (camStream) camStream.getTracks().forEach(t => t.stop());
       mainVid.classList.remove('ready');
 
-      camStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: {
-          facingMode: facing === 'back' ? 'environment' : 'user',
-          width:{ ideal:1920 }, height:{ ideal:1080 }
-        }
-      });
+      // iOS Safari는 facingMode: {exact:...} 가 실패하는 경우가 있어서 fallback 사용
+      let constraints = {
+        audio: false,
+        video: { facingMode: facing === 'back' ? 'environment' : 'user' }
+      };
+
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch(e) {
+        // fallback: 그냥 video:true
+        camStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+      }
 
       camTrack = camStream.getVideoTracks()[0] || null;
       mainVid.srcObject = camStream;
       mainVid.muted = true;
       mainVid.style.transform = facing === 'front' ? 'scaleX(-1)' : 'scaleX(1)';
-      mainVid.addEventListener('canplay', () => mainVid.classList.add('ready'), { once:true });
+      mainVid.addEventListener('canplay', () => mainVid.classList.add('ready'), { once: true });
       mainVid.play().catch(() => {});
     } catch(e) {
-      showToast('카메라 오류');
+      showToast('카메라 권한을 허용해주세요');
     }
   }
 
@@ -595,20 +600,16 @@ transition:.2s;white-space:nowrap;
     mainVid.classList.remove('ready');
   }
 
-  // DB 초기화 완료 후에만 visibilitychange 등록
-  let camStarted = false;
   document.addEventListener('visibilitychange', () => {
-    if (!camStarted) return;
     if (document.hidden) {
       if (isRecording) stopRec();
       stopCam();
     } else {
-      setTimeout(() => startCam(), 300);
+      startCam();
     }
   });
 
   window.addEventListener('pagehide', stopCam);
-  window.addEventListener('beforeunload', stopCam);
 
   /* Focus tap */
   document.getElementById('vf').addEventListener('click', e => {
