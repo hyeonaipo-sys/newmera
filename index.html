@@ -18,7 +18,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 .screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: #000; }
 .screen.active { display: flex; }
 
-/* TOP BAR - Seamless integration like Image 1 */
+/* TOP BAR */
 #topBar { 
   height: 60px;
   display: flex; 
@@ -31,46 +31,48 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   top: 0; left: 0; right: 0;
 }
 .top-btn { 
-  background: rgba(0,0,0,0.4); 
+  background: rgba(0,0,0,0.5); 
   border: none;
   color: #fff; 
-  min-width: 44px;
-  height: 44px; 
-  border-radius: 22px; 
+  height: 40px; 
+  border-radius: 20px; 
   display: flex; 
   align-items: center; 
   justify-content: center; 
-  font-size: 16px; 
-  backdrop-filter: blur(15px); 
+  font-size: 14px; 
+  backdrop-filter: blur(10px); 
   padding: 0 15px;
-  font-weight: 600;
+  font-weight: 700;
 }
-.top-btn.active { background: var(--ios-yellow); color: #000; }
+.top-btn.active { background: #fff; color: #000; }
 
-/* VIEWPORT - Fills from top to the control area */
-#vfContainer { 
-  position: relative; 
-  width: 100%;
-  height: 100%;
-  display: flex; 
-  flex-direction: column;
+/* VIEWPORT CONTAINER - Needs to fit between top and bottom bar */
+#vfWrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  margin-top: 60px; /* Below Top Bar */
 }
 #vf { 
   position: relative; 
   width: 100%; 
-  flex: 1;
+  height: 100%;
+  max-height: calc(100vh - 280px); /* Leave space for bottom UI */
   overflow: hidden; 
   background: #111;
+  border-radius: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom-left-radius: 40px;
-  border-bottom-right-radius: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 #mainVid { width: 100%; height: 100%; object-fit: cover; }
 #mainVid.mirror { transform: scaleX(-1); }
 
-/* COUNTDOWN & CHANGE Overlay */
+/* OVERLAYS */
 #overlayMsg {
   position: absolute;
   top: 50%; left: 50%;
@@ -80,31 +82,29 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   color: #fff;
   z-index: 150;
   display: none;
-  text-align: center;
   text-shadow: 0 0 20px rgba(0,0,0,0.8);
 }
-
-/* FLASH SCREEN EFFECT */
-#flashScreen {
-  position: fixed; inset: 0; background: #fff; z-index: 2000; display: none;
+#flashEffect {
+  position: absolute; inset: 0; background: #fff; z-index: 200; display: none;
 }
 
-/* BOTTOM CONTROLS */
+/* BOTTOM CONTROLS - Fixed at bottom */
 #cameraBottom { 
+  height: 200px;
   background: #000; 
-  padding: 20px 0 calc(var(--safe-bottom) + 20px); 
+  padding-bottom: var(--safe-bottom);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
+  justify-content: center;
+  z-index: 100;
 }
 #modesWrapper { 
   display: flex; 
+  justify-content: center;
   gap: 30px; 
-  font-size: 14px; 
-  font-weight: 800; 
+  margin-bottom: 20px;
 }
-.mode { color: rgba(255,255,255,0.4); }
+.mode { font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.4); }
 .mode.active { color: var(--ios-yellow); }
 
 #shutterRow { 
@@ -114,55 +114,53 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   justify-content: space-evenly; 
 }
 #thumb { 
-  width: 50px; height: 50px; border-radius: 50%; background: #222; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); 
+  width: 54px; height: 54px; border-radius: 50%; background: #1a1a1a; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); 
 }
 #thumb img { width: 100%; height: 100%; object-fit: cover; }
 #shutter { 
-  width: 76px; height: 76px; border-radius: 50%; border: 5px solid #fff; display: flex; align-items: center; justify-content: center; 
+  width: 76px; height: 76px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; 
 }
 #shutterInner { 
-  width: 58px; height: 58px; border-radius: 50%; background: #fff; transition: 0.2s; 
+  width: 60px; height: 60px; border-radius: 50%; background: #fff; transition: transform 0.1s;
 }
-#shutter.recording #shutterInner { background: var(--ios-red); border-radius: 10px; transform: scale(0.6); }
+#shutter:active #shutterInner { transform: scale(0.9); }
 
-/* LIBRARY & VIEWER */
+/* GALLERY & VIEWER */
 #galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; }
-.gItem { width: 100%; aspect-ratio: 1; background: #1c1c1e; position: relative; }
+.gItem { width: 100%; aspect-ratio: 1; position: relative; background: #111; }
 .gItem img.main { width: 100%; height: 100%; object-fit: cover; }
 .gItem img.sub { position: absolute; top: 4px; left: 4px; width: 30%; border: 1px solid #fff; border-radius: 4px; }
 
 #photoViewer { position: fixed; inset: 0; background: #000; display: none; z-index: 500; flex-direction: column; }
 #photoViewer.active { display: flex; }
-#pvHeader { padding: max(var(--safe-top), 20px) 20px 10px; display: flex; justify-content: space-between; }
-#pvContainer { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; }
-#pvMainImg { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; }
-#pvSubImg { position: absolute; top: 20px; left: 20px; width: 28%; border: 2px solid #fff; border-radius: 12px; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+#pvContainer { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+#pvMainImg { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 20px; }
+#pvSubImg { position: absolute; top: 40px; left: 40px; width: 30%; border: 2px solid #fff; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
 
-#toast { position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 25px; border-radius: 25px; font-size: 14px; font-weight: 800; z-index: 1000; opacity: 0; transition: 0.3s; }
+#toast { position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 25px; border-radius: 25px; font-size: 14px; font-weight: 800; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
 #toast.show { opacity: 1; }
 </style>
 </head>
 <body>
 
-<div id="flashScreen"></div>
-
 <div class="screen active" id="cameraScreen">
-  <div id="vfContainer">
-    <div id="vf">
-      <video id="mainVid" autoplay playsinline muted></video>
-      <div id="overlayMsg">3</div>
-    </div>
-  </div>
-
   <div id="topBar">
     <button class="top-btn" onclick="toggleFlash()" id="flashBtn">⚡️ OFF</button>
     <button class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH OFF</button>
   </div>
 
+  <div id="vfWrapper">
+    <div id="vf">
+      <video id="mainVid" autoplay playsinline muted></video>
+      <div id="overlayMsg"></div>
+      <div id="flashEffect"></div>
+    </div>
+  </div>
+
   <div id="cameraBottom">
     <div id="modesWrapper">
-      <div class="mode" id="mode-video">VIDEO</div>
-      <div class="mode active" id="mode-photo">PHOTO</div>
+      <div class="mode">VIDEO</div>
+      <div class="mode active">PHOTO</div>
     </div>
     <div id="shutterRow">
       <div id="thumb" onclick="openLib()"><img id="thumbImg"></div>
@@ -173,22 +171,21 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 </div>
 
 <div class="screen" id="libraryScreen">
-  <header style="padding: 40px 20px 20px;">
-    <h1 style="font-size:32px; font-weight:800;">Library</h1>
+  <header style="padding: 50px 20px 20px; background: #000;">
+    <h1 style="font-size:32px; font-weight:800;">Gallery</h1>
   </header>
   <div id="galleryGrid"></div>
-  <button onclick="closeLib()" style="position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:#fff; color:#000; padding:15px 40px; border-radius:30px; font-weight:800; border:none; z-index:250;">Back</button>
+  <button onclick="closeLib()" style="position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:#fff; color:#000; padding:15px 40px; border-radius:30px; font-weight:800; border:none; z-index:250;">Close</button>
 </div>
 
 <div id="photoViewer">
-  <div id="pvHeader">
+  <header style="padding: max(var(--safe-top), 20px) 20px 10px; display:flex; justify-content:space-between;">
     <button onclick="closeViewer()" style="color:var(--ios-blue); font-size:18px; background:none; border:none">Done</button>
     <button onclick="deleteItem()" style="color:var(--ios-red); font-size:18px; background:none; border:none">Delete</button>
-  </div>
+  </header>
   <div id="pvContainer">
     <img id="pvMainImg">
     <img id="pvSubImg">
-    <video id="pvMainVid" controls style="display:none; width:100%; height:100%; object-fit:contain"></video>
   </div>
 </div>
 
@@ -198,18 +195,18 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 <script>
 (function() {
   let stream=null, facing='back', items=[], db=null;
-  let flash=false, bothMode=false, isProcessing=false;
+  let flashEnabled=false, bothMode=false, isProcessing=false;
   
   const mainVid = document.getElementById('mainVid');
   const canvas = document.getElementById('canvas');
   const overlayMsg = document.getElementById('overlayMsg');
-  const flashScreen = document.getElementById('flashScreen');
+  const flashEffect = document.getElementById('flashEffect');
   const thumbImg = document.getElementById('thumbImg');
 
-  const req = indexedDB.open("Newmera_BeReal_Final_DB", 3);
+  const req = indexedDB.open("BeReal_Camera_App_v4", 1);
   req.onupgradeneeded = e => { 
     db = e.target.result; 
-    if(!db.objectStoreNames.contains("media")) db.createObjectStore("media", {keyPath:"id"}); 
+    db.createObjectStore("media", {keyPath:"id"}); 
   };
   req.onsuccess = e => { db = e.target.result; loadItems(); startCam(); };
 
@@ -221,14 +218,14 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
       });
       mainVid.srcObject = stream;
       mainVid.className = facing=='front'?'mirror':'';
-    } catch(e) { console.error(e); }
+    } catch(e) { msg('Camera Error'); }
   }
 
   window.toggleFlash = () => {
-    flash = !flash;
+    flashEnabled = !flashEnabled;
     const btn = document.getElementById('flashBtn');
-    btn.textContent = flash ? '⚡️ ON' : '⚡️ OFF';
-    btn.classList.toggle('active', flash);
+    btn.textContent = flashEnabled ? '⚡️ ON' : '⚡️ OFF';
+    btn.classList.toggle('active', flashEnabled);
   };
 
   window.toggleBoth = () => {
@@ -243,69 +240,68 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     isProcessing = true;
 
     if(bothMode) {
-        await executeBeRealFlow();
-    } else {
-        await triggerFlashEffect();
-        const data = grab(1.0);
-        saveItem({ type:'photo', main: data });
-        msg('SAVED');
-        isProcessing = false;
-    }
-  };
-
-  async function triggerFlashEffect() {
-    if(!flash) return;
-    const track = stream.getVideoTracks()[0];
-    try {
-        await track.applyConstraints({ advanced: [{ torch: true }] });
-        flashScreen.style.display = 'block';
-        setTimeout(async () => {
-            flashScreen.style.display = 'none';
-            await track.applyConstraints({ advanced: [{ torch: false }] });
-        }, 100);
-    } catch(e) {
-        flashScreen.style.display = 'block';
-        setTimeout(() => flashScreen.style.display = 'none', 100);
-    }
-  }
-
-  async function executeBeRealFlow() {
-    // 1. First Side (Usually Back)
-    await triggerFlashEffect();
-    const firstSide = grab(1.0);
-    
-    // 2. Change!
-    overlayMsg.textContent = "CHANGE!";
-    overlayMsg.style.display = "block";
-    facing = facing === 'back' ? 'front' : 'back';
-    await startCam();
-    
-    setTimeout(() => {
-        // 3. Countdown 3s
+      // 1. First Shot
+      await triggerFlash();
+      const firstShot = grab();
+      
+      // 2. Change!
+      overlayMsg.textContent = "CHANGE!";
+      overlayMsg.style.display = "block";
+      facing = facing === 'back' ? 'front' : 'back';
+      await startCam();
+      
+      setTimeout(() => {
+        // 3. Countdown
         let count = 3;
         overlayMsg.textContent = count;
         const cdInt = setInterval(async () => {
-            count--;
-            if(count > 0) {
-                overlayMsg.textContent = count;
-            } else {
-                clearInterval(cdInt);
-                overlayMsg.style.display = 'none';
-                // 4. Second Side
-                await triggerFlashEffect();
-                const secondSide = grab(1.0);
-                saveItem({ type:'photo', main: firstSide, sub: secondSide });
-                msg('BEREAL SAVED');
-                isProcessing = false;
-            }
+          count--;
+          if(count > 0) {
+            overlayMsg.textContent = count;
+          } else {
+            clearInterval(cdInt);
+            overlayMsg.style.display = 'none';
+            // 4. Second Shot
+            await triggerFlash();
+            const secondShot = grab();
+            saveItem({ type:'photo', main: firstShot, sub: secondShot });
+            msg('SAVED');
+            isProcessing = false;
+          }
         }, 1000);
-    }, 1000);
+      }, 1000);
+    } else {
+      await triggerFlash();
+      const data = grab();
+      saveItem({ type:'photo', main: data });
+      msg('SAVED');
+      isProcessing = false;
+    }
+  };
+
+  async function triggerFlash() {
+    if(!flashEnabled) return;
+    flashEffect.style.display = 'block';
+    const track = stream.getVideoTracks()[0];
+    try {
+      if(track.getCapabilities().torch) {
+        await track.applyConstraints({ advanced: [{ torch: true }] });
+        setTimeout(async () => {
+          await track.applyConstraints({ advanced: [{ torch: false }] });
+          flashEffect.style.display = 'none';
+        }, 150);
+      } else {
+        setTimeout(() => flashEffect.style.display = 'none', 150);
+      }
+    } catch(e) {
+      setTimeout(() => flashEffect.style.display = 'none', 150);
+    }
   }
 
-  function grab(q) {
+  function grab() {
     const ctx = canvas.getContext('2d');
     const vW = mainVid.videoWidth, vH = mainVid.videoHeight;
-    canvas.width = 1080; canvas.height = 1440; // Fixed 3:4 for high quality
+    canvas.width = 1080; canvas.height = 1440; 
     
     const vAspect = vW / vH, tAspect = canvas.width / canvas.height;
     let sW, sH, sX, sY;
@@ -316,7 +312,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     if(facing==='front') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
     ctx.drawImage(mainVid, sX, sY, sW, sH, 0, 0, canvas.width, canvas.height);
     ctx.restore();
-    return canvas.toDataURL('image/jpeg', q);
+    return canvas.toDataURL('image/jpeg', 0.9);
   }
 
   function saveItem(item) {
@@ -328,7 +324,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
   function loadItems() {
     db.transaction("media", "readonly").objectStore("media").getAll().onsuccess = e => {
       items = e.target.result.sort((a,b)=>b.id-a.id);
-      if(items.length>0) { thumbImg.src = items[0].main; thumbImg.parentElement.style.display = 'block'; }
+      if(items.length>0) { thumbImg.src = items[0].main; }
       renderGrid();
     };
   }
@@ -353,17 +349,13 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     vIdx = i; const it = items[i];
     document.getElementById('photoViewer').classList.add('active');
     document.getElementById('pvMainImg').src = it.main;
-    if(it.sub) {
-        document.getElementById('pvSubImg').src = it.sub;
-        document.getElementById('pvSubImg').style.display = 'block';
-    } else {
-        document.getElementById('pvSubImg').style.display = 'none';
-    }
+    const sub = document.getElementById('pvSubImg');
+    if(it.sub) { sub.src = it.sub; sub.style.display = 'block'; } else { sub.style.display = 'none'; }
   };
   window.closeViewer = () => document.getElementById('photoViewer').classList.remove('active');
   window.deleteItem = () => {
     db.transaction("media", "readwrite").objectStore("media").delete(items[vIdx].id).oncomplete = () => {
-        loadItems(); closeViewer();
+      loadItems(); closeViewer();
     };
   };
   window.flipCam = () => { facing=facing==='back'?'front':'back'; startCam(); };
