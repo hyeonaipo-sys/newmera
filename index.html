@@ -14,6 +14,8 @@
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
   --yellow:#ffd60a;
+  --white:rgba(255,255,255,.96);
+  --dim:rgba(255,255,255,.52);
 }
 *{
   box-sizing:border-box;
@@ -56,64 +58,60 @@ button{
   top:0;
   left:0;
   right:0;
-  z-index:20;
+  z-index:30;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:max(var(--safe-top), 10px) 18px 0;
+  padding:max(var(--safe-top), 8px) 20px 0;
   pointer-events:none;
 }
-.top-btn-wrap{
+.topBtn{
   pointer-events:auto;
-}
-.top-btn{
-  min-width:72px;
-  height:38px;
-  padding:0 14px;
-  border-radius:19px;
+  min-width:58px;
+  height:28px;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:rgba(255,255,255,0.11);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
+  color:var(--white);
   font-size:13px;
-  font-weight:800;
-  color:#fff;
+  font-weight:500;
+  letter-spacing:.2px;
+  opacity:.95;
 }
-.top-btn.small{
-  min-width:62px;
+.topBtn.active{
+  color:var(--yellow);
 }
-.top-btn.active{
-  background:rgba(255,255,255,0.2);
+#ratioWrap{
+  position:relative;
 }
 #ratioMenu{
   position:absolute;
-  top:46px;
+  top:30px;
   left:50%;
   transform:translateX(-50%);
   display:none;
   flex-direction:column;
   overflow:hidden;
-  border-radius:14px;
-  background:rgba(30,30,30,0.96);
-  border:1px solid rgba(255,255,255,0.08);
-  min-width:84px;
+  border-radius:12px;
+  background:rgba(28,28,30,.96);
+  border:1px solid rgba(255,255,255,.08);
+  min-width:82px;
 }
 #ratioMenu.show{
   display:flex;
 }
-.ratio-opt{
-  padding:12px 14px;
+.ratioOpt{
+  padding:11px 12px;
   text-align:center;
-  font-size:14px;
+  font-size:13px;
   font-weight:700;
-  border-bottom:1px solid rgba(255,255,255,0.08);
+  color:#fff;
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
-.ratio-opt:last-child{
+.ratioOpt:last-child{
   border-bottom:none;
 }
-.ratio-opt.selected{
+.ratioOpt.selected{
   color:var(--yellow);
 }
 
@@ -122,7 +120,7 @@ button{
   display:flex;
   align-items:flex-start;
   justify-content:center;
-  padding:78px 18px 0;
+  padding:54px 18px 0;
 }
 #vf{
   position:relative;
@@ -130,22 +128,31 @@ button{
   max-width:430px;
   aspect-ratio:3/4;
   overflow:hidden;
-  border-radius:36px;
+  border-radius:34px;
   background:#111;
 }
 #mainVid{
   width:100%;
   height:100%;
   object-fit:cover;
+  display:block;
+  background:#111;
   pointer-events:none;
 }
 #mainVid::-webkit-media-controls,
+#mainVid::-webkit-media-controls-panel,
 #mainVid::-webkit-media-controls-play-button,
 #mainVid::-webkit-media-controls-start-playback-button{
   display:none !important;
   -webkit-appearance:none;
 }
-
+#touchShield{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  background:transparent;
+  touch-action:none;
+}
 #centerOverlay{
   position:absolute;
   inset:0;
@@ -153,29 +160,29 @@ button{
   align-items:center;
   justify-content:center;
   pointer-events:none;
-  z-index:12;
+  z-index:15;
 }
 #countdownBubble{
-  width:108px;
-  height:108px;
+  width:104px;
+  height:104px;
   border-radius:50%;
-  background:rgba(70,70,70,0.72);
+  background:rgba(72,72,72,.7);
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
   display:none;
   align-items:center;
   justify-content:center;
-  font-size:46px;
+  font-size:44px;
   font-weight:900;
   color:#fff;
 }
-#flashFx{
-  position:absolute;
+#screenFlash{
+  position:fixed;
   inset:0;
   background:#fff;
   opacity:0;
   pointer-events:none;
-  z-index:15;
+  z-index:200;
 }
 
 #bottomUI{
@@ -183,24 +190,31 @@ button{
   left:0;
   right:0;
   bottom:0;
-  z-index:20;
-  background:#000;
-  padding:10px 20px max(var(--safe-bottom), 24px);
+  z-index:30;
+  background:linear-gradient(to top,#000 72%,rgba(0,0,0,0));
+  padding:24px 18px max(var(--safe-bottom), 26px);
 }
-#modes{
+#modeRail{
   display:flex;
   justify-content:center;
-  gap:42px;
-  margin-bottom:18px;
+  align-items:center;
+  gap:34px;
+  margin-bottom:22px;
+  overflow:hidden;
 }
 .mode{
-  font-size:16px;
-  font-weight:900;
-  color:rgba(255,255,255,0.36);
-  transition:.2s;
+  font-size:17px;
+  font-weight:300;
+  color:rgba(255,255,255,.85);
+  letter-spacing:1px;
+  white-space:nowrap;
+}
+.mode.inactive{
+  color:rgba(255,255,255,.36);
 }
 .mode.active{
   color:var(--yellow);
+  font-weight:400;
 }
 #controlsRow{
   display:grid;
@@ -211,19 +225,16 @@ button{
   display:flex;
   align-items:center;
 }
-.sideCtl.left{
-  justify-content:flex-start;
-}
-.sideCtl.right{
-  justify-content:flex-end;
-}
+.sideCtl.left{ justify-content:flex-start; }
+.sideCtl.right{ justify-content:flex-end; }
+
 #thumbBtn{
-  width:58px;
-  height:58px;
-  border-radius:16px;
+  width:54px;
+  height:54px;
+  border-radius:12px;
   overflow:hidden;
   background:#111;
-  border:1px solid rgba(255,255,255,0.14);
+  border:1px solid rgba(255,255,255,.14);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -235,23 +246,23 @@ button{
   display:none;
 }
 #thumbPlaceholder{
-  font-size:26px;
+  font-size:24px;
 }
 #flipBtn{
-  width:58px;
-  height:58px;
-  border-radius:16px;
-  background:transparent;
-  font-size:34px;
+  width:54px;
+  height:54px;
   display:flex;
   align-items:center;
   justify-content:center;
+  font-size:34px;
+  line-height:1;
 }
+
 #shutter{
-  width:94px;
-  height:94px;
+  width:92px;
+  height:92px;
   border-radius:50%;
-  border:6px solid #fff;
+  border:5px solid #fff;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -263,24 +274,21 @@ button{
   background:#fff;
 }
 #shutter:active{
-  transform:scale(0.96);
+  transform:scale(.97);
 }
 
 /* GALLERY */
 #galleryScreen{
-  z-index:40;
+  z-index:60;
 }
 #galleryHeader{
-  padding:max(var(--safe-top), 12px) 14px 12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  padding:max(var(--safe-top), 10px) 14px 12px;
   background:#000;
 }
 #galleryClose{
   width:100%;
-  height:42px;
-  border-radius:22px;
+  height:40px;
+  border-radius:20px;
   background:#e9e9eb;
   color:#111;
   font-size:16px;
@@ -300,7 +308,7 @@ button{
   background:#111;
   overflow:hidden;
 }
-.gItem > img{
+.gItem>img{
   width:100%;
   height:100%;
   object-fit:cover;
@@ -310,12 +318,11 @@ button{
   position:absolute;
   top:6px;
   left:6px;
-  width:32%;
+  width:30%;
   aspect-ratio:3/4;
   border-radius:7px;
   overflow:hidden;
-  border:1px solid rgba(255,255,255,0.85);
-  background:#111;
+  border:1px solid rgba(255,255,255,.9);
 }
 .gPip img{
   width:100%;
@@ -328,8 +335,8 @@ button{
 #viewer{
   position:fixed;
   inset:0;
+  z-index:80;
   background:#000;
-  z-index:60;
   display:none;
   flex-direction:column;
 }
@@ -337,7 +344,7 @@ button{
   display:flex;
 }
 #viewerHeader{
-  padding:max(var(--safe-top), 12px) 16px 10px;
+  padding:max(var(--safe-top), 10px) 16px 10px;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -346,7 +353,6 @@ button{
   color:#fff;
   font-size:17px;
   font-weight:700;
-  opacity:.95;
 }
 #viewerBody{
   flex:1;
@@ -360,7 +366,7 @@ button{
   width:100%;
   max-width:430px;
   aspect-ratio:3/4;
-  border-radius:28px;
+  border-radius:26px;
   overflow:hidden;
   background:#111;
 }
@@ -372,15 +378,14 @@ button{
 }
 #viewerSubWrap{
   position:absolute;
-  top:14px;
-  left:14px;
+  top:12px;
+  left:12px;
   width:30%;
   aspect-ratio:3/4;
+  border-radius:12px;
   overflow:hidden;
-  border-radius:14px;
-  border:2px solid rgba(255,255,255,0.96);
+  border:2px solid rgba(255,255,255,.95);
   background:#111;
-  box-shadow:0 10px 28px rgba(0,0,0,.45);
 }
 #viewerSub{
   width:100%;
@@ -392,19 +397,19 @@ button{
 /* TOAST */
 #toast{
   position:fixed;
-  top:100px;
+  top:88px;
   left:50%;
   transform:translateX(-50%);
-  z-index:100;
+  z-index:150;
   background:#fff;
   color:#111;
-  padding:12px 22px;
+  padding:11px 20px;
   border-radius:999px;
-  font-size:15px;
+  font-size:14px;
   font-weight:800;
   opacity:0;
-  pointer-events:none;
   transition:.25s;
+  pointer-events:none;
   white-space:nowrap;
 }
 #toast.show{
@@ -416,22 +421,18 @@ button{
 
 <div class="screen active" id="camScreen">
   <div id="topBar">
-    <div class="top-btn-wrap">
-      <button class="top-btn small" id="flashBtn" type="button">⚡</button>
-    </div>
+    <button class="topBtn" id="flashBtn" type="button">⚡ OFF</button>
 
-    <div class="top-btn-wrap" style="position:relative;">
-      <button class="top-btn small" id="ratioBtn" type="button">3:4</button>
+    <div id="ratioWrap">
+      <button class="topBtn" id="ratioBtn" type="button">3:4</button>
       <div id="ratioMenu">
-        <button class="ratio-opt" type="button" data-ratio="1:1">1:1</button>
-        <button class="ratio-opt selected" type="button" data-ratio="3:4">3:4</button>
-        <button class="ratio-opt" type="button" data-ratio="9:16">9:16</button>
+        <button class="ratioOpt" type="button" data-ratio="1:1">1:1</button>
+        <button class="ratioOpt selected" type="button" data-ratio="3:4">3:4</button>
+        <button class="ratioOpt" type="button" data-ratio="9:16">9:16</button>
       </div>
     </div>
 
-    <div class="top-btn-wrap">
-      <button class="top-btn" id="bothBtn" type="button">BOTH OFF</button>
-    </div>
+    <button class="topBtn" id="bothBtn" type="button">BOTH OFF</button>
   </div>
 
   <div id="vfWrap">
@@ -442,22 +443,28 @@ button{
         playsinline
         webkit-playsinline
         muted
+        preload="none"
         disablepictureinpicture
+        disableremoteplayback
+        x-webkit-airplay="deny"
         controlslist="nodownload nofullscreen noremoteplayback"
       ></video>
+
+      <div id="touchShield"></div>
 
       <div id="centerOverlay">
         <div id="countdownBubble"></div>
       </div>
-
-      <div id="flashFx"></div>
     </div>
   </div>
 
   <div id="bottomUI">
-    <div id="modes">
-      <div class="mode" id="videoMode">VIDEO</div>
+    <div id="modeRail">
+      <div class="mode inactive">SLO-MO</div>
+      <div class="mode inactive" id="videoMode">VIDEO</div>
       <div class="mode active" id="photoMode">PHOTO</div>
+      <div class="mode inactive">SQUARE</div>
+      <div class="mode inactive">PANO</div>
     </div>
 
     <div id="controlsRow">
@@ -502,7 +509,8 @@ button{
 </div>
 
 <div id="toast"></div>
-<canvas id="canvas" style="display:none;"></canvas>
+<div id="screenFlash"></div>
+<canvas id="canvas" style="display:none"></canvas>
 
 <script>
 (() => {
@@ -515,6 +523,7 @@ button{
   let isProcessing = false;
   let currentRatio = '3:4';
   let viewerIndex = -1;
+  let flashMode = 'off'; // off, on
 
   const camScreen = document.getElementById('camScreen');
   const galleryScreen = document.getElementById('galleryScreen');
@@ -523,6 +532,7 @@ button{
   const ratioBtn = document.getElementById('ratioBtn');
   const ratioMenu = document.getElementById('ratioMenu');
   const bothBtn = document.getElementById('bothBtn');
+  const flashBtn = document.getElementById('flashBtn');
   const shutter = document.getElementById('shutter');
   const thumbBtn = document.getElementById('thumbBtn');
   const thumbImg = document.getElementById('thumbImg');
@@ -533,9 +543,10 @@ button{
   const canvas = document.getElementById('canvas');
   const toast = document.getElementById('toast');
   const countdownBubble = document.getElementById('countdownBubble');
-  const flashFx = document.getElementById('flashFx');
+  const touchShield = document.getElementById('touchShield');
   const videoMode = document.getElementById('videoMode');
   const photoMode = document.getElementById('photoMode');
+  const screenFlash = document.getElementById('screenFlash');
 
   const viewer = document.getElementById('viewer');
   const viewerMain = document.getElementById('viewerMain');
@@ -548,7 +559,14 @@ button{
   mainVid.controls = false;
   mainVid.removeAttribute('controls');
 
-  const req = indexedDB.open('newmera_local_db_v3', 1);
+  ['touchstart','touchend','click'].forEach(type => {
+    touchShield.addEventListener(type, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, { passive:false });
+  });
+
+  const req = indexedDB.open('newmera_local_db_v5', 1);
 
   req.onupgradeneeded = (e) => {
     db = e.target.result;
@@ -563,9 +581,7 @@ button{
     startCam();
   };
 
-  req.onerror = () => {
-    showToast('DB ERROR');
-  };
+  req.onerror = () => showToast('DB ERROR');
 
   async function startCam() {
     try {
@@ -584,7 +600,11 @@ button{
       mainVid.setAttribute('playsinline', 'true');
       mainVid.setAttribute('webkit-playsinline', 'true');
       mainVid.muted = true;
+      mainVid.playsInline = true;
+      mainVid.disablePictureInPicture = true;
       mainVid.style.transform = facing === 'front' ? 'scaleX(-1)' : 'scaleX(1)';
+
+      await applyTorchIfNeeded();
 
       const p = mainVid.play();
       if (p && typeof p.catch === 'function') p.catch(() => {});
@@ -605,25 +625,16 @@ button{
     ratioMenu.classList.remove('show');
     vf.style.aspectRatio = getAspectValue(ratio);
 
-    document.querySelectorAll('.ratio-opt').forEach(el => {
+    document.querySelectorAll('.ratioOpt').forEach(el => {
       el.classList.toggle('selected', el.dataset.ratio === ratio);
     });
   }
 
-  function triggerFlash() {
-    flashFx.style.opacity = '0.92';
-    setTimeout(() => {
-      flashFx.style.opacity = '0';
-    }, 120);
-  }
-
-  function showToast(text, duration = 1200) {
+  function showToast(text, duration = 1100) {
     toast.textContent = text;
     toast.classList.add('show');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => {
-      toast.classList.remove('show');
-    }, duration);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), duration);
   }
 
   function showCenterText(text) {
@@ -633,6 +644,44 @@ button{
 
   function hideCenterText() {
     countdownBubble.style.display = 'none';
+  }
+
+  async function applyTorchIfNeeded() {
+    try {
+      if (!stream) return false;
+      const track = stream.getVideoTracks()[0];
+      if (!track) return false;
+
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      if (!caps.torch || facing !== 'back') return false;
+
+      await track.applyConstraints({
+        advanced: [{ torch: flashMode === 'on' }]
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function triggerFlashEffect() {
+    let usedTorch = false;
+
+    if (flashMode === 'on' && facing === 'back') {
+      usedTorch = await applyTorchIfNeeded();
+    }
+
+    if (!usedTorch && flashMode === 'on') {
+      screenFlash.style.opacity = '1';
+      setTimeout(() => {
+        screenFlash.style.opacity = '0';
+      }, 120);
+    }
+  }
+
+  function updateFlashUI() {
+    flashBtn.textContent = flashMode === 'on' ? '⚡ ON' : '⚡ OFF';
+    flashBtn.classList.toggle('active', flashMode === 'on');
   }
 
   function grab() {
@@ -674,12 +723,7 @@ button{
       ctx.scale(-1, 1);
     }
 
-    ctx.drawImage(
-      mainVid,
-      sX, sY, sW, sH,
-      0, 0, canvas.width, canvas.height
-    );
-
+    ctx.drawImage(mainVid, sX, sY, sW, sH, 0, 0, canvas.width, canvas.height);
     ctx.restore();
 
     return canvas.toDataURL('image/jpeg', 0.82);
@@ -690,19 +734,12 @@ button{
 
     const tx = db.transaction('photos', 'readwrite');
     tx.objectStore('photos').add(item);
-
-    tx.oncomplete = () => {
-      loadItems();
-    };
-
-    tx.onerror = () => {
-      showToast('SAVE ERROR');
-    };
+    tx.oncomplete = loadItems;
+    tx.onerror = () => showToast('SAVE ERROR');
   }
 
   function loadItems() {
     if (!db) return;
-
     const tx = db.transaction('photos', 'readonly');
     tx.objectStore('photos').getAll().onsuccess = (e) => {
       items = e.target.result.sort((a, b) => b.id - a.id);
@@ -733,17 +770,13 @@ button{
 
       const main = document.createElement('img');
       main.src = item.main;
-      main.alt = 'photo';
       div.appendChild(main);
 
       if (item.sub) {
         const pip = document.createElement('div');
         pip.className = 'gPip';
-
         const sub = document.createElement('img');
         sub.src = item.sub;
-        sub.alt = 'sub photo';
-
         pip.appendChild(sub);
         div.appendChild(pip);
       }
@@ -792,7 +825,6 @@ button{
 
     const tx = db.transaction('photos', 'readwrite');
     tx.objectStore('photos').delete(item.id);
-
     tx.oncomplete = () => {
       closeViewer();
       loadItems();
@@ -803,15 +835,17 @@ button{
   function setMode(nextMode) {
     mode = nextMode;
     videoMode.classList.toggle('active', mode === 'video');
+    videoMode.classList.toggle('inactive', mode !== 'video');
     photoMode.classList.toggle('active', mode === 'photo');
-    showToast(mode === 'video' ? 'VIDEO' : 'PHOTO', 700);
+    photoMode.classList.toggle('inactive', mode !== 'photo');
+    showToast(mode === 'video' ? 'VIDEO' : 'PHOTO', 650);
   }
 
   async function handleBothShot() {
+    await triggerFlashEffect();
     const first = grab();
 
     showToast('CHANGE');
-
     facing = facing === 'back' ? 'front' : 'back';
     await startCam();
 
@@ -821,9 +855,8 @@ button{
     await new Promise(resolve => {
       const timer = setInterval(() => {
         count -= 1;
-        if (count > 0) {
-          showCenterText(count);
-        } else {
+        if (count > 0) showCenterText(count);
+        else {
           clearInterval(timer);
           hideCenterText();
           resolve();
@@ -831,7 +864,7 @@ button{
       }, 1000);
     });
 
-    triggerFlash();
+    await triggerFlashEffect();
     const second = grab();
 
     saveItem({
@@ -848,11 +881,10 @@ button{
     if (isProcessing || mode !== 'photo') return;
     isProcessing = true;
 
-    triggerFlash();
-
     if (bothMode) {
       await handleBothShot();
     } else {
+      await triggerFlashEffect();
       const shot = grab();
       saveItem({
         type: 'photo',
@@ -867,11 +899,20 @@ button{
     }, 300);
   }
 
+  flashBtn.addEventListener('click', async () => {
+    flashMode = flashMode === 'off' ? 'on' : 'off';
+    updateFlashUI();
+    await applyTorchIfNeeded();
+    if (flashMode === 'on' && facing !== 'back') {
+      showToast('SCREEN FLASH');
+    }
+  });
+
   ratioBtn.addEventListener('click', () => {
     ratioMenu.classList.toggle('show');
   });
 
-  document.querySelectorAll('.ratio-opt').forEach(btn => {
+  document.querySelectorAll('.ratioOpt').forEach(btn => {
     btn.addEventListener('click', () => setRatio(btn.dataset.ratio));
   });
 
@@ -888,6 +929,9 @@ button{
   flipBtn.addEventListener('click', async () => {
     facing = facing === 'back' ? 'front' : 'back';
     await startCam();
+    if (flashMode === 'on' && facing === 'front') {
+      showToast('SCREEN FLASH');
+    }
   });
 
   viewerDone.addEventListener('click', closeViewer);
@@ -920,6 +964,7 @@ button{
     }
   }, { passive: true });
 
+  updateFlashUI();
   setRatio('3:4');
 })();
 </script>
