@@ -2,191 +2,212 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Newmera</title>
 
-<!-- iOS 앱 느낌 -->
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 <style>
-:root {
-  --ios-blue:#007aff;
-  --ios-yellow:#ffd60a;
-}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:#000;color:#fff;font-family:-apple-system;}
+body{margin:0;background:#000;color:#fff;font-family:-apple-system}
 
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;}
+/* layout */
+.screen{position:fixed;inset:0;display:none;flex-direction:column}
+.screen.active{display:flex}
 
 /* top */
 #topBar{
-  position:absolute;top:0;left:0;right:0;
-  display:flex;justify-content:space-between;
-  padding:20px;
+position:absolute;top:0;left:0;right:0;
+display:flex;justify-content:space-between;
+padding:20px;
+z-index:10;
 }
 .top-btn{
-  background:rgba(255,255,255,0.08);
-  backdrop-filter:blur(25px);
-  border:none;color:#fff;
-  padding:10px 16px;border-radius:20px;
-  font-weight:700;
+background:rgba(255,255,255,.1);
+backdrop-filter:blur(20px);
+padding:10px 16px;
+border-radius:20px;
+font-weight:700;
 }
 
-/* camera */
-#vfWrapper{
-  flex:1;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-#vf{
-  width:90%;
-  aspect-ratio:3/4;
-  border-radius:36px;
-  overflow:hidden;
-  background:#111;
-}
-#mainVid{width:100%;height:100%;object-fit:cover;}
-#mainVid.mirror{transform:scaleX(-1);}
+/* center */
+#vfWrapper{flex:1;display:flex;justify-content:center;align-items:center}
+#vf{width:90%;aspect-ratio:3/4;border-radius:30px;overflow:hidden}
+video{width:100%;height:100%;object-fit:cover}
 
 /* bottom */
-#cameraBottom{
-  height:160px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+#bottom{
+height:180px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
 }
+
+#modes{
+display:flex;
+gap:30px;
+margin-bottom:10px;
+}
+.mode{color:#777;font-weight:700}
+.mode.active{color:#ffd60a}
+
+#controls{
+width:100%;
+display:flex;
+justify-content:space-around;
+align-items:center;
+}
+
 #shutter{
-  width:80px;height:80px;
-  border-radius:50%;
-  border:5px solid #fff;
-  display:flex;align-items:center;justify-content:center;
+width:80px;height:80px;
+border:5px solid #fff;
+border-radius:50%;
+display:flex;align-items:center;justify-content:center;
 }
 #shutterInner{
-  width:60px;height:60px;
-  border-radius:50%;
-  background:linear-gradient(145deg,#fff,#ddd);
+width:60px;height:60px;border-radius:50%;
+background:#fff;
 }
-#shutter:active{transform:scale(.92);}
 
-/* toast */
-#toast{
-  position:fixed;
-  top:120px;left:50%;
-  transform:translateX(-50%);
-  background:#fff;color:#000;
-  padding:10px 20px;
-  border-radius:20px;
-  opacity:0;
-  transition:.3s;
+/* gallery */
+#gallery{
+flex:1;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:2px;
 }
-#toast.show{opacity:1;}
+#gallery img{width:100%;aspect-ratio:1;object-fit:cover}
 </style>
 </head>
 
 <body>
 
-<div class="screen">
-  <div id="topBar">
-    <button class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH OFF</button>
-  </div>
+<!-- CAMERA -->
+<div class="screen active" id="cam">
+<div id="topBar">
+<div class="top-btn">⚡</div>
 
-  <div id="vfWrapper">
-    <div id="vf">
-      <video id="mainVid" autoplay playsinline muted></video>
-    </div>
-  </div>
+<div class="top-btn" onclick="changeRatio()">3:4</div>
 
-  <div id="cameraBottom">
-    <div id="shutter" onclick="handleShutter()">
-      <div id="shutterInner"></div>
-    </div>
-  </div>
+<div class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH</div>
 </div>
 
-<div id="toast"></div>
+<div id="vfWrapper">
+<div id="vf">
+<video id="mainVid" autoplay playsinline muted webkit-playsinline></video>
+</div>
+</div>
+
+<div id="bottom">
+
+<div id="modes">
+<div class="mode" id="videoMode">VIDEO</div>
+<div class="mode active" id="photoMode">PHOTO</div>
+</div>
+
+<div id="controls">
+<div onclick="openGallery()">🖼️</div>
+
+<div id="shutter" onclick="shot()">
+<div id="shutterInner"></div>
+</div>
+
+<div onclick="flip()">🔄</div>
+</div>
+
+</div>
+</div>
+
+<!-- GALLERY -->
+<div class="screen" id="lib">
+<button onclick="closeGallery()">닫기</button>
+<div id="gallery"></div>
+</div>
+
 <canvas id="canvas" style="display:none"></canvas>
 
 <script>
-let stream,facing='back',bothMode=false,isProcessing=false,db;
+let stream,facing='back',both=false,db;
 
-const mainVid=document.getElementById('mainVid');
-const canvas=document.getElementById('canvas');
+const vid=document.getElementById('mainVid');
 
-/* DB */
-const req=indexedDB.open("camDB",1);
+vid.controls=false;
+
+const req=indexedDB.open("db",1);
 req.onupgradeneeded=e=>{
-  db=e.target.result;
-  db.createObjectStore("media",{keyPath:"id"});
+db=e.target.result;
+db.createObjectStore("img",{keyPath:"id"});
 };
 req.onsuccess=e=>{
-  db=e.target.result;
-  startCam();
+db=e.target.result;
+startCam();
+load();
 };
 
-/* camera */
 async function startCam(){
-  if(stream) stream.getTracks().forEach(t=>t.stop());
-  stream=await navigator.mediaDevices.getUserMedia({
-    video:{facingMode:facing==='back'?'environment':'user'}
-  });
-  mainVid.srcObject=stream;
-  mainVid.className = facing==='front'?'mirror':'';
+if(stream) stream.getTracks().forEach(t=>t.stop());
+stream=await navigator.mediaDevices.getUserMedia({
+video:{facingMode:facing==='back'?'environment':'user'}
+});
+vid.srcObject=stream;
 }
 
-/* capture */
 function grab(){
-  const ctx=canvas.getContext('2d');
-  canvas.width=1080;
-  canvas.height=1440;
-  ctx.drawImage(mainVid,0,0,canvas.width,canvas.height);
-  return canvas.toDataURL('image/jpeg',0.7);
+const c=document.getElementById('canvas');
+const ctx=c.getContext('2d');
+c.width=1080;c.height=1440;
+ctx.drawImage(vid,0,0,c.width,c.height);
+return c.toDataURL('image/jpeg',0.7);
 }
 
-/* save */
-function saveItem(it){
-  it.id=Date.now();
-  db.transaction("media","readwrite").objectStore("media").add(it);
+function shot(){
+const data=grab();
+save(data);
 }
 
-/* UI */
+function save(d){
+db.transaction("img","readwrite")
+.objectStore("img")
+.add({id:Date.now(),src:d});
+load();
+}
+
+function load(){
+db.transaction("img","readonly")
+.objectStore("img")
+.getAll().onsuccess=e=>{
+const g=document.getElementById('gallery');
+g.innerHTML='';
+e.target.result.reverse().forEach(it=>{
+const img=document.createElement('img');
+img.src=it.src;
+g.appendChild(img);
+});
+};
+}
+
+function openGallery(){
+document.getElementById('cam').classList.remove('active');
+document.getElementById('lib').classList.add('active');
+}
+function closeGallery(){
+document.getElementById('cam').classList.add('active');
+document.getElementById('lib').classList.remove('active');
+}
+
+function flip(){
+facing=facing==='back'?'front':'back';
+startCam();
+}
+
 function toggleBoth(){
-  bothMode=!bothMode;
-  document.getElementById('bothBtn').textContent = bothMode?"BOTH ON":"BOTH OFF";
+both=!both;
+document.getElementById('bothBtn').textContent = both?'BOTH ON':'BOTH';
 }
 
-async function handleShutter(){
-  if(isProcessing) return;
-  isProcessing=true;
-
-  if(bothMode){
-    const first=grab();
-
-    facing=facing==='back'?'front':'back';
-    await startCam();
-
-    setTimeout(()=>{
-      const second=grab();
-      saveItem({main:first,sub:second});
-      msg("BOTH SAVED");
-      isProcessing=false;
-    },500);
-  } else {
-    const data=grab();
-    saveItem({main:data});
-    msg("SAVED");
-    isProcessing=false;
-  }
-}
-
-/* toast */
-function msg(m){
-  const t=document.getElementById('toast');
-  t.textContent=m;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),1500);
+function changeRatio(){
+alert("ratio next 단계에서 넣자");
 }
 </script>
 
