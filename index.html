@@ -15,7 +15,6 @@
   --safe-bottom: env(safe-area-inset-bottom);
   --yellow:#ffd60a;
   --white:rgba(255,255,255,.96);
-  --dim:rgba(255,255,255,.45);
 }
 *{
   box-sizing:border-box;
@@ -47,96 +46,8 @@ button{
 }
 .screen.active{display:flex;}
 
-/* camera */
 #camScreen{overflow:hidden;}
-#vfWrap{
-  position:absolute;
-  inset:0;
-}
-#vf{
-  position:relative;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#000;
-}
-#mainVid{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-  background:#000;
-  pointer-events:none;
-}
-#mainVid::-webkit-media-controls,
-#mainVid::-webkit-media-controls-panel,
-#mainVid::-webkit-media-controls-play-button,
-#mainVid::-webkit-media-controls-start-playback-button{
-  display:none !important;
-  -webkit-appearance:none;
-}
 
-/* overlay for tap focus and blocking video controls */
-#tapLayer{
-  position:absolute;
-  inset:0;
-  z-index:5;
-  background:transparent;
-}
-#focusRing{
-  position:absolute;
-  width:74px;
-  height:74px;
-  border:2px solid var(--yellow);
-  border-radius:50%;
-  box-shadow:0 0 0 1px rgba(0,0,0,.25) inset;
-  transform:translate(-50%,-50%) scale(.8);
-  opacity:0;
-  pointer-events:none;
-  transition:transform .18s ease, opacity .18s ease;
-  z-index:12;
-}
-#focusRing.show{
-  opacity:1;
-  transform:translate(-50%,-50%) scale(1);
-}
-
-#screenFlash{
-  position:fixed;
-  inset:0;
-  background:#fff;
-  opacity:0;
-  pointer-events:none;
-  z-index:100;
-  transition:opacity .12s;
-}
-
-#centerOverlay{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-  z-index:11;
-}
-#countdownBubble{
-  min-width:104px;
-  height:104px;
-  padding:0 18px;
-  border-radius:52px;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(70,70,70,.68);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  color:#fff;
-  font-size:44px;
-  font-weight:900;
-}
-
-/* top ui like iPhone camera */
 #topBar{
   position:absolute;
   top:0;
@@ -154,26 +65,24 @@ button{
 .topCtl{
   display:flex;
   align-items:center;
-  font-size:14px;
   color:var(--white);
+  font-size:14px;
+  font-weight:500;
 }
 .topCtl.center{justify-content:center;}
 .topCtl.right{justify-content:flex-end;}
 .topCtl button{
+  min-height:28px;
   display:flex;
   align-items:center;
   justify-content:center;
   gap:6px;
-  min-height:28px;
   color:inherit;
 }
 #flashBtn .bolt{
   color:var(--yellow);
   font-size:22px;
   line-height:1;
-}
-#ratioBtn,#bothBtn,#flashBtn{
-  opacity:.98;
 }
 #ratioWrap{position:relative;}
 #ratioMenu{
@@ -201,7 +110,70 @@ button{
 .ratioOpt:last-child{border-bottom:none;}
 .ratioOpt.selected{color:var(--yellow);}
 
-/* bottom ui */
+#vfWrap{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:54px 18px 0;
+}
+#vf{
+  position:relative;
+  width:100%;
+  max-width:430px;
+  aspect-ratio:3/4;
+  overflow:hidden;
+  border-radius:34px;
+  background:#111;
+}
+#mainVid{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  background:#111;
+  pointer-events:none;
+}
+#mainVid::-webkit-media-controls,
+#mainVid::-webkit-media-controls-panel,
+#mainVid::-webkit-media-controls-play-button,
+#mainVid::-webkit-media-controls-start-playback-button{
+  display:none !important;
+  -webkit-appearance:none;
+}
+#touchShield{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  background:transparent;
+  touch-action:none;
+}
+#centerOverlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  z-index:10;
+}
+#countdownBubble{
+  min-width:104px;
+  height:104px;
+  padding:0 18px;
+  border-radius:52px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(70,70,70,.68);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  color:#fff;
+  font-size:44px;
+  font-weight:900;
+}
+
 #bottomUI{
   position:absolute;
   left:0;
@@ -285,7 +257,6 @@ button{
 }
 #shutter:active{transform:scale(.97);}
 
-/* gallery */
 #galleryScreen{z-index:40;}
 #galleryHeader{
   padding:max(var(--safe-top), 10px) 14px 12px;
@@ -337,7 +308,6 @@ button{
   display:block;
 }
 
-/* viewer */
 #viewer{
   position:fixed;
   inset:0;
@@ -398,7 +368,6 @@ button{
   display:block;
 }
 
-/* toast */
 #toast{
   position:fixed;
   top:86px;
@@ -461,8 +430,7 @@ button{
         controlslist="nodownload nofullscreen noremoteplayback"
       ></video>
 
-      <div id="tapLayer"></div>
-      <div id="focusRing"></div>
+      <div id="touchShield"></div>
 
       <div id="centerOverlay">
         <div id="countdownBubble"></div>
@@ -518,7 +486,6 @@ button{
 </div>
 
 <div id="toast"></div>
-<div id="screenFlash"></div>
 <canvas id="canvas" style="display:none"></canvas>
 
 <script>
@@ -554,11 +521,9 @@ button{
   const canvas = document.getElementById('canvas');
   const toast = document.getElementById('toast');
   const countdownBubble = document.getElementById('countdownBubble');
+  const touchShield = document.getElementById('touchShield');
   const videoMode = document.getElementById('videoMode');
   const photoMode = document.getElementById('photoMode');
-  const screenFlash = document.getElementById('screenFlash');
-  const tapLayer = document.getElementById('tapLayer');
-  const focusRing = document.getElementById('focusRing');
 
   const viewer = document.getElementById('viewer');
   const viewerMain = document.getElementById('viewerMain');
@@ -571,7 +536,14 @@ button{
   mainVid.controls = false;
   mainVid.removeAttribute('controls');
 
-  const req = indexedDB.open('newmera_local_db_v6', 1);
+  ['touchstart','touchend','click'].forEach(type => {
+    touchShield.addEventListener(type, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, { passive:false });
+  });
+
+  const req = indexedDB.open('newmera_local_db_v7', 1);
   req.onupgradeneeded = (e) => {
     db = e.target.result;
     if (!db.objectStoreNames.contains('photos')) {
@@ -607,6 +579,17 @@ button{
       mainVid.playsInline = true;
       mainVid.disablePictureInPicture = true;
       mainVid.style.transform = facing === 'front' ? 'scaleX(-1)' : 'scaleX(1)';
+
+      if (flashMode === 'on') {
+        const ok = await setTorch(true);
+        if (!ok) {
+          flashMode = 'off';
+          updateFlashUI();
+          showToast(facing === 'front' ? 'FRONT NO TORCH' : 'TORCH UNSUPPORTED', 1100);
+        }
+      } else {
+        await setTorch(false);
+      }
 
       const p = mainVid.play();
       if (p && typeof p.catch === 'function') p.catch(() => {});
@@ -663,64 +646,6 @@ button{
     } catch {
       return false;
     }
-  }
-
-  async function triggerFlashEffect() {
-    if (flashMode !== 'on') return;
-
-    const torchWorked = await setTorch(true);
-
-    if (torchWorked) {
-      setTimeout(async () => {
-        try { await setTorch(false); } catch {}
-      }, 120);
-      return;
-    }
-
-    screenFlash.style.opacity = '1';
-    setTimeout(() => {
-      screenFlash.style.opacity = '0';
-    }, 120);
-  }
-
-  function showFocusRing(x, y) {
-    focusRing.style.left = `${x}px`;
-    focusRing.style.top = `${y}px`;
-    focusRing.classList.add('show');
-    clearTimeout(showFocusRing._t);
-    showFocusRing._t = setTimeout(() => {
-      focusRing.classList.remove('show');
-    }, 700);
-  }
-
-  async function tryTapFocus(x, y) {
-    showFocusRing(x, y);
-
-    if (!track || !track.getCapabilities || !track.applyConstraints) return;
-
-    try {
-      const caps = track.getCapabilities();
-
-      const w = tapLayer.clientWidth;
-      const h = tapLayer.clientHeight;
-      const nx = Math.max(0, Math.min(1, x / w));
-      const ny = Math.max(0, Math.min(1, y / h));
-
-      const advanced = [];
-
-      if (caps.focusMode) {
-        if (caps.focusMode.includes('single-shot')) advanced.push({ focusMode: 'single-shot' });
-        else if (caps.focusMode.includes('continuous')) advanced.push({ focusMode: 'continuous' });
-      }
-
-      if ('pointsOfInterest' in caps) {
-        advanced.push({ pointsOfInterest: [{ x: nx, y: ny }] });
-      }
-
-      if (advanced.length) {
-        await track.applyConstraints({ advanced });
-      }
-    } catch {}
   }
 
   function grab() {
@@ -875,7 +800,6 @@ button{
   }
 
   async function handleBothShot() {
-    await triggerFlashEffect();
     const first = grab();
 
     showToast('CHANGE', 700);
@@ -897,7 +821,6 @@ button{
       }, 1000);
     });
 
-    await triggerFlashEffect();
     const second = grab();
 
     saveItem({
@@ -917,7 +840,6 @@ button{
     if (bothMode) {
       await handleBothShot();
     } else {
-      await triggerFlashEffect();
       const shot = grab();
       saveItem({
         type:'photo',
@@ -933,11 +855,26 @@ button{
   }
 
   flashBtn.addEventListener('click', async () => {
-    flashMode = flashMode === 'off' ? 'on' : 'off';
-    updateFlashUI();
-    if (flashMode === 'on' && facing === 'front') showToast('SCREEN FLASH', 800);
+    if (facing !== 'back') {
+      flashMode = 'off';
+      updateFlashUI();
+      showToast('FRONT NO TORCH', 1100);
+      return;
+    }
+
     if (flashMode === 'off') {
-      try { await setTorch(false); } catch {}
+      flashMode = 'on';
+      updateFlashUI();
+      const ok = await setTorch(true);
+      if (!ok) {
+        flashMode = 'off';
+        updateFlashUI();
+        showToast('TORCH UNSUPPORTED', 1100);
+      }
+    } else {
+      flashMode = 'off';
+      updateFlashUI();
+      await setTorch(false);
     }
   });
 
@@ -959,9 +896,13 @@ button{
   galleryClose.addEventListener('click', closeGallery);
 
   flipBtn.addEventListener('click', async () => {
+    if (flashMode === 'on') {
+      await setTorch(false);
+      flashMode = 'off';
+      updateFlashUI();
+    }
     facing = facing === 'back' ? 'front' : 'back';
     await startCam();
-    if (flashMode === 'on' && facing === 'front') showToast('SCREEN FLASH', 800);
   });
 
   viewerDone.addEventListener('click', closeViewer);
@@ -973,13 +914,6 @@ button{
   });
   photoMode.addEventListener('click', () => {
     setMode('photo');
-  });
-
-  tapLayer.addEventListener('click', async (e) => {
-    const rect = tapLayer.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    await tryTapFocus(x, y);
   });
 
   document.addEventListener('click', (e) => {
