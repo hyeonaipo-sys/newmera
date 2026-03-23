@@ -1,335 +1,690 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Newmera Pro BeReal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Newmera</title>
 <style>
-:root {
-  --ios-blue: #007aff;
-  --ios-red: #ff3b30;
-  --ios-yellow: #ffd60a;
-  --safe-top: env(safe-area-inset-top);
-  --safe-bottom: env(safe-area-inset-bottom);
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;background:#000;font-family:-apple-system,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
+
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;display:none;flex-direction:column;background:#000;z-index:10}
+.screen.active{display:flex}
+
+/* ══════════════════════════════
+CAMERA SCREEN
+══════════════════════════════ */
+#vf{position:relative;flex:1;background:#111;overflow:hidden;min-height:0}
+#mainVid{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+#mainVid.mirror{transform:scaleX(-1)}
+
+/* topbar */
+#topbar{position:absolute;top:0;left:0;right:0;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent);z-index:20}
+.tbtn{width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:background .2s;flex-shrink:0}
+.tbtn.on{background:#ffd60a}
+#appTitle{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.02em}
+
+/* countdown */
+#countdownOverlay{position:absolute;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:30}
+#countdownOverlay.show{display:flex}
+#countdownNum{font-size:96px;font-weight:700;color:#fff;line-height:1;animation:pop .3s ease}
+#countdownLabel{font-size:15px;color:rgba(255,255,255,.7);font-weight:500}
+
+/* pip preview */
+#capturePreview{position:absolute;bottom:20px;left:16px;width:96px;height:128px;border-radius:16px;overflow:hidden;border:2.5px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.65);z-index:10;display:none}
+#capturePreview.show{display:block}
+#capturePreviewImg{width:100%;height:100%;object-fit:cover}
+
+/* focus / flash */
+#focus{position:absolute;width:62px;height:62px;border:2px solid #ffd60a;border-radius:8px;pointer-events:none;display:none;z-index:15;transform:translate(-50%,-50%)}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50;transition:opacity .05s}
+
+/* zoom */
+#zoomRow{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
+.zbtn{min-width:36px;height:34px;border-radius:17px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0 10px}
+.zbtn.on{background:rgba(255,214,10,.18);border-color:#ffd60a;color:#ffd60a}
+
+/* rec / land pills */
+#recPill,#landPill{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#fff;padding:5px 14px;border-radius:20px;display:none;align-items:center;gap:7px;font-size:13px;font-weight:600;z-index:20;white-space:nowrap}
+#recPill.show,#landPill.show{display:flex}
+.reddot{width:8px;height:8px;border-radius:50%;background:#ff3b30;animation:blink 1s infinite}
+.yellowdot{width:7px;height:7px;border-radius:50%;background:#ffd60a;animation:pulse 1.5s infinite}
+#landBtn{position:absolute;bottom:24px;right:14px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);display:none;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:15}
+#landBtn.show{display:flex}
+#landBtn.on{background:#ffd60a}
+
+/* bottom */
+#bottom{background:#000;flex-shrink:0;padding-bottom:max(env(safe-area-inset-bottom),16px)}
+#modes{display:flex;justify-content:center;gap:20px;padding:10px 8px 4px;overflow-x:auto;scrollbar-width:none}
+#modes::-webkit-scrollbar{display:none}
+.mode{background:none;border:none;color:rgba(255,255,255,.45);font-size:11px;font-weight:600;letter-spacing:.07em;cursor:pointer;padding:4px 0;white-space:nowrap;flex-shrink:0}
+.mode.on{color:#ffd60a;transform:scale(1.1)}
+#controls{display:flex;align-items:center;justify-content:space-around;padding:8px 28px 4px}
+#thumb{width:50px;height:50px;border-radius:10px;border:2.5px solid #fff;background:#1a1a1a;overflow:hidden;flex-shrink:0;cursor:pointer;position:relative}
+#thumb img{width:100%;height:100%;object-fit:cover;display:none}
+#thumbCount{position:absolute;bottom:2px;right:4px;color:#fff;font-size:9px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+#shutter{width:76px;height:76px;border-radius:50%;border:4px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:border-color .2s}
+#shutter.rec{border-color:#ff3b30}
+#shutter.disabled{opacity:.4;pointer-events:none}
+#shutterInner{width:60px;height:60px;border-radius:50%;background:#fff;transition:all .18s ease}
+#shutter.rec #shutterInner{width:28px;height:28px;border-radius:8px;background:#ff3b30}
+#flipBtn{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;flex-shrink:0}
+
+/* ══════════════════════════════
+GALLERY SCREEN
+══════════════════════════════ */
+#galleryScreen{background:#000}
+
+#galleryHeader{
+display:flex;align-items:center;justify-content:space-between;
+padding:16px 18px;padding-top:max(env(safe-area-inset-top),16px);
+flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.07);
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
-html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; }
+#galleryTitle{color:#fff;font-size:18px;font-weight:700;letter-spacing:-.02em}
+#galleryCount{color:rgba(255,255,255,.4);font-size:13px;margin-top:2px}
+#galleryActions{display:flex;gap:10px;align-items:center}
+.gBtn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.gBtn.primary{background:#fff;color:#000;border-color:#fff}
+.gBtn.danger{background:rgba(255,59,48,.15);border-color:rgba(255,59,48,.3);color:#ff3b30}
+#selectModeBtn{font-size:13px}
 
-/* LAYOUT */
-.screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: #000; }
-.screen.active { display: flex; }
+#galleryGrid{
+flex:1;overflow-y:auto;padding:2px;
+display:grid;grid-template-columns:repeat(3,1fr);gap:2px;
+align-content:start;
+}
+#galleryGrid::-webkit-scrollbar{display:none}
 
-/* VIEWPORT */
-#vfContainer { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; }
-#vf { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 0 0 40px 40px; }
-#mainVid { width: 100%; height: 100%; object-fit: cover; background: #000; }
-#mainVid.mirror { transform: scaleX(-1); }
+.gItem{
+aspect-ratio:1;position:relative;overflow:hidden;cursor:pointer;background:#1a1a1a;
+}
+.gItem img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .2s}
+.gItem .sel{
+position:absolute;top:6px;right:6px;
+width:22px;height:22px;border-radius:50%;
+border:2px solid #fff;background:transparent;
+display:none;align-items:center;justify-content:center;
+font-size:13px;transition:all .2s;
+}
+.gItem.selecting .sel{display:flex}
+.gItem.selected .sel{background:#ffd60a;border-color:#ffd60a;color:#000}
+.gItem.selected img{opacity:.7}
 
-/* TOP CONTROLS */
-#topBar { position: absolute; top: max(var(--safe-top), 15px); left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; z-index: 100; }
-.top-btn { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; backdrop-filter: blur(10px); }
-.top-btn.active { background: var(--ios-yellow); color: #000; border-color: var(--ios-yellow); }
-#bothBtn { width: auto; padding: 0 15px; border-radius: 22px; font-size: 13px; font-weight: 700; }
+#galleryEmpty{
+flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+gap:12px;color:rgba(255,255,255,.3);font-size:14px;
+}
+#galleryEmpty .emIcon{font-size:48px;opacity:.4}
 
-/* COUNTER & REC */
-#countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px; font-weight: 900; color: #fff; text-shadow: 0 0 30px rgba(0,0,0,0.8); z-index: 150; display: none; pointer-events: none; }
-#recUI { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(255, 59, 48, 0.9); padding: 5px 15px; border-radius: 20px; display: none; align-items: center; gap: 8px; z-index: 110; }
-#recUI.active { display: flex; }
-#recDot { width: 8px; height: 8px; background: #fff; border-radius: 50%; animation: blink 1s infinite; }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+/* selection bar */
+#selectionBar{
+display:none;align-items:center;justify-content:space-between;
+padding:12px 18px;padding-bottom:max(env(safe-area-inset-bottom),12px);
+background:#000;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;
+}
+#selectionBar.show{display:flex}
+#selCount{color:#fff;font-size:14px;font-weight:600}
 
-/* BOTTOM UI */
-#cameraBottom { background: #000; padding: 10px 0 calc(var(--safe-bottom) + 15px); flex-shrink: 0; }
-#modesWrapper { position: relative; width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-#modesTrack { display: flex; position: absolute; gap: 40px; transition: transform 0.4s cubic-bezier(0.2, 1, 0.2, 1); }
-.mode { font-size: 13px; font-weight: 800; color: rgba(255,255,255,0.3); padding: 10px; transition: 0.3s; letter-spacing: 0.5px; }
-.mode.active { color: var(--ios-yellow); }
+/* ══════════════════════════════
+PHOTO VIEWER
+══════════════════════════════ */
+#photoViewer{
+position:fixed;inset:0;background:#000;
+display:none;flex-direction:column;z-index:100;
+}
+#photoViewer.show{display:flex}
+#photoViewerHeader{
+display:flex;align-items:center;justify-content:space-between;
+padding:14px 18px;padding-top:max(env(safe-area-inset-top),14px);
+flex-shrink:0;
+}
+#photoViewerImg{flex:1;object-fit:contain;width:100%;min-height:0}
+#photoViewerFooter{
+display:flex;justify-content:center;gap:16px;
+padding:14px 18px;padding-bottom:max(env(safe-area-inset-bottom),14px);
+flex-shrink:0;
+}
+.pvBtn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:12px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer}
+.pvBtn.danger{background:rgba(255,59,48,.15);border-color:rgba(255,59,48,.3);color:#ff3b30}
 
-#shutterRow { display: flex; align-items: center; justify-content: space-between; padding: 0 40px; margin-top: 5px; }
-#thumb { width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.3); background: #111; overflow: hidden; }
-#thumb img { width: 100%; height: 100%; object-fit: cover; }
-#shutter { width: 72px; height: 72px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; }
-#shutterInner { width: 56px; height: 56px; border-radius: 50%; background: #fff; transition: 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); }
-#shutter.recording #shutterInner { background: var(--ios-red); border-radius: 12px; transform: scale(0.5); }
+/* ══════════════════════════════
+TOAST
+══════════════════════════════ */
+#toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(22,22,22,.93);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* LIBRARY & VIEWER */
-#libHeader { padding: max(var(--safe-top), 40px) 20px 15px; }
-#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding-bottom: 120px; }
-.gItem { aspect-ratio: 1; background: #1c1c1e; position: relative; }
-.gItem img { width: 100%; height: 100%; object-fit: cover; }
-.vBadge { position: absolute; bottom: 6px; right: 6px; font-size: 10px; font-weight: 800; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; }
+/* permission */
+#permScreen{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px;z-index:999}
+#permScreen .icon{font-size:54px}
+#permScreen h2{color:#fff;font-size:21px;font-weight:700;letter-spacing:-.02em}
+#permScreen p{color:rgba(255,255,255,.55);font-size:14px;text-align:center;line-height:1.6}
+#startBtn{background:#fff;color:#000;border:none;border-radius:14px;padding:15px 40px;font-size:16px;font-weight:600;cursor:pointer;margin-top:6px}
 
-#toast { position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; }
-#toast.show { opacity: 1; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes pop{0%{transform:scale(1.4)}100%{transform:scale(1)}}
 </style>
+
 </head>
 <body>
 
+<!-- Permission -->
+
+<div id="permScreen">
+  <div class="icon">📷</div>
+  <h2>Newmera</h2>
+  <p>카메라 권한을 허용해주세요</p>
+  <button id="startBtn" onclick="startCamera()">시작하기</button>
+</div>
+
+<!-- ── CAMERA SCREEN ── -->
+
 <div class="screen active" id="cameraScreen">
-  <div id="vfContainer">
-    <div id="vf" ontouchstart="handleSwipeStart(event)" ontouchend="handleSwipeEnd(event)">
-      <video id="mainVid" autoplay playsinline muted></video>
-      <div id="countdown">3</div>
-      <div id="recUI"><div id="recDot"></div><div id="recTimer">00:00</div></div>
-      <div id="topBar">
-        <button class="top-btn" onclick="toggleFlash()" id="flashBtn">⚡️</button>
-        <button class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH OFF</button>
-      </div>
-    </div>
+  <div id="vf" onclick="handleVfClick(event)">
+    <video id="mainVid" autoplay playsinline muted></video>
+
+```
+<div id="countdownOverlay">
+  <div id="countdownNum">3</div>
+  <div id="countdownLabel">반대 카메라로 전환 중...</div>
+</div>
+
+<div id="capturePreview"><img id="capturePreviewImg"></div>
+
+<div id="topbar">
+  <div class="tbtn" id="flashBtn" onclick="event.stopPropagation();toggleFlash()">⚡</div>
+  <div id="appTitle">newmera</div>
+  <div class="tbtn" id="berealBtn" onclick="event.stopPropagation();toggleBereal()" style="font-size:10px;font-weight:800;width:auto;padding:0 10px;border-radius:10px;letter-spacing:-.02em">BeReal</div>
+</div>
+
+<div id="recPill"><div class="reddot"></div><span id="recTime">00:00</span></div>
+<div id="landPill"><div class="yellowdot"></div>가로 모드 촬영 중</div>
+<div id="focus"></div>
+<div id="flash"></div>
+
+<div id="zoomRow">
+  <div class="zbtn on" onclick="event.stopPropagation();setZoom(1)">1×</div>
+  <div class="zbtn" onclick="event.stopPropagation();setZoom(2)">2×</div>
+  <div class="zbtn" onclick="event.stopPropagation();setZoom(3)">3×</div>
+</div>
+<div id="landBtn" onclick="event.stopPropagation();toggleLandscape()">↔️</div>
+```
+
   </div>
-  <div id="cameraBottom">
-    <div id="modesWrapper" ontouchstart="handleSwipeStart(event)" ontouchend="handleSwipeEnd(event)">
-      <div id="modesTrack">
-        <div class="mode" onclick="setMode(0)">VIDEO</div>
-        <div class="mode active" onclick="setMode(1)">PHOTO</div>
-      </div>
+
+  <div id="bottom">
+    <div id="modes">
+      <button class="mode" onclick="setMode(this,'SLO-MO')">SLO-MO</button>
+      <button class="mode" onclick="setMode(this,'VIDEO')">VIDEO</button>
+      <button class="mode on" onclick="setMode(this,'FOTO')">FOTO</button>
+      <button class="mode" onclick="setMode(this,'PORTRAIT')">PORTRAIT</button>
+      <button class="mode" onclick="setMode(this,'1:1')">1:1</button>
     </div>
-    <div id="shutterRow">
-      <div id="thumb" onclick="openLib()"><img id="thumbImg"></div>
+    <div id="controls">
+      <div id="thumb" onclick="openGallery()">
+        <img id="thumbImg">
+        <span id="thumbCount"></span>
+      </div>
       <div id="shutter" onclick="handleShutter()"><div id="shutterInner"></div></div>
-      <div id="flipBtn" onclick="flipCam()" style="font-size:26px">🔄</div>
+      <div id="flipBtn" onclick="flipCamera()">🔄</div>
     </div>
   </div>
 </div>
 
-<div class="screen" id="libraryScreen">
-  <header id="libHeader">
-    <div style="display:flex; justify-content: flex-end; gap: 15px;">
-        <button style="color:var(--ios-blue); font-size:17px; font-weight:600; background:none; border:none">Select</button>
+<!-- ── GALLERY SCREEN ── -->
+
+<div class="screen" id="galleryScreen">
+  <div id="galleryHeader">
+    <div>
+      <div id="galleryTitle">갤러리</div>
+      <div id="galleryCount"></div>
     </div>
-    <h1 style="font-size:34px; font-weight:800; margin-top:5px">Library</h1>
-    <div id="libCount" style="color:#8e8e93; font-size:15px; margin-top:5px">0 Items</div>
-  </header>
+    <div id="galleryActions">
+      <button class="gBtn" id="selectModeBtn" onclick="toggleSelectMode()">선택</button>
+      <button class="gBtn" onclick="closeGallery()">✕</button>
+    </div>
+  </div>
+
   <div id="galleryGrid"></div>
-  <button onclick="closeLib()" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#fff; color:#000; padding:14px 30px; border-radius:30px; font-weight:800; border:none; z-index:250">Done</button>
+  <div id="galleryEmpty" style="display:none">
+    <div class="emIcon">📷</div>
+    <div>아직 찍은 사진이 없어요</div>
+  </div>
+
+  <div id="selectionBar">
+    <span id="selCount">0장 선택됨</span>
+    <div style="display:flex;gap:8px">
+      <button class="gBtn danger" onclick="deleteSelected()">삭제</button>
+      <button class="gBtn primary" onclick="downloadSelected()">저장</button>
+    </div>
+  </div>
 </div>
 
-<div class="screen" id="photoViewer">
-  <header style="padding: max(var(--safe-top), 20px) 20px; display:flex; justify-content:space-between">
-    <button onclick="closeViewer()" style="color:var(--ios-blue); font-size:17px; font-weight:700; background:none; border:none">Done</button>
-    <button onclick="deleteItem()" style="color:var(--ios-red); font-size:17px; background:none; border:none">Delete</button>
-  </header>
-  <div style="flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden">
-    <img id="pvMainImg" style="max-width:100%; max-height:100%; display:none">
-    <video id="pvMainVid" controls style="max-width:100%; max-height:100%; display:none"></video>
+<!-- ── PHOTO VIEWER ── -->
+
+<div id="photoViewer">
+  <div id="photoViewerHeader">
+    <button class="gBtn" onclick="closePhotoViewer()">← 뒤로</button>
+    <span style="color:rgba(255,255,255,.5);font-size:13px" id="photoViewerIdx"></span>
+    <button class="gBtn" onclick="downloadCurrentPhoto()">저장</button>
+  </div>
+  <img id="photoViewerImg">
+  <div id="photoViewerFooter">
+    <button class="pvBtn danger" onclick="deleteCurrentPhoto()">삭제</button>
   </div>
 </div>
 
 <div id="toast"></div>
 <canvas id="canvas" style="display:none"></canvas>
+<canvas id="vidCanvas" style="display:none"></canvas>
 
 <script>
-(function() {
-  let stream=null, facing='back', currentMode='PHOTO', items=[];
-  let isRec=false, recStart=0, recInt=null, drawInt=null, mediaRec=null, chunks=[];
-  let db=null, flash=false, bothMode=false, isBothCapturing=false;
+/* ══ STATE ══ */
+var camStream=null, mode='FOTO';
+var bereal=false, berealPhase=0, berealFirstURL=null, berealFirstFacing=null;
+var landscape=false, recording=false;
+var mediaRec=null, chunks=[], recTimer=null, recSec=0;
+var flashOn=false, facing='back', animFrame=null;
+var photos=[]; // [{id, dataURL, ts}]
+var selectMode=false, selectedIds=new Set();
+var viewerIdx=0;
 
-  const mainVid = document.getElementById('mainVid');
-  const canvas = document.getElementById('canvas');
-  const thumbImg = document.getElementById('thumbImg');
-  const countdownEl = document.getElementById('countdown');
+var mainVid=document.getElementById('mainVid');
+var canvas=document.getElementById('canvas');
 
-  const req = indexedDB.open("NewmeraProBeReal_v3", 1);
-  req.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains("media")) db.createObjectStore("media", {keyPath:"id"}); };
-  req.onsuccess = e => { db = e.target.result; loadItems(); startCam(); };
+/* ══ INIT ══ */
+window.addEventListener('load', function(){
+  loadPhotos();
+  startCamera();
+});
 
-  async function startCam() {
-    if(stream) stream.getTracks().forEach(t=>t.stop());
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: facing==='back'?'environment':'user', width:{ideal:1920}, height:{ideal:1080} } 
+function loadPhotos(){
+  try{ photos=JSON.parse(localStorage.getItem('newmera_photos')||'[]'); }catch(e){ photos=[]; }
+}
+function savePhotos(){
+  try{ localStorage.setItem('newmera_photos', JSON.stringify(photos)); }catch(e){
+    showToast('저장 공간이 부족해요');
+  }
+}
+
+/* ══ CAMERA ══ */
+async function startCamera(){
+  try{
+    await openCamera(facing);
+    document.getElementById('permScreen').style.display='none';
+  }catch(e){
+    document.querySelector('#permScreen p').textContent='권한 거부됨. Safari 설정에서 카메라를 허용해주세요.';
+    document.getElementById('permScreen').style.display='flex';
+  }
+}
+
+async function openCamera(dir){
+  if(camStream){ camStream.getTracks().forEach(function(t){t.stop();}); camStream=null; }
+  var constraints={
+    video: dir==='back' ? {facingMode:{exact:'environment'}} : {facingMode:{exact:'user'}},
+    audio: mode==='VIDEO'||mode==='SLO-MO'
+  };
+  try{ camStream=await navigator.mediaDevices.getUserMedia(constraints); }
+  catch(e){
+    constraints.video = dir==='back' ? {facingMode:'environment'} : {facingMode:'user'};
+    camStream=await navigator.mediaDevices.getUserMedia(constraints);
+  }
+  mainVid.srcObject=camStream; mainVid.play();
+  mainVid.className=dir==='front'?'mirror':'';
+  facing=dir;
+}
+
+/* ══ SHUTTER ══ */
+function handleShutter(){
+  if(mode==='VIDEO'||mode==='SLO-MO'){ recording?stopRec():startRec(); return; }
+  bereal ? berealCapture() : normalCapture();
+}
+
+/* ══ NORMAL CAPTURE ══ */
+function normalCapture(){
+  doFlash();
+  var url=grabFrame();
+  addPhoto(url);
+  showToast('📸 저장됨');
+}
+
+/* ══ BEREAL CAPTURE ══ */
+function berealCapture(){
+  if(berealPhase!==0) return;
+  berealFirstURL=grabFrame();
+  berealFirstFacing=facing;
+  document.getElementById('capturePreviewImg').src=berealFirstURL;
+  document.getElementById('capturePreview').classList.add('show');
+  document.getElementById('shutter').classList.add('disabled');
+  berealPhase=1;
+
+  var count=3;
+  var overlay=document.getElementById('countdownOverlay');
+  var numEl=document.getElementById('countdownNum');
+  overlay.classList.add('show');
+  numEl.textContent=count;
+
+  var iv=setInterval(function(){
+    count--;
+    if(count>0){
+      numEl.style.animation='none'; void numEl.offsetWidth; numEl.style.animation='pop .3s ease';
+      numEl.textContent=count;
+    }else{
+      clearInterval(iv);
+      overlay.classList.remove('show');
+      document.getElementById('capturePreview').classList.remove('show');
+      var next=berealFirstFacing==='back'?'front':'back';
+      openCamera(next).then(function(){
+        setTimeout(function(){
+          var secondURL=grabFrame();
+          composeFinalPhoto(berealFirstURL, berealFirstFacing, secondURL, next);
+          berealPhase=0; berealFirstURL=null;
+          document.getElementById('shutter').classList.remove('disabled');
+          openCamera(berealFirstFacing);
+        },400);
       });
-      mainVid.srcObject = stream;
-      mainVid.className = facing==='front'?'mirror':'';
-      const track = stream.getVideoTracks()[0];
-      if(track.getCapabilities().torch) track.applyConstraints({advanced:[{torch:flash}]});
-    } catch(e) { msg('Camera Error'); }
-  }
-
-  window.toggleFlash = () => {
-    flash = !flash;
-    document.getElementById('flashBtn').classList.toggle('active', flash);
-    const track = stream.getVideoTracks()[0];
-    try { track.applyConstraints({advanced:[{torch:flash}]}); } catch(e){}
-  };
-
-  window.toggleBoth = () => {
-    bothMode = !bothMode;
-    document.getElementById('bothBtn').textContent = bothMode ? 'BOTH ON' : 'BOTH OFF';
-    document.getElementById('bothBtn').classList.toggle('active', bothMode);
-  };
-
-  let startX=0, cIdx=1;
-  window.handleSwipeStart = e => startX = e.touches[0].clientX;
-  window.handleSwipeEnd = e => {
-    if(isRec || isBothCapturing) return;
-    const diff = startX - e.changedTouches[0].clientX;
-    if(Math.abs(diff)>50) {
-      if(diff>0 && cIdx<1) setMode(cIdx+1);
-      else if(diff<0 && cIdx>0) setMode(cIdx-1);
     }
-  };
-  window.setMode = idx => {
-    cIdx=idx; currentMode = idx===0?'VIDEO':'PHOTO';
-    document.getElementById('modesTrack').style.transform = `translateX(${idx===0?40:-40}px)`;
-    document.querySelectorAll('.mode').forEach((m,i)=>m.classList.toggle('active', i===idx));
-    document.getElementById('shutterInner').style.background = idx===0?'var(--ios-red)':'#fff';
-  };
+  },1000);
+}
 
-  window.handleShutter = () => {
-    if(isBothCapturing) return;
-    currentMode === 'PHOTO' ? takePhoto() : handleVideo();
-  };
+function grabFrame(){
+  var vw=mainVid.videoWidth||1280, vh=mainVid.videoHeight||720;
+  var cw=vw,ch=vh;
+  if(mode==='1:1'){cw=Math.min(vw,vh);ch=cw;}
+  canvas.width=cw; canvas.height=ch;
+  var ctx=canvas.getContext('2d');
+  var ox=(vw-cw)/2, oy=(vh-ch)/2;
+  if(facing==='front'){ctx.translate(cw,0);ctx.scale(-1,1);}
+  ctx.drawImage(mainVid,ox,oy,cw,ch,0,0,cw,ch);
+  if(facing==='front') ctx.setTransform(1,0,0,1,0,0);
+  return canvas.toDataURL('image/jpeg',.88);
+}
 
-  async function takePhoto() {
-    if(!bothMode) {
-      const data = grab(0.9);
-      saveItem({ type:'photo', thumb: data, main: data });
-      msg('📸 Photo Saved');
-      return;
-    }
-
-    isBothCapturing = true;
-    const firstPic = grab(0.9);
-    countdownEl.style.display = 'block';
-    let count = 3;
-    countdownEl.textContent = count;
-    
-    const countInt = setInterval(async () => {
-      count--;
-      if(count > 0) countdownEl.textContent = count;
-      else {
-        clearInterval(countInt);
-        countdownEl.style.display = 'none';
-        facing = facing === 'back' ? 'front' : 'back';
-        await startCam();
-        
-        setTimeout(() => {
-          const secondPic = grab(0.9);
-          combineImages(firstPic, secondPic);
-          isBothCapturing = false;
-          facing = facing === 'back' ? 'front' : 'back';
-          startCam();
-          msg('👥 BeReal Done!');
-        }, 600);
-      }
-    }, 1000);
-  }
-
-  function combineImages(main, sub) {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = 1080; tempCanvas.height = 1440;
-    const ctx = tempCanvas.getContext('2d');
-    const imgMain = new Image();
-    imgMain.onload = () => {
-      ctx.drawImage(imgMain, 0, 0, 1080, 1440);
-      const imgSub = new Image();
-      imgSub.onload = () => {
-        const sw = 260, sh = 346;
-        ctx.fillStyle = "#fff";
-        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(20, 20, sw+6, sh+6, 15) : ctx.rect(20, 20, sw+6, sh+6);
-        ctx.fill();
-        ctx.save(); ctx.beginPath();
-        ctx.roundRect ? ctx.roundRect(23, 23, sw, sh, 12) : ctx.rect(23, 23, sw, sh);
-        ctx.clip(); ctx.drawImage(imgSub, 23, 23, sw, sh); ctx.restore();
-        const final = tempCanvas.toDataURL('image/jpeg', 0.9);
-        saveItem({ type:'photo', thumb: final, main: final });
-      };
-      imgSub.src = sub;
+function composeFinalPhoto(url1, face1, url2, face2){
+  var i1=new Image(), i2=new Image();
+  i1.onload=function(){
+    i2.onload=function(){
+      var W=i1.width,H=i1.height;
+      canvas.width=W;canvas.height=H;
+      var ctx=canvas.getContext('2d');
+      ctx.drawImage(i1,0,0,W,H);
+      var pw=W*.3, ph=pw*(i2.height/i2.width);
+      var mg=W*.04,rx=mg,ry=H-mg-ph,r=16;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(rx+r,ry);ctx.lineTo(rx+pw-r,ry);ctx.quadraticCurveTo(rx+pw,ry,rx+pw,ry+r);
+      ctx.lineTo(rx+pw,ry+ph-r);ctx.quadraticCurveTo(rx+pw,ry+ph,rx+pw-r,ry+ph);
+      ctx.lineTo(rx+r,ry+ph);ctx.quadraticCurveTo(rx,ry+ph,rx,ry+ph-r);
+      ctx.lineTo(rx,ry+r);ctx.quadraticCurveTo(rx,ry,rx+r,ry);
+      ctx.closePath();ctx.clip();
+      ctx.drawImage(i2,rx,ry,pw,ph);
+      ctx.restore();
+      ctx.strokeStyle='#fff';ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.moveTo(rx+r,ry);ctx.lineTo(rx+pw-r,ry);ctx.quadraticCurveTo(rx+pw,ry,rx+pw,ry+r);
+      ctx.lineTo(rx+pw,ry+ph-r);ctx.quadraticCurveTo(rx+pw,ry+ph,rx+pw-r,ry+ph);
+      ctx.lineTo(rx+r,ry+ph);ctx.quadraticCurveTo(rx,ry+ph,rx,ry+ph-r);
+      ctx.lineTo(rx,ry+r);ctx.quadraticCurveTo(rx,ry,rx+r,ry);
+      ctx.closePath();ctx.stroke();
+      var finalURL=canvas.toDataURL('image/jpeg',.88);
+      addPhoto(finalURL);
+      showToast('📸 BeReal 저장됨!');
     };
-    imgMain.src = main;
-  }
-
-  function handleVideo() { if(!isRec) startRec(); else stopRec(); }
-
-  function startRec() {
-    isRec=true; chunks=[];
-    document.getElementById('shutter').classList.add('recording');
-    document.getElementById('recUI').classList.add('active');
-    recStart = Date.now();
-    recInt = setInterval(() => {
-      const d = Math.floor((Date.now()-recStart)/1000);
-      document.getElementById('recTimer').textContent = `${String(Math.floor(d/60)).padStart(2,'0')}:${String(d%60).padStart(2,'0')}`;
-    }, 1000);
-
-    const cStream = canvas.captureStream(30);
-    mediaRec = new MediaRecorder(cStream, { mimeType:'video/webm;codecs=vp8', videoBitsPerSecond:8000000 });
-    mediaRec.ondataavailable = e => chunks.push(e.data);
-    mediaRec.onstop = () => {
-      const blob = new Blob(chunks, {type:'video/webm'});
-      const thumb = canvas.toDataURL('image/jpeg', 0.5);
-      const reader = new FileReader();
-      reader.onloadend = () => { saveItem({ type:'video', thumb, main: reader.result }); msg('🎥 Video Saved'); };
-      reader.readAsDataURL(blob);
-    };
-    mediaRec.start();
-    drawInt = setInterval(() => grab(0, true), 1000/30);
-  }
-
-  function stopRec() { isRec=false; clearInterval(recInt); clearInterval(drawInt); document.getElementById('shutter').classList.remove('recording'); document.getElementById('recUI').classList.remove('active'); mediaRec.stop(); }
-
-  function grab(q, drawOnly=false) {
-    canvas.width = 1920; canvas.height = 1080;
-    const ctx = canvas.getContext('2d');
-    if(facing==='front') { ctx.translate(1920, 0); ctx.scale(-1, 1); }
-    ctx.drawImage(mainVid, 0, 0, 1920, 1080);
-    return drawOnly ? null : canvas.toDataURL('image/jpeg', q);
-  }
-
-  function saveItem(item) {
-    item.id = Date.now();
-    const tx = db.transaction("media", "readwrite");
-    tx.objectStore("media").add(item);
-    tx.oncomplete = () => loadItems();
-  }
-
-  function loadItems() {
-    const tx = db.transaction("media", "readonly");
-    const req = tx.objectStore("media").getAll();
-    req.onsuccess = () => {
-      items = req.result.sort((a,b)=>b.id-a.id);
-      if(items.length>0) { thumbImg.src = items[0].thumb; thumbImg.style.display='block'; }
-      else thumbImg.style.display='none';
-    };
-  }
-
-  window.openLib = () => { document.getElementById('libraryScreen').classList.add('active'); renderGrid(); };
-  window.closeLib = () => document.getElementById('libraryScreen').classList.remove('active');
-
-  function renderGrid() {
-    const grid = document.getElementById('galleryGrid');
-    grid.innerHTML = '';
-    document.getElementById('libCount').textContent = items.length + ' Items';
-    items.forEach((it, i) => {
-      const div = document.createElement('div');
-      div.className = 'gItem';
-      div.innerHTML = `<img src="${it.thumb}">${it.type==='video'?'<div class="vBadge">16:9</div>':''}`;
-      div.onclick = () => openViewer(i);
-      grid.appendChild(div);
-    });
-  }
-
-  let vIdx=0;
-  window.openViewer = i => { vIdx=i; document.getElementById('photoViewer').classList.add('active'); updateViewer(); };
-  function updateViewer() {
-    const it = items[vIdx];
-    const img=document.getElementById('pvMainImg'), vid=document.getElementById('pvMainVid');
-    if(it.type==='video') { img.style.display='none'; vid.style.display='block'; vid.src=it.main; }
-    else { vid.style.display='none'; img.style.display='block'; img.src=it.main; }
-  }
-  window.closeViewer = () => { document.getElementById('photoViewer').classList.remove('active'); document.getElementById('pvMainVid').pause(); };
-  window.deleteItem = () => {
-    if(confirm('Delete?')) {
-      const tx = db.transaction("media", "readwrite");
-      tx.objectStore("media").delete(items[vIdx].id);
-      tx.oncomplete = () => { loadItems(); renderGrid(); closeViewer(); };
-    }
+    i2.src=url2;
   };
+  i1.src=url1;
+}
 
-  window.flipCam = () => { facing=facing==='back'?'front':'back'; startCam(); };
-  function msg(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
-})();
+/* ══ PHOTO STORAGE ══ */
+function addPhoto(url){
+  var photo={id:Date.now()+'_'+Math.random().toString(36).slice(2), dataURL:url, ts:Date.now()};
+  photos.unshift(photo);
+  savePhotos();
+  updateThumb();
+}
+
+function updateThumb(){
+  var img=document.getElementById('thumbImg');
+  var cnt=document.getElementById('thumbCount');
+  if(photos.length>0){
+    img.src=photos[0].dataURL; img.style.display='block';
+    cnt.textContent=photos.length>1?photos.length:'';
+  }else{
+    img.style.display='none'; cnt.textContent='';
+  }
+}
+
+/* ══ GALLERY ══ */
+function openGallery(){
+  selectMode=false; selectedIds.clear();
+  renderGallery();
+  document.getElementById('cameraScreen').classList.remove('active');
+  document.getElementById('galleryScreen').classList.add('active');
+}
+
+function closeGallery(){
+  document.getElementById('galleryScreen').classList.remove('active');
+  document.getElementById('cameraScreen').classList.add('active');
+  updateThumb();
+}
+
+function renderGallery(){
+  var grid=document.getElementById('galleryGrid');
+  var empty=document.getElementById('galleryEmpty');
+  var cnt=document.getElementById('galleryCount');
+  var selBar=document.getElementById('selectionBar');
+
+  cnt.textContent=photos.length+'장';
+  selBar.classList.toggle('show', selectMode&&selectedIds.size>0);
+  document.getElementById('selCount').textContent=selectedIds.size+'장 선택됨';
+  document.getElementById('selectModeBtn').textContent=selectMode?'취소':'선택';
+
+  if(photos.length===0){
+    grid.style.display='none'; empty.style.display='flex'; return;
+  }
+  grid.style.display='grid'; empty.style.display='none';
+
+  grid.innerHTML='';
+  photos.forEach(function(p,i){
+    var div=document.createElement('div');
+    div.className='gItem'+(selectMode?' selecting':'')+(selectedIds.has(p.id)?' selected':'');
+    div.innerHTML='<img src="'+p.dataURL+'" loading="lazy"><div class="sel">✓</div>';
+    div.onclick=function(){
+      if(selectMode){ toggleSelect(p.id); }
+      else{ openPhotoViewer(i); }
+    };
+    grid.appendChild(div);
+  });
+}
+
+function toggleSelectMode(){
+  selectMode=!selectMode;
+  selectedIds.clear();
+  renderGallery();
+}
+
+function toggleSelect(id){
+  if(selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  renderGallery();
+}
+
+function downloadSelected(){
+  if(selectedIds.size===0){ showToast('사진을 선택해주세요'); return; }
+  var toDownload=photos.filter(function(p){return selectedIds.has(p.id);});
+  toDownload.forEach(function(p,i){
+    setTimeout(function(){
+      var a=document.createElement('a');
+      a.href=p.dataURL;
+      a.download='newmera_'+p.id+'.jpg';
+      a.click();
+    },i*200);
+  });
+  showToast(toDownload.length+'장 저장 중... (꾹 눌러서 저장)');
+  // iOS fallback: open in new tab
+  if(/iPhone|iPad/.test(navigator.userAgent)){
+    setTimeout(function(){
+      toDownload.forEach(function(p){
+        var w=window.open();
+        w.document.write('<img src="'+p.dataURL+'" style="max-width:100%"><p style="color:#888;font-family:sans-serif;text-align:center;padding:12px">이미지 꾹 누르기 → 사진 저장</p>');
+      });
+    },100);
+  }
+}
+
+function deleteSelected(){
+  if(selectedIds.size===0) return;
+  if(!confirm(selectedIds.size+'장을 삭제할까요?')) return;
+  photos=photos.filter(function(p){return !selectedIds.has(p.id);});
+  selectedIds.clear(); selectMode=false;
+  savePhotos(); renderGallery(); showToast('삭제됨');
+}
+
+/* ══ PHOTO VIEWER ══ */
+function openPhotoViewer(idx){
+  viewerIdx=idx;
+  var p=photos[idx];
+  document.getElementById('photoViewerImg').src=p.dataURL;
+  document.getElementById('photoViewerIdx').textContent=(idx+1)+' / '+photos.length;
+  document.getElementById('photoViewer').classList.add('show');
+}
+
+function closePhotoViewer(){
+  document.getElementById('photoViewer').classList.remove('show');
+}
+
+function downloadCurrentPhoto(){
+  var p=photos[viewerIdx];
+  if(!p) return;
+  if(/iPhone|iPad/.test(navigator.userAgent)){
+    var w=window.open();
+    w.document.write('<img src="'+p.dataURL+'" style="max-width:100%;display:block"><p style="color:#888;font-family:sans-serif;text-align:center;padding:12px">이미지를 꾹 누르고 → 사진 저장</p>');
+  }else{
+    var a=document.createElement('a');
+    a.href=p.dataURL; a.download='newmera_'+p.id+'.jpg'; a.click();
+  }
+}
+
+function deleteCurrentPhoto(){
+  if(!confirm('이 사진을 삭제할까요?')) return;
+  photos.splice(viewerIdx,1);
+  savePhotos();
+  closePhotoViewer();
+  renderGallery();
+  showToast('삭제됨');
+}
+
+/* ══ VIDEO ══ */
+function startRec(){
+  chunks=[];
+  var s=camStream;
+  if(landscape){
+    var vc=document.getElementById('vidCanvas');
+    var vw=mainVid.videoWidth||1280,vh=mainVid.videoHeight||720;
+    vc.width=vh;vc.height=vw;
+    var ctx=vc.getContext('2d');
+    (function draw(){ctx.save();ctx.translate(vc.width/2,vc.height/2);ctx.rotate(-Math.PI/2);ctx.drawImage(mainVid,-vw/2,-vh/2,vw,vh);ctx.restore();animFrame=requestAnimationFrame(draw);})();
+    s=vc.captureStream(30);
+    var at=camStream.getAudioTracks()[0];
+    if(at) s.addTrack(at);
+  }
+  var mime='video/webm;codecs=vp9';
+  if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
+  try{mediaRec=new MediaRecorder(s,{mimeType:mime});}catch(e){mediaRec=new MediaRecorder(s);}
+  mediaRec.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
+  mediaRec.onstop=function(){
+    var blob=new Blob(chunks,{type:'video/webm'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='newmera_'+Date.now()+'.webm';a.click();
+    setTimeout(function(){URL.revokeObjectURL(url);},5000);
+    showToast('🎬 영상 저장됨');
+  };
+  mediaRec.start(100);
+  recording=true;
+  document.getElementById('shutter').classList.add('rec');
+  recSec=0;updateRecTime();
+  document.getElementById('recPill').classList.add('show');
+  recTimer=setInterval(function(){recSec++;updateRecTime();},1000);
+}
+
+function stopRec(){
+  if(mediaRec&&mediaRec.state!=='inactive') mediaRec.stop();
+  recording=false;
+  document.getElementById('shutter').classList.remove('rec');
+  document.getElementById('recPill').classList.remove('show');
+  clearInterval(recTimer);
+  if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}
+}
+
+function updateRecTime(){
+  var m=String(Math.floor(recSec/60)).padStart(2,'0'),s=String(recSec%60).padStart(2,'0');
+  document.getElementById('recTime').textContent=m+':'+s;
+}
+
+/* ══ UI CONTROLS ══ */
+function doFlash(){
+  var fl=document.getElementById('flash');
+  fl.style.opacity='0.7';
+  setTimeout(function(){fl.style.opacity='0';},120);
+}
+
+function toggleBereal(){
+  bereal=!bereal;
+  document.getElementById('berealBtn').classList.toggle('on',bereal);
+  showToast(bereal?'👁️ BeReal ON — 셔터 → 3초 후 반대 카메라 자동 촬영':'👁️ BeReal OFF');
+}
+
+function toggleFlash(){flashOn=!flashOn;document.getElementById('flashBtn').classList.toggle('on',flashOn);}
+
+function toggleLandscape(){
+  landscape=!landscape;
+  document.getElementById('landBtn').classList.toggle('on',landscape);
+  document.getElementById('landPill').classList.toggle('show',landscape);
+  showToast(landscape?'↔️ 가로 모드 켜짐':'↕️ 세로 모드');
+}
+
+function setMode(el,m){
+  mode=m;
+  document.querySelectorAll('.mode').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+  var lb=document.getElementById('landBtn');
+  if(m==='VIDEO'||m==='SLO-MO') lb.classList.add('show');
+  else{lb.classList.remove('show');if(landscape)toggleLandscape();}
+}
+
+function setZoom(z){
+  mainVid.style.transform=(facing==='front'?'scaleX(-1) ':'')+'scale('+z+')';
+  document.querySelectorAll('.zbtn').forEach(function(b){b.classList.toggle('on',b.textContent.trim()===z+'×');});
+}
+
+function flipCamera(){
+  var btn=document.getElementById('flipBtn');
+  btn.style.transform='rotate(180deg)';
+  setTimeout(function(){btn.style.transform='';},400);
+  openCamera(facing==='back'?'front':'back');
+}
+
+function handleVfClick(e){
+  var f=document.getElementById('focus');
+  var rect=e.currentTarget.getBoundingClientRect();
+  f.style.left=(e.clientX-rect.left)+'px';
+  f.style.top=(e.clientY-rect.top)+'px';
+  f.style.display='block';
+  setTimeout(function(){f.style.display='none';},1100);
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t=setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+// init thumb
+updateThumb();
 </script>
+
 </body>
 </html>
-
