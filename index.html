@@ -3,70 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Newmera Pro Cinematic</title>
+<title>Newmera Pro BeReal</title>
 <style>
 :root {
   --ios-blue: #007aff;
   --ios-red: #ff3b30;
   --ios-yellow: #ffd60a;
   --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
 html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; }
 
+/* LAYOUT */
 .screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: #000; }
 .screen.active { display: flex; }
 
-/* CAMERA VIEWPORT */
-#vfContainer { position: relative; flex: 1; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-#vf { position: relative; width: 100%; height: 100%; border-radius: 0 0 40px 40px; overflow: hidden; }
-#mainVid { width: 100%; height: 100%; object-fit: cover; }
-#subVid { position: absolute; top: 20px; right: 20px; width: 120px; height: 160px; border: 2px solid #fff; border-radius: 12px; object-fit: cover; display: none; z-index: 50; }
+/* VIEWPORT */
+#vfContainer { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; }
+#vf { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 0 0 40px 40px; }
+#mainVid { width: 100%; height: 100%; object-fit: cover; background: #000; }
 #mainVid.mirror { transform: scaleX(-1); }
 
 /* TOP CONTROLS */
-#topBar { position: absolute; top: max(var(--safe-top), 20px); left: 0; width: 100%; display: flex; justify-content: space-between; padding: 0 20px; z-index: 100; }
-.top-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 700; backdrop-filter: blur(10px); }
-.top-btn.active { background: var(--ios-yellow); color: #000; }
+#topBar { position: absolute; top: max(var(--safe-top), 15px); left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; z-index: 100; }
+.top-btn { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; backdrop-filter: blur(10px); }
+.top-btn.active { background: var(--ios-yellow); color: #000; border-color: var(--ios-yellow); }
+#bothBtn { width: auto; padding: 0 15px; border-radius: 22px; font-size: 13px; font-weight: 700; }
 
-/* Recording UI */
-#recUI { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); background: rgba(255, 59, 48, 0.9); padding: 5px 15px; border-radius: 20px; display: none; align-items: center; gap: 8px; z-index: 110; }
+/* COUNTER & REC */
+#countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px; font-weight: 900; color: #fff; text-shadow: 0 0 30px rgba(0,0,0,0.8); z-index: 150; display: none; pointer-events: none; }
+#recUI { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(255, 59, 48, 0.9); padding: 5px 15px; border-radius: 20px; display: none; align-items: center; gap: 8px; z-index: 110; }
 #recUI.active { display: flex; }
 #recDot { width: 8px; height: 8px; background: #fff; border-radius: 50%; animation: blink 1s infinite; }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
 /* BOTTOM UI */
-#cameraBottom { background: #000; padding: 15px 0 calc(env(safe-area-inset-bottom) + 10px); }
-#modesWrapper { position: relative; width: 100%; height: 40px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; }
+#cameraBottom { background: #000; padding: 10px 0 calc(var(--safe-bottom) + 15px); flex-shrink: 0; }
+#modesWrapper { position: relative; width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 #modesTrack { display: flex; position: absolute; gap: 40px; transition: transform 0.4s cubic-bezier(0.2, 1, 0.2, 1); }
-.mode { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.3); }
+.mode { font-size: 13px; font-weight: 800; color: rgba(255,255,255,0.3); padding: 10px; transition: 0.3s; letter-spacing: 0.5px; }
 .mode.active { color: var(--ios-yellow); }
 
-#shutterRow { display: flex; align-items: center; justify-content: space-between; padding: 0 45px; }
-#thumb { width: 56px; height: 56px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: #111; overflow: hidden; }
+#shutterRow { display: flex; align-items: center; justify-content: space-between; padding: 0 40px; margin-top: 5px; }
+#thumb { width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.3); background: #111; overflow: hidden; }
 #thumb img { width: 100%; height: 100%; object-fit: cover; }
-#shutter { width: 74px; height: 74px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; }
-#shutterInner { width: 58px; height: 58px; border-radius: 50%; background: #fff; transition: 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
-#shutter.recording #shutterInner { background: var(--ios-red); border-radius: 10px; transform: scale(0.5); }
+#shutter { width: 72px; height: 72px; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; }
+#shutterInner { width: 56px; height: 56px; border-radius: 50%; background: #fff; transition: 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); }
+#shutter.recording #shutterInner { background: var(--ios-red); border-radius: 12px; transform: scale(0.5); }
 
-/* LIBRARY */
-#libraryScreen { background: #000; }
-#libHeader { padding: max(var(--safe-top), 40px) 20px 10px; }
-#libActions { display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 10px; }
-.action-link { color: var(--ios-blue); font-size: 17px; font-weight: 600; background: none; border: none; }
-#libTitle { font-size: 34px; font-weight: 800; }
-#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding-bottom: 100px; }
+/* LIBRARY & VIEWER */
+#libHeader { padding: max(var(--safe-top), 40px) 20px 15px; }
+#galleryGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding-bottom: 120px; }
 .gItem { aspect-ratio: 1; background: #1c1c1e; position: relative; }
 .gItem img { width: 100%; height: 100%; object-fit: cover; }
-.vBadge { position: absolute; bottom: 5px; right: 5px; font-size: 10px; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; }
+.vBadge { position: absolute; bottom: 6px; right: 6px; font-size: 10px; font-weight: 800; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; }
 
-#backToCam { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 14px 25px; border-radius: 30px; font-weight: 800; z-index: 200; }
-
-/* VIEWER */
-#photoViewer { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 300; }
-#pvHeader { padding: max(var(--safe-top), 20px) 20px; display: flex; justify-content: space-between; }
-
-#toast { position: fixed; top: 110px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; }
+#toast { position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 700; z-index: 1000; opacity: 0; transition: 0.3s; pointer-events: none; }
 #toast.show { opacity: 1; }
 </style>
 </head>
@@ -74,18 +67,18 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 
 <div class="screen active" id="cameraScreen">
   <div id="vfContainer">
-    <div id="vf" ontouchstart="handleCamStart(event)" ontouchend="handleCamEnd(event)">
+    <div id="vf" ontouchstart="handleSwipeStart(event)" ontouchend="handleSwipeEnd(event)">
       <video id="mainVid" autoplay playsinline muted></video>
-      <video id="subVid" autoplay playsinline muted></video>
+      <div id="countdown">3</div>
       <div id="recUI"><div id="recDot"></div><div id="recTimer">00:00</div></div>
       <div id="topBar">
-        <button class="top-btn" onclick="toggleFlash()" id="flashBtn">Flash OFF</button>
-        <button class="top-btn" onclick="toggleBoth()" id="bothBtn">Both OFF</button>
+        <button class="top-btn" onclick="toggleFlash()" id="flashBtn">⚡️</button>
+        <button class="top-btn" onclick="toggleBoth()" id="bothBtn">BOTH OFF</button>
       </div>
     </div>
   </div>
   <div id="cameraBottom">
-    <div id="modesWrapper" ontouchstart="handleCamStart(event)" ontouchend="handleCamEnd(event)">
+    <div id="modesWrapper" ontouchstart="handleSwipeStart(event)" ontouchend="handleSwipeEnd(event)">
       <div id="modesTrack">
         <div class="mode" onclick="setMode(0)">VIDEO</div>
         <div class="mode active" onclick="setMode(1)">PHOTO</div>
@@ -101,25 +94,24 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 
 <div class="screen" id="libraryScreen">
   <header id="libHeader">
-    <div id="libActions">
-      <button class="action-link">Play</button>
-      <button class="action-link">Select</button>
+    <div style="display:flex; justify-content: flex-end; gap: 15px;">
+        <button style="color:var(--ios-blue); font-size:17px; font-weight:600; background:none; border:none">Select</button>
     </div>
-    <h1 id="libTitle">Library</h1>
-    <div id="libCount" style="color:#8e8e93">0 Items</div>
+    <h1 style="font-size:34px; font-weight:800; margin-top:5px">Library</h1>
+    <div id="libCount" style="color:#8e8e93; font-size:15px; margin-top:5px">0 Items</div>
   </header>
   <div id="galleryGrid"></div>
-  <button id="backToCam" onclick="closeLib()">카메라</button>
+  <button onclick="closeLib()" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#fff; color:#000; padding:14px 30px; border-radius:30px; font-weight:800; border:none; z-index:250">Done</button>
 </div>
 
-<div id="photoViewer">
-  <div id="pvHeader">
-    <button onclick="closeViewer()" style="color:var(--ios-blue); background:none; border:none; font-size:17px; font-weight:700">Done</button>
-    <button onclick="delItem()" style="color:var(--ios-red); background:none; border:none; font-size:17px">Delete</button>
-  </div>
-  <div style="flex:1; display:flex; align-items:center; justify-content:center;">
-    <img id="pvImg" style="max-width:100%; max-height:100%; display:none">
-    <video id="pvVid" controls style="max-width:100%; max-height:100%; display:none"></video>
+<div class="screen" id="photoViewer">
+  <header style="padding: max(var(--safe-top), 20px) 20px; display:flex; justify-content:space-between">
+    <button onclick="closeViewer()" style="color:var(--ios-blue); font-size:17px; font-weight:700; background:none; border:none">Done</button>
+    <button onclick="deleteItem()" style="color:var(--ios-red); font-size:17px; background:none; border:none">Delete</button>
+  </header>
+  <div style="flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden">
+    <img id="pvMainImg" style="max-width:100%; max-height:100%; display:none">
+    <video id="pvMainVid" controls style="max-width:100%; max-height:100%; display:none"></video>
   </div>
 </div>
 
@@ -128,133 +120,163 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
 
 <script>
 (function() {
-  let stream=null, subStream=null, facing='back', currentMode='PHOTO', items=[];
+  let stream=null, facing='back', currentMode='PHOTO', items=[];
   let isRec=false, recStart=0, recInt=null, drawInt=null, mediaRec=null, chunks=[];
-  let db=null, flash=false, both=false;
+  let db=null, flash=false, bothMode=false, isBothCapturing=false;
 
   const mainVid = document.getElementById('mainVid');
-  const subVid = document.getElementById('subVid');
   const canvas = document.getElementById('canvas');
   const thumbImg = document.getElementById('thumbImg');
+  const countdownEl = document.getElementById('countdown');
 
-  // IndexedDB Init
-  const req = indexedDB.open("NewmeraProCinematic", 1);
+  const req = indexedDB.open("NewmeraProBeReal_v3", 1);
   req.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains("media")) db.createObjectStore("media", {keyPath:"id"}); };
   req.onsuccess = e => { db = e.target.result; loadItems(); startCam(); };
 
   async function startCam() {
     if(stream) stream.getTracks().forEach(t=>t.stop());
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing==='back'?'environment':'user', width:{ideal:1920}, height:{ideal:1080} }
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: facing==='back'?'environment':'user', width:{ideal:1920}, height:{ideal:1080} } 
       });
       mainVid.srcObject = stream;
       mainVid.className = facing==='front'?'mirror':'';
-      
-      // Flash control
       const track = stream.getVideoTracks()[0];
       if(track.getCapabilities().torch) track.applyConstraints({advanced:[{torch:flash}]});
     } catch(e) { msg('Camera Error'); }
   }
 
-  window.toggleFlash = async () => {
+  window.toggleFlash = () => {
     flash = !flash;
-    document.getElementById('flashBtn').textContent = flash ? 'Flash ON' : 'Flash OFF';
     document.getElementById('flashBtn').classList.toggle('active', flash);
     const track = stream.getVideoTracks()[0];
-    try { await track.applyConstraints({advanced:[{torch:flash}]}); } catch(e){}
+    try { track.applyConstraints({advanced:[{torch:flash}]}); } catch(e){}
   };
 
-  window.toggleBoth = async () => {
-    both = !both;
-    subVid.style.display = both ? 'block' : 'none';
-    document.getElementById('bothBtn').textContent = both ? 'Both ON' : 'Both OFF';
-    document.getElementById('bothBtn').classList.toggle('active', both);
-    if(both && !subStream) {
-        subStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 480 } });
-        subVid.srcObject = subStream;
-    } else if(!both && subStream) {
-        subStream.getTracks().forEach(t=>t.stop()); subStream = null;
-    }
+  window.toggleBoth = () => {
+    bothMode = !bothMode;
+    document.getElementById('bothBtn').textContent = bothMode ? 'BOTH ON' : 'BOTH OFF';
+    document.getElementById('bothBtn').classList.toggle('active', bothMode);
   };
 
-  // Swipe
   let startX=0, cIdx=1;
-  window.handleCamStart = e => startX = e.touches[0].clientX;
-  window.handleCamEnd = e => {
-    if(isRec) return;
+  window.handleSwipeStart = e => startX = e.touches[0].clientX;
+  window.handleSwipeEnd = e => {
+    if(isRec || isBothCapturing) return;
     const diff = startX - e.changedTouches[0].clientX;
     if(Math.abs(diff)>50) {
-        if(diff>0 && cIdx<1) setMode(cIdx+1);
-        else if(diff<0 && cIdx>0) setMode(cIdx-1);
+      if(diff>0 && cIdx<1) setMode(cIdx+1);
+      else if(diff<0 && cIdx>0) setMode(cIdx-1);
     }
   };
   window.setMode = idx => {
-    cIdx = idx; currentMode = idx===0?'VIDEO':'PHOTO';
+    cIdx=idx; currentMode = idx===0?'VIDEO':'PHOTO';
     document.getElementById('modesTrack').style.transform = `translateX(${idx===0?40:-40}px)`;
     document.querySelectorAll('.mode').forEach((m,i)=>m.classList.toggle('active', i===idx));
     document.getElementById('shutterInner').style.background = idx===0?'var(--ios-red)':'#fff';
   };
 
-  window.handleShutter = () => currentMode==='PHOTO' ? takePhoto() : handleVideo();
+  window.handleShutter = () => {
+    if(isBothCapturing) return;
+    currentMode === 'PHOTO' ? takePhoto() : handleVideo();
+  };
 
-  function takePhoto() {
-    const data = grab(0.9);
-    save({ type:'photo', thumb: data, main: data });
-    msg('📸 Photo Saved');
+  async function takePhoto() {
+    if(!bothMode) {
+      const data = grab(0.9);
+      saveItem({ type:'photo', thumb: data, main: data });
+      msg('📸 Photo Saved');
+      return;
+    }
+
+    isBothCapturing = true;
+    const firstPic = grab(0.9);
+    countdownEl.style.display = 'block';
+    let count = 3;
+    countdownEl.textContent = count;
+    
+    const countInt = setInterval(async () => {
+      count--;
+      if(count > 0) countdownEl.textContent = count;
+      else {
+        clearInterval(countInt);
+        countdownEl.style.display = 'none';
+        facing = facing === 'back' ? 'front' : 'back';
+        await startCam();
+        
+        setTimeout(() => {
+          const secondPic = grab(0.9);
+          combineImages(firstPic, secondPic);
+          isBothCapturing = false;
+          facing = facing === 'back' ? 'front' : 'back';
+          startCam();
+          msg('👥 BeReal Done!');
+        }, 600);
+      }
+    }, 1000);
   }
 
-  function handleVideo() { if(!isRec) startVideo(); else stopVideo(); }
+  function combineImages(main, sub) {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 1080; tempCanvas.height = 1440;
+    const ctx = tempCanvas.getContext('2d');
+    const imgMain = new Image();
+    imgMain.onload = () => {
+      ctx.drawImage(imgMain, 0, 0, 1080, 1440);
+      const imgSub = new Image();
+      imgSub.onload = () => {
+        const sw = 260, sh = 346;
+        ctx.fillStyle = "#fff";
+        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(20, 20, sw+6, sh+6, 15) : ctx.rect(20, 20, sw+6, sh+6);
+        ctx.fill();
+        ctx.save(); ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(23, 23, sw, sh, 12) : ctx.rect(23, 23, sw, sh);
+        ctx.clip(); ctx.drawImage(imgSub, 23, 23, sw, sh); ctx.restore();
+        const final = tempCanvas.toDataURL('image/jpeg', 0.9);
+        saveItem({ type:'photo', thumb: final, main: final });
+      };
+      imgSub.src = sub;
+    };
+    imgMain.src = main;
+  }
 
-  function startVideo() {
+  function handleVideo() { if(!isRec) startRec(); else stopRec(); }
+
+  function startRec() {
     isRec=true; chunks=[];
     document.getElementById('shutter').classList.add('recording');
     document.getElementById('recUI').classList.add('active');
     recStart = Date.now();
-    recInt = setInterval(()=>{
-        const d = Math.floor((Date.now()-recStart)/1000);
-        document.getElementById('recTimer').textContent = `${String(Math.floor(d/60)).padStart(2,'0')}:${String(d%60).padStart(2,'0')}`;
+    recInt = setInterval(() => {
+      const d = Math.floor((Date.now()-recStart)/1000);
+      document.getElementById('recTimer').textContent = `${String(Math.floor(d/60)).padStart(2,'0')}:${String(d%60).padStart(2,'0')}`;
     }, 1000);
 
-    // 16:9 Canvas Capture
     const cStream = canvas.captureStream(30);
     mediaRec = new MediaRecorder(cStream, { mimeType:'video/webm;codecs=vp8', videoBitsPerSecond:8000000 });
-    mediaRec.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
+    mediaRec.ondataavailable = e => chunks.push(e.data);
     mediaRec.onstop = () => {
-        const blob = new Blob(chunks, {type:'video/webm'});
-        const thumb = canvas.toDataURL('image/jpeg', 0.5);
-        const reader = new FileReader();
-        reader.onloadend = () => { save({ type:'video', thumb, main: reader.result }); msg('🎥 Video Saved'); };
-        reader.readAsDataURL(blob);
+      const blob = new Blob(chunks, {type:'video/webm'});
+      const thumb = canvas.toDataURL('image/jpeg', 0.5);
+      const reader = new FileReader();
+      reader.onloadend = () => { saveItem({ type:'video', thumb, main: reader.result }); msg('🎥 Video Saved'); };
+      reader.readAsDataURL(blob);
     };
     mediaRec.start();
     drawInt = setInterval(() => grab(0, true), 1000/30);
   }
 
-  function stopVideo() {
-    isRec=false;
-    document.getElementById('shutter').classList.remove('recording');
-    document.getElementById('recUI').classList.remove('active');
-    clearInterval(recInt); clearInterval(drawInt);
-    mediaRec.stop();
-  }
+  function stopRec() { isRec=false; clearInterval(recInt); clearInterval(drawInt); document.getElementById('shutter').classList.remove('recording'); document.getElementById('recUI').classList.remove('active'); mediaRec.stop(); }
 
   function grab(q, drawOnly=false) {
-    // 16:9 억제 (가로 1920:1080)
     canvas.width = 1920; canvas.height = 1080;
     const ctx = canvas.getContext('2d');
     if(facing==='front') { ctx.translate(1920, 0); ctx.scale(-1, 1); }
     ctx.drawImage(mainVid, 0, 0, 1920, 1080);
-    if(both && subVid.srcObject) {
-        ctx.setTransform(1,0,0,1,0,0);
-        ctx.strokeStyle = "#fff"; ctx.lineWidth = 4;
-        ctx.strokeRect(1920-320-40, 40, 320, 420);
-        ctx.drawImage(subVid, 1920-320-40, 40, 320, 420);
-    }
     return drawOnly ? null : canvas.toDataURL('image/jpeg', q);
   }
 
-  function save(item) {
+  function saveItem(item) {
     item.id = Date.now();
     const tx = db.transaction("media", "readwrite");
     tx.objectStore("media").add(item);
@@ -265,9 +287,9 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     const tx = db.transaction("media", "readonly");
     const req = tx.objectStore("media").getAll();
     req.onsuccess = () => {
-        items = req.result.sort((a,b)=>b.id-a.id);
-        if(items.length>0) { thumbImg.src = items[0].thumb; thumbImg.style.display='block'; }
-        else thumbImg.style.display='none';
+      items = req.result.sort((a,b)=>b.id-a.id);
+      if(items.length>0) { thumbImg.src = items[0].thumb; thumbImg.style.display='block'; }
+      else thumbImg.style.display='none';
     };
   }
 
@@ -279,28 +301,28 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font
     grid.innerHTML = '';
     document.getElementById('libCount').textContent = items.length + ' Items';
     items.forEach((it, i) => {
-        const d = document.createElement('div');
-        d.className='gItem';
-        d.innerHTML = `<img src="${it.thumb}">${it.type==='video'?'<div class="vBadge">▶ 16:9</div>':''}`;
-        d.onclick = () => openViewer(i);
-        grid.appendChild(d);
+      const div = document.createElement('div');
+      div.className = 'gItem';
+      div.innerHTML = `<img src="${it.thumb}">${it.type==='video'?'<div class="vBadge">16:9</div>':''}`;
+      div.onclick = () => openViewer(i);
+      grid.appendChild(div);
     });
   }
 
   let vIdx=0;
-  window.openViewer = idx => { vIdx=idx; document.getElementById('photoViewer').classList.add('show'); updateViewer(); };
+  window.openViewer = i => { vIdx=i; document.getElementById('photoViewer').classList.add('active'); updateViewer(); };
   function updateViewer() {
     const it = items[vIdx];
-    const img=document.getElementById('pvImg'), vid=document.getElementById('pvVid');
+    const img=document.getElementById('pvMainImg'), vid=document.getElementById('pvMainVid');
     if(it.type==='video') { img.style.display='none'; vid.style.display='block'; vid.src=it.main; }
     else { vid.style.display='none'; img.style.display='block'; img.src=it.main; }
   }
-  window.closeViewer = () => { document.getElementById('photoViewer').classList.remove('show'); document.getElementById('pvVid').pause(); };
-  window.delItem = () => {
+  window.closeViewer = () => { document.getElementById('photoViewer').classList.remove('active'); document.getElementById('pvMainVid').pause(); };
+  window.deleteItem = () => {
     if(confirm('Delete?')) {
-        const tx = db.transaction("media", "readwrite");
-        tx.objectStore("media").delete(items[vIdx].id);
-        tx.oncomplete = () => { loadItems(); renderGrid(); if(items.length<=1) closeViewer(); else { vIdx=0; updateViewer(); } };
+      const tx = db.transaction("media", "readwrite");
+      tx.objectStore("media").delete(items[vIdx].id);
+      tx.oncomplete = () => { loadItems(); renderGrid(); closeViewer(); };
     }
   };
 
