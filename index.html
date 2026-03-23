@@ -15,7 +15,7 @@
   --safe-bottom: env(safe-area-inset-bottom);
   --yellow:#ffd60a;
   --white:rgba(255,255,255,.96);
-  --dim:rgba(255,255,255,.52);
+  --dim:rgba(255,255,255,.45);
 }
 *{
   box-sizing:border-box;
@@ -33,10 +33,10 @@ html,body{
 }
 button{
   border:none;
-  outline:none;
   background:none;
   color:inherit;
   font:inherit;
+  outline:none;
 }
 .screen{
   position:fixed;
@@ -45,98 +45,27 @@ button{
   flex-direction:column;
   background:#000;
 }
-.screen.active{
-  display:flex;
-}
+.screen.active{display:flex;}
 
-/* CAMERA */
-#camScreen{
-  overflow:hidden;
-}
-#topBar{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  z-index:30;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:max(var(--safe-top), 8px) 20px 0;
-  pointer-events:none;
-}
-.topBtn{
-  pointer-events:auto;
-  min-width:58px;
-  height:28px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--white);
-  font-size:13px;
-  font-weight:500;
-  letter-spacing:.2px;
-  opacity:.95;
-}
-.topBtn.active{
-  color:var(--yellow);
-}
-#ratioWrap{
-  position:relative;
-}
-#ratioMenu{
-  position:absolute;
-  top:30px;
-  left:50%;
-  transform:translateX(-50%);
-  display:none;
-  flex-direction:column;
-  overflow:hidden;
-  border-radius:12px;
-  background:rgba(28,28,30,.96);
-  border:1px solid rgba(255,255,255,.08);
-  min-width:82px;
-}
-#ratioMenu.show{
-  display:flex;
-}
-.ratioOpt{
-  padding:11px 12px;
-  text-align:center;
-  font-size:13px;
-  font-weight:700;
-  color:#fff;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.ratioOpt:last-child{
-  border-bottom:none;
-}
-.ratioOpt.selected{
-  color:var(--yellow);
-}
-
+/* camera */
+#camScreen{overflow:hidden;}
 #vfWrap{
-  flex:1;
-  display:flex;
-  align-items:flex-start;
-  justify-content:center;
-  padding:54px 18px 0;
+  position:absolute;
+  inset:0;
 }
 #vf{
   position:relative;
   width:100%;
-  max-width:430px;
-  aspect-ratio:3/4;
+  height:100%;
   overflow:hidden;
-  border-radius:34px;
-  background:#111;
+  background:#000;
 }
 #mainVid{
   width:100%;
   height:100%;
   object-fit:cover;
   display:block;
-  background:#111;
+  background:#000;
   pointer-events:none;
 }
 #mainVid::-webkit-media-controls,
@@ -146,13 +75,42 @@ button{
   display:none !important;
   -webkit-appearance:none;
 }
-#touchShield{
+
+/* overlay for tap focus and blocking video controls */
+#tapLayer{
   position:absolute;
   inset:0;
   z-index:5;
   background:transparent;
-  touch-action:none;
 }
+#focusRing{
+  position:absolute;
+  width:74px;
+  height:74px;
+  border:2px solid var(--yellow);
+  border-radius:50%;
+  box-shadow:0 0 0 1px rgba(0,0,0,.25) inset;
+  transform:translate(-50%,-50%) scale(.8);
+  opacity:0;
+  pointer-events:none;
+  transition:transform .18s ease, opacity .18s ease;
+  z-index:12;
+}
+#focusRing.show{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1);
+}
+
+#screenFlash{
+  position:fixed;
+  inset:0;
+  background:#fff;
+  opacity:0;
+  pointer-events:none;
+  z-index:100;
+  transition:opacity .12s;
+}
+
 #centerOverlay{
   position:absolute;
   inset:0;
@@ -160,61 +118,114 @@ button{
   align-items:center;
   justify-content:center;
   pointer-events:none;
-  z-index:15;
+  z-index:11;
 }
 #countdownBubble{
-  width:104px;
+  min-width:104px;
   height:104px;
-  border-radius:50%;
-  background:rgba(72,72,72,.7);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
+  padding:0 18px;
+  border-radius:52px;
   display:none;
   align-items:center;
   justify-content:center;
+  background:rgba(70,70,70,.68);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  color:#fff;
   font-size:44px;
   font-weight:900;
-  color:#fff;
-}
-#screenFlash{
-  position:fixed;
-  inset:0;
-  background:#fff;
-  opacity:0;
-  pointer-events:none;
-  z-index:200;
 }
 
+/* top ui like iPhone camera */
+#topBar{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  z-index:20;
+  padding:max(var(--safe-top), 8px) 18px 0;
+}
+#topRow{
+  height:32px;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  align-items:center;
+}
+.topCtl{
+  display:flex;
+  align-items:center;
+  font-size:14px;
+  color:var(--white);
+}
+.topCtl.center{justify-content:center;}
+.topCtl.right{justify-content:flex-end;}
+.topCtl button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:28px;
+  color:inherit;
+}
+#flashBtn .bolt{
+  color:var(--yellow);
+  font-size:22px;
+  line-height:1;
+}
+#ratioBtn,#bothBtn,#flashBtn{
+  opacity:.98;
+}
+#ratioWrap{position:relative;}
+#ratioMenu{
+  position:absolute;
+  top:30px;
+  left:50%;
+  transform:translateX(-50%);
+  display:none;
+  flex-direction:column;
+  min-width:78px;
+  overflow:hidden;
+  border-radius:12px;
+  background:rgba(28,28,30,.96);
+  border:1px solid rgba(255,255,255,.08);
+}
+#ratioMenu.show{display:flex;}
+.ratioOpt{
+  padding:10px 12px;
+  text-align:center;
+  font-size:13px;
+  font-weight:700;
+  color:#fff;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.ratioOpt:last-child{border-bottom:none;}
+.ratioOpt.selected{color:var(--yellow);}
+
+/* bottom ui */
 #bottomUI{
   position:absolute;
   left:0;
   right:0;
   bottom:0;
-  z-index:30;
-  background:linear-gradient(to top,#000 72%,rgba(0,0,0,0));
-  padding:24px 18px max(var(--safe-bottom), 26px);
+  z-index:20;
+  background:linear-gradient(to top,#000 68%,rgba(0,0,0,0));
+  padding:20px 18px max(var(--safe-bottom), 26px);
 }
 #modeRail{
   display:flex;
   justify-content:center;
   align-items:center;
-  gap:34px;
-  margin-bottom:22px;
-  overflow:hidden;
+  gap:46px;
+  margin-bottom:18px;
 }
 .mode{
   font-size:17px;
-  font-weight:300;
-  color:rgba(255,255,255,.85);
-  letter-spacing:1px;
-  white-space:nowrap;
-}
-.mode.inactive{
-  color:rgba(255,255,255,.36);
+  letter-spacing:1.2px;
+  font-weight:400;
+  color:rgba(255,255,255,.7);
 }
 .mode.active{
   color:var(--yellow);
-  font-weight:400;
 }
 #controlsRow{
   display:grid;
@@ -225,16 +236,16 @@ button{
   display:flex;
   align-items:center;
 }
-.sideCtl.left{ justify-content:flex-start; }
-.sideCtl.right{ justify-content:flex-end; }
+.sideCtl.left{justify-content:flex-start;}
+.sideCtl.right{justify-content:flex-end;}
 
 #thumbBtn{
   width:54px;
   height:54px;
   border-radius:12px;
   overflow:hidden;
-  background:#111;
-  border:1px solid rgba(255,255,255,.14);
+  background:#101010;
+  border:1px solid rgba(255,255,255,.16);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -245,9 +256,8 @@ button{
   object-fit:cover;
   display:none;
 }
-#thumbPlaceholder{
-  font-size:24px;
-}
+#thumbPlaceholder{font-size:24px;}
+
 #flipBtn{
   width:54px;
   height:54px;
@@ -273,14 +283,10 @@ button{
   border-radius:50%;
   background:#fff;
 }
-#shutter:active{
-  transform:scale(.97);
-}
+#shutter:active{transform:scale(.97);}
 
-/* GALLERY */
-#galleryScreen{
-  z-index:60;
-}
+/* gallery */
+#galleryScreen{z-index:40;}
 #galleryHeader{
   padding:max(var(--safe-top), 10px) 14px 12px;
   background:#000;
@@ -308,7 +314,7 @@ button{
   background:#111;
   overflow:hidden;
 }
-.gItem>img{
+.gItem > img{
   width:100%;
   height:100%;
   object-fit:cover;
@@ -331,18 +337,16 @@ button{
   display:block;
 }
 
-/* VIEWER */
+/* viewer */
 #viewer{
   position:fixed;
   inset:0;
-  z-index:80;
+  z-index:60;
   background:#000;
   display:none;
   flex-direction:column;
 }
-#viewer.active{
-  display:flex;
-}
+#viewer.active{display:flex;}
 #viewerHeader{
   padding:max(var(--safe-top), 10px) 16px 10px;
   display:flex;
@@ -384,7 +388,7 @@ button{
   aspect-ratio:3/4;
   border-radius:12px;
   overflow:hidden;
-  border:2px solid rgba(255,255,255,.95);
+  border:2px solid rgba(255,255,255,.96);
   background:#111;
 }
 #viewerSub{
@@ -394,45 +398,52 @@ button{
   display:block;
 }
 
-/* TOAST */
+/* toast */
 #toast{
   position:fixed;
-  top:88px;
+  top:86px;
   left:50%;
   transform:translateX(-50%);
-  z-index:150;
+  z-index:90;
   background:#fff;
   color:#111;
-  padding:11px 20px;
+  padding:10px 18px;
   border-radius:999px;
   font-size:14px;
   font-weight:800;
   opacity:0;
-  transition:.25s;
   pointer-events:none;
+  transition:.22s;
   white-space:nowrap;
 }
-#toast.show{
-  opacity:1;
-}
+#toast.show{opacity:1;}
 </style>
 </head>
 <body>
 
 <div class="screen active" id="camScreen">
   <div id="topBar">
-    <button class="topBtn" id="flashBtn" type="button">⚡ OFF</button>
+    <div id="topRow">
+      <div class="topCtl">
+        <button id="flashBtn" type="button">
+          <span class="bolt">⚡</span>
+          <span id="flashLabel">OFF</span>
+        </button>
+      </div>
 
-    <div id="ratioWrap">
-      <button class="topBtn" id="ratioBtn" type="button">3:4</button>
-      <div id="ratioMenu">
-        <button class="ratioOpt" type="button" data-ratio="1:1">1:1</button>
-        <button class="ratioOpt selected" type="button" data-ratio="3:4">3:4</button>
-        <button class="ratioOpt" type="button" data-ratio="9:16">9:16</button>
+      <div class="topCtl center" id="ratioWrap">
+        <button id="ratioBtn" type="button">3:4</button>
+        <div id="ratioMenu">
+          <button class="ratioOpt" type="button" data-ratio="1:1">1:1</button>
+          <button class="ratioOpt selected" type="button" data-ratio="3:4">3:4</button>
+          <button class="ratioOpt" type="button" data-ratio="9:16">9:16</button>
+        </div>
+      </div>
+
+      <div class="topCtl right">
+        <button id="bothBtn" type="button">BOTH OFF</button>
       </div>
     </div>
-
-    <button class="topBtn" id="bothBtn" type="button">BOTH OFF</button>
   </div>
 
   <div id="vfWrap">
@@ -450,7 +461,8 @@ button{
         controlslist="nodownload nofullscreen noremoteplayback"
       ></video>
 
-      <div id="touchShield"></div>
+      <div id="tapLayer"></div>
+      <div id="focusRing"></div>
 
       <div id="centerOverlay">
         <div id="countdownBubble"></div>
@@ -460,11 +472,8 @@ button{
 
   <div id="bottomUI">
     <div id="modeRail">
-      <div class="mode inactive">SLO-MO</div>
-      <div class="mode inactive" id="videoMode">VIDEO</div>
-      <div class="mode active" id="photoMode">PHOTO</div>
-      <div class="mode inactive">SQUARE</div>
-      <div class="mode inactive">PANO</div>
+      <button class="mode" id="videoMode" type="button">VIDEO</button>
+      <button class="mode active" id="photoMode" type="button">PHOTO</button>
     </div>
 
     <div id="controlsRow">
@@ -515,6 +524,7 @@ button{
 <script>
 (() => {
   let stream = null;
+  let track = null;
   let facing = 'back';
   let bothMode = false;
   let mode = 'photo';
@@ -523,7 +533,7 @@ button{
   let isProcessing = false;
   let currentRatio = '3:4';
   let viewerIndex = -1;
-  let flashMode = 'off'; // off, on
+  let flashMode = 'off';
 
   const camScreen = document.getElementById('camScreen');
   const galleryScreen = document.getElementById('galleryScreen');
@@ -533,6 +543,7 @@ button{
   const ratioMenu = document.getElementById('ratioMenu');
   const bothBtn = document.getElementById('bothBtn');
   const flashBtn = document.getElementById('flashBtn');
+  const flashLabel = document.getElementById('flashLabel');
   const shutter = document.getElementById('shutter');
   const thumbBtn = document.getElementById('thumbBtn');
   const thumbImg = document.getElementById('thumbImg');
@@ -543,10 +554,11 @@ button{
   const canvas = document.getElementById('canvas');
   const toast = document.getElementById('toast');
   const countdownBubble = document.getElementById('countdownBubble');
-  const touchShield = document.getElementById('touchShield');
   const videoMode = document.getElementById('videoMode');
   const photoMode = document.getElementById('photoMode');
   const screenFlash = document.getElementById('screenFlash');
+  const tapLayer = document.getElementById('tapLayer');
+  const focusRing = document.getElementById('focusRing');
 
   const viewer = document.getElementById('viewer');
   const viewerMain = document.getElementById('viewerMain');
@@ -559,28 +571,18 @@ button{
   mainVid.controls = false;
   mainVid.removeAttribute('controls');
 
-  ['touchstart','touchend','click'].forEach(type => {
-    touchShield.addEventListener(type, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, { passive:false });
-  });
-
-  const req = indexedDB.open('newmera_local_db_v5', 1);
-
+  const req = indexedDB.open('newmera_local_db_v6', 1);
   req.onupgradeneeded = (e) => {
     db = e.target.result;
     if (!db.objectStoreNames.contains('photos')) {
       db.createObjectStore('photos', { keyPath: 'id' });
     }
   };
-
   req.onsuccess = (e) => {
     db = e.target.result;
     loadItems();
     startCam();
   };
-
   req.onerror = () => showToast('DB ERROR');
 
   async function startCam() {
@@ -596,6 +598,8 @@ button{
         }
       });
 
+      track = stream.getVideoTracks()[0] || null;
+
       mainVid.srcObject = stream;
       mainVid.setAttribute('playsinline', 'true');
       mainVid.setAttribute('webkit-playsinline', 'true');
@@ -603,8 +607,6 @@ button{
       mainVid.playsInline = true;
       mainVid.disablePictureInPicture = true;
       mainVid.style.transform = facing === 'front' ? 'scaleX(-1)' : 'scaleX(1)';
-
-      await applyTorchIfNeeded();
 
       const p = mainVid.play();
       if (p && typeof p.catch === 'function') p.catch(() => {});
@@ -646,18 +648,17 @@ button{
     countdownBubble.style.display = 'none';
   }
 
-  async function applyTorchIfNeeded() {
+  function updateFlashUI() {
+    flashLabel.textContent = flashMode.toUpperCase();
+    flashBtn.classList.toggle('active', flashMode === 'on');
+  }
+
+  async function setTorch(on) {
     try {
-      if (!stream) return false;
-      const track = stream.getVideoTracks()[0];
-      if (!track) return false;
-
+      if (!track || facing !== 'back') return false;
       const caps = track.getCapabilities ? track.getCapabilities() : {};
-      if (!caps.torch || facing !== 'back') return false;
-
-      await track.applyConstraints({
-        advanced: [{ torch: flashMode === 'on' }]
-      });
+      if (!caps.torch) return false;
+      await track.applyConstraints({ advanced: [{ torch: on }] });
       return true;
     } catch {
       return false;
@@ -665,23 +666,61 @@ button{
   }
 
   async function triggerFlashEffect() {
-    let usedTorch = false;
+    if (flashMode !== 'on') return;
 
-    if (flashMode === 'on' && facing === 'back') {
-      usedTorch = await applyTorchIfNeeded();
-    }
+    const torchWorked = await setTorch(true);
 
-    if (!usedTorch && flashMode === 'on') {
-      screenFlash.style.opacity = '1';
-      setTimeout(() => {
-        screenFlash.style.opacity = '0';
+    if (torchWorked) {
+      setTimeout(async () => {
+        try { await setTorch(false); } catch {}
       }, 120);
+      return;
     }
+
+    screenFlash.style.opacity = '1';
+    setTimeout(() => {
+      screenFlash.style.opacity = '0';
+    }, 120);
   }
 
-  function updateFlashUI() {
-    flashBtn.textContent = flashMode === 'on' ? '⚡ ON' : '⚡ OFF';
-    flashBtn.classList.toggle('active', flashMode === 'on');
+  function showFocusRing(x, y) {
+    focusRing.style.left = `${x}px`;
+    focusRing.style.top = `${y}px`;
+    focusRing.classList.add('show');
+    clearTimeout(showFocusRing._t);
+    showFocusRing._t = setTimeout(() => {
+      focusRing.classList.remove('show');
+    }, 700);
+  }
+
+  async function tryTapFocus(x, y) {
+    showFocusRing(x, y);
+
+    if (!track || !track.getCapabilities || !track.applyConstraints) return;
+
+    try {
+      const caps = track.getCapabilities();
+
+      const w = tapLayer.clientWidth;
+      const h = tapLayer.clientHeight;
+      const nx = Math.max(0, Math.min(1, x / w));
+      const ny = Math.max(0, Math.min(1, y / h));
+
+      const advanced = [];
+
+      if (caps.focusMode) {
+        if (caps.focusMode.includes('single-shot')) advanced.push({ focusMode: 'single-shot' });
+        else if (caps.focusMode.includes('continuous')) advanced.push({ focusMode: 'continuous' });
+      }
+
+      if ('pointsOfInterest' in caps) {
+        advanced.push({ pointsOfInterest: [{ x: nx, y: ny }] });
+      }
+
+      if (advanced.length) {
+        await track.applyConstraints({ advanced });
+      }
+    } catch {}
   }
 
   function grab() {
@@ -717,21 +756,18 @@ button{
     }
 
     ctx.save();
-
     if (facing === 'front') {
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
     }
-
     ctx.drawImage(mainVid, sX, sY, sW, sH, 0, 0, canvas.width, canvas.height);
     ctx.restore();
 
-    return canvas.toDataURL('image/jpeg', 0.82);
+    return canvas.toDataURL('image/jpeg', 0.84);
   }
 
   function saveItem(item) {
     item.id = Date.now() + Math.floor(Math.random() * 1000);
-
     const tx = db.transaction('photos', 'readwrite');
     tx.objectStore('photos').add(item);
     tx.oncomplete = loadItems;
@@ -835,17 +871,14 @@ button{
   function setMode(nextMode) {
     mode = nextMode;
     videoMode.classList.toggle('active', mode === 'video');
-    videoMode.classList.toggle('inactive', mode !== 'video');
     photoMode.classList.toggle('active', mode === 'photo');
-    photoMode.classList.toggle('inactive', mode !== 'photo');
-    showToast(mode === 'video' ? 'VIDEO' : 'PHOTO', 650);
   }
 
   async function handleBothShot() {
     await triggerFlashEffect();
     const first = grab();
 
-    showToast('CHANGE');
+    showToast('CHANGE', 700);
     facing = facing === 'back' ? 'front' : 'back';
     await startCam();
 
@@ -868,16 +901,16 @@ button{
     const second = grab();
 
     saveItem({
-      type: 'photo',
-      main: first,
-      sub: second,
-      ratio: currentRatio
+      type:'photo',
+      main:first,
+      sub:second,
+      ratio:currentRatio
     });
 
-    showToast('DONE ✓', 1400);
+    showToast('DONE ✓', 1300);
   }
 
-  async function handlePhotoShot() {
+  async function handleShot() {
     if (isProcessing || mode !== 'photo') return;
     isProcessing = true;
 
@@ -887,24 +920,24 @@ button{
       await triggerFlashEffect();
       const shot = grab();
       saveItem({
-        type: 'photo',
-        main: shot,
-        ratio: currentRatio
+        type:'photo',
+        main:shot,
+        ratio:currentRatio
       });
-      showToast('DONE ✓', 1400);
+      showToast('DONE ✓', 1100);
     }
 
     setTimeout(() => {
       isProcessing = false;
-    }, 300);
+    }, 260);
   }
 
   flashBtn.addEventListener('click', async () => {
     flashMode = flashMode === 'off' ? 'on' : 'off';
     updateFlashUI();
-    await applyTorchIfNeeded();
-    if (flashMode === 'on' && facing !== 'back') {
-      showToast('SCREEN FLASH');
+    if (flashMode === 'on' && facing === 'front') showToast('SCREEN FLASH', 800);
+    if (flashMode === 'off') {
+      try { await setTorch(false); } catch {}
     }
   });
 
@@ -919,50 +952,40 @@ button{
   bothBtn.addEventListener('click', () => {
     bothMode = !bothMode;
     bothBtn.textContent = bothMode ? 'BOTH ON' : 'BOTH OFF';
-    bothBtn.classList.toggle('active', bothMode);
   });
 
-  shutter.addEventListener('click', handlePhotoShot);
+  shutter.addEventListener('click', handleShot);
   thumbBtn.addEventListener('click', openGallery);
   galleryClose.addEventListener('click', closeGallery);
 
   flipBtn.addEventListener('click', async () => {
     facing = facing === 'back' ? 'front' : 'back';
     await startCam();
-    if (flashMode === 'on' && facing === 'front') {
-      showToast('SCREEN FLASH');
-    }
+    if (flashMode === 'on' && facing === 'front') showToast('SCREEN FLASH', 800);
   });
 
   viewerDone.addEventListener('click', closeViewer);
   viewerDelete.addEventListener('click', deleteViewerItem);
 
+  videoMode.addEventListener('click', () => {
+    setMode('video');
+    showToast('VIDEO 준비중', 800);
+  });
+  photoMode.addEventListener('click', () => {
+    setMode('photo');
+  });
+
+  tapLayer.addEventListener('click', async (e) => {
+    const rect = tapLayer.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    await tryTapFocus(x, y);
+  });
+
   document.addEventListener('click', (e) => {
     const insideRatio = ratioBtn.contains(e.target) || ratioMenu.contains(e.target);
     if (!insideRatio) ratioMenu.classList.remove('show');
   });
-
-  let touchStartX = 0;
-  let touchStartY = 0;
-
-  camScreen.addEventListener('touchstart', (e) => {
-    if (viewer.classList.contains('active') || galleryScreen.classList.contains('active')) return;
-    const t = e.changedTouches[0];
-    touchStartX = t.clientX;
-    touchStartY = t.clientY;
-  }, { passive: true });
-
-  camScreen.addEventListener('touchend', (e) => {
-    if (viewer.classList.contains('active') || galleryScreen.classList.contains('active')) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - touchStartX;
-    const dy = t.clientY - touchStartY;
-
-    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
-      if (dx < 0) setMode('video');
-      else setMode('photo');
-    }
-  }, { passive: true });
 
   updateFlashUI();
   setRatio('3:4');
