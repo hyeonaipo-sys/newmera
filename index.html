@@ -34,52 +34,15 @@ button{border:none;background:none;color:inherit;font:inherit;cursor:pointer;out
 /* ════════════════════════════
 CAMERA SCREEN
 ════════════════════════════ */
-#camScreen{overflow:hidden}
-
-/* Fullscreen viewfinder */
-#vf{
-position:absolute;
-top:0;left:0;right:0;
-bottom:140px; /* bottom UI 높이 확보 */
+#camScreen{
 overflow:hidden;
-background:#000;
 display:flex;
-align-items:center;
-justify-content:center;
+flex-direction:column;
 }
-/* video inner frame — switches between 16:9 landscape and fullscreen */
-#vfInner{
-position:relative;
-width:100%;
-height:100%;
-overflow:hidden;
-transition:all .3s ease;
-flex-shrink:0;
-}
-/* VIDEO mode: 16:9 landscape box centered */
-#vfInner.landscape{
-height:auto;
-aspect-ratio:16/9;
-border-radius:18px;
-overflow:hidden;
-}
-#mainVid{
-position:absolute;
-inset:0;
-width:100%;height:100%;
-object-fit:cover;
-display:block;
-opacity:0;
-transition:opacity .15s;
-pointer-events:none;
-}
-#mainVid.ready{opacity:1}
 
-/* ── TOP BAR ── */
+/* Top bar — sits in black area above viewfinder */
 #topBar{
-position:absolute;
-top:0;left:0;right:0;
-z-index:20;
+flex-shrink:0;
 padding-top:max(var(–safe-top),10px);
 padding-left:16px;
 padding-right:16px;
@@ -87,6 +50,8 @@ padding-bottom:8px;
 display:grid;
 grid-template-columns:1fr 1fr 1fr;
 align-items:center;
+background:#000;
+z-index:20;
 }
 #topBar .tLeft{ display:flex; justify-content:flex-start; }
 #topBar .tCenter{ display:flex; justify-content:center; }
@@ -95,26 +60,47 @@ align-items:center;
 .topIcon{
 width:34px;height:34px;
 display:flex;align-items:center;justify-content:center;
-color:rgba(255,255,255,.85);
 }
-/* flash icon — X through bolt when off */
-#flashIcon{ font-size:20px; }
-
 #bothBtn{
-font-size:12px;
-font-weight:700;
-letter-spacing:.05em;
+font-size:12px;font-weight:700;letter-spacing:.05em;
 color:rgba(255,255,255,.8);
-padding:4px 9px;
-border-radius:6px;
+padding:4px 9px;border-radius:6px;
 border:1px solid rgba(255,255,255,.22);
 background:none;
 }
-#bothBtn.on{
-color:#000;
-background:var(–yellow);
-border-color:var(–yellow);
+#bothBtn.on{color:#000;background:var(–yellow);border-color:var(–yellow);}
+
+/* Viewfinder — fills remaining space */
+#vf{
+flex:1;
+position:relative;
+overflow:hidden;
+background:#000;
+display:flex;
+align-items:center;
+justify-content:center;
+min-height:0;
 }
+/* video inner */
+#vfInner{
+position:relative;
+width:100%;height:100%;
+overflow:hidden;
+}
+#vfInner.landscape{
+height:auto;
+aspect-ratio:16/9;
+border-radius:18px;
+overflow:hidden;
+}
+#mainVid{
+position:absolute;inset:0;
+width:100%;height:100%;
+object-fit:cover;display:block;
+opacity:0;transition:opacity .15s;
+pointer-events:none;
+}
+#mainVid.ready{opacity:1}
 
 /* Flash badge */
 #flashBadge{
@@ -402,45 +388,44 @@ transition:.2s;white-space:nowrap;
 
 <div class="screen active" id="camScreen">
 
+  <!-- Top bar — in black area ABOVE viewfinder -->
+
+  <div id="topBar">
+    <div class="tLeft">
+      <button class="topIcon" id="flashBtn">
+        <svg id="flashIcon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="rgba(255,255,255,0.85)"/>
+        </svg>
+      </button>
+    </div>
+    <div class="tCenter"></div>
+    <div class="tRight">
+      <button id="bothBtn">BOTH</button>
+    </div>
+  </div>
+
+  <!-- Viewfinder — fills space between topBar and bottomUI -->
+
   <div id="vf">
     <div id="vfInner">
-    <video id="mainVid" autoplay playsinline webkit-playsinline muted preload="none"
-      disablepictureinpicture x-webkit-airplay="deny"></video>
+      <video id="mainVid" autoplay playsinline webkit-playsinline muted preload="none"
+        disablepictureinpicture x-webkit-airplay="deny"></video>
 
 ```
-<!-- top bar -->
-<div id="topBar">
-  <div class="tLeft">
-    <button class="topIcon" id="flashBtn">
-      <svg id="flashIcon" width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="rgba(255,255,255,0.85)"/>
-      </svg>
-    </button>
-  </div>
-  <div class="tCenter"></div>
-  <div class="tRight">
-    <button id="bothBtn">BOTH</button>
-  </div>
+  <!-- Flash badge -->
+  <div id="flashBadge">⚡</div>
+  <!-- Focus ring -->
+  <div id="focusRing"></div>
+  <!-- Flash FX -->
+  <div id="flashFx"></div>
+  <!-- Countdown -->
+  <div id="countdownBubble"><div id="countdownNum">3</div></div>
+  <!-- PIP -->
+  <div id="pipWrap"><img id="pipImg"></div>
 </div>
-
-<!-- Flash badge -->
-<div id="flashBadge">⚡</div>
-
-<!-- Focus ring -->
-<div id="focusRing"></div>
-
-<!-- Flash FX -->
-<div id="flashFx"></div>
-
-<!-- Countdown -->
-<div id="countdownBubble"><div id="countdownNum">3</div></div>
-
-<!-- PIP -->
-<div id="pipWrap"><img id="pipImg"></div>
 ```
 
-  </div><!-- /vfInner -->
-  </div><!-- /vf -->
+  </div>
 
   <!-- Bottom UI -->
 
@@ -454,7 +439,6 @@ transition:.2s;white-space:nowrap;
 <div id="controlsRow">
   <div class="sideCtl left">
     <button id="thumbBtn" onclick="openGallery()">
-      <div id="thumbPlaceholder">🖼️</div>
       <img id="thumbImg" alt="">
     </button>
   </div>
@@ -465,7 +449,7 @@ transition:.2s;white-space:nowrap;
 
   <div class="sideCtl right">
     <button id="flipBtn" onclick="doFlip()">
-      <svg width="40" height="40" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="40" height="40" viewBox="0 0 36 36" fill="none">
         <rect width="36" height="36" rx="18" fill="rgba(255,255,255,0.15)"/>
         <path d="M22.5 10.5L25.5 13.5L22.5 16.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M10.5 13.5H25.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
@@ -547,7 +531,6 @@ transition:.2s;white-space:nowrap;
   const shutter    = document.getElementById('shutter');
   const flipBtn    = document.getElementById('flipBtn');
   const thumbImg   = document.getElementById('thumbImg');
-  const thumbPh    = document.getElementById('thumbPlaceholder');
   const countdownBubble = document.getElementById('countdownBubble');
   const countdownNum    = document.getElementById('countdownNum');
   const pipWrap    = document.getElementById('pipWrap');
@@ -790,12 +773,10 @@ transition:.2s;white-space:nowrap;
       if (mode === 'video') {
         shutter.classList.add('video');
         document.getElementById('vfInner').classList.add('landscape');
-        vf.style.bottom = '140px';
         flashBtn.style.visibility = 'hidden';
         bothBtn2.style.visibility = 'hidden';
       } else {
         document.getElementById('vfInner').classList.remove('landscape');
-        vf.style.bottom = '0';
         flashBtn.style.visibility = 'visible';
         bothBtn2.style.visibility = 'visible';
       }
@@ -839,15 +820,14 @@ transition:.2s;white-space:nowrap;
   }
 
   function updateThumb() {
-    if (!photos.length) { thumbImg.style.display='none'; thumbPh.style.display='flex'; return; }
+    if (!photos.length) { thumbImg.style.display='none'; return; }
     const p = photos[0];
     if (p.type === 'video' && p.blob) {
-      thumbPh.style.display='none'; thumbImg.style.display='none'; return;
+      thumbImg.style.display='none'; return;
     }
     if (p.main) {
       thumbImg.src = p.main;
       thumbImg.style.display = 'block';
-      thumbPh.style.display = 'none';
     }
   }
 
