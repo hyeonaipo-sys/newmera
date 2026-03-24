@@ -245,7 +245,7 @@ display:flex; justify-content:space-between; align-items:center;
 position:absolute; top:12px; left:12px;
 width:30%; aspect-ratio:3/4;
 border-radius:12px; overflow:hidden;
-border:2px solid #fff; display:none;
+display:none;
 }
 #vwSub img { width:100%; height:100%; object-fit:cover; }
 #vwFoot {
@@ -348,7 +348,7 @@ text-overflow:ellipsis;
     <span id="vwIdx" style="color:rgba(255,255,255,.4);font-size:13px"></span>
     <button class="vwBtn" id="vwDl">저장</button>
   </div>
-  <div id="vwBody" id="vwBodyEl">
+  <div id="vwBody">
     <div id="vwWrap">
       <img id="vwImg">
       <div id="vwSub"><img id="vwSubImg"></div>
@@ -534,6 +534,10 @@ text-overflow:ellipsis;
       }
     };
   });
+
+  // 초기 상태: photo 모드이므로 버튼 보이게
+  flashBtn.style.visibility='visible';
+  bothBtn.style.visibility='visible';
 
   /* SHUTTER */
   shutter.onclick=()=>{ mode==='video'?(recording?stopRec():startRec()):handlePhoto(); };
@@ -755,7 +759,7 @@ text-overflow:ellipsis;
 
   /* double tap swap */
   $('vwBody')||document.getElementById('vwBody');
-  document.getElementById('vwBodyEl')?.addEventListener('click',()=>{
+  document.getElementById('vwBody').addEventListener('click',()=>{
     const p=items[vwIdx]; if(!p?.sub) return;
     if(pvTapTimer){ clearTimeout(pvTapTimer); pvTapTimer=null;
       pvSwapped=!pvSwapped;
