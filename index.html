@@ -251,8 +251,8 @@ TOAST
 ══════════════════ */
 #toast {
 position:fixed; z-index:99;
-top: max(calc(var(–st) + 60px), 80px);
-left:50%; transform:translateX(-50%) translateY(-6px);
+bottom:max(calc(var(–sb) + 140px), 160px);
+left:50%; transform:translateX(-50%) translateY(6px);
 background:#fff; color:#111;
 padding:8px 18px; border-radius:999px;
 font-size:13px; font-weight:800;
@@ -459,7 +459,8 @@ white-space:nowrap;
     if(mode!=='photo'){ showToast('PHOTO 모드에서만 가능해요'); return; }
     bothMode=!bothMode;
     bothBtn.classList.toggle('on',bothMode);
-    showToast(bothMode?'BOTH ON':'BOTH OFF');
+    bothBtn.textContent=bothMode?'BOTH ON':'BOTH';
+    showToast(bothMode?'👁 BOTH 켜짐 — 셔터 누르면 3초 후 반대 카메라 촬영':'BOTH 꺼짐');
   };
 
   /* FLIP */
