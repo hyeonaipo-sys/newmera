@@ -37,7 +37,10 @@ CAMERA PAGE
 #topBar {
 flex-shrink:0;
 width:100%;
-padding: max(var(–st), 12px) 18px 8px;
+padding-top:max(var(–st), 50px);
+padding-left:18px;
+padding-right:18px;
+padding-bottom:10px;
 display:flex;
 align-items:center;
 justify-content:space-between;
@@ -61,6 +64,20 @@ position:relative;
 background:#000;
 overflow:hidden;
 min-height:0;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+#vfInner {
+position:relative;
+width:100%; height:100%;
+overflow:hidden;
+}
+#vfInner.landscape {
+height:auto;
+aspect-ratio:16/9;
+border-radius:16px;
+overflow:hidden;
 }
 #mainVid {
 position:absolute; inset:0;
@@ -262,11 +279,13 @@ white-space:nowrap;
   </div>
 
   <div id="vf">
+    <div id="vfInner">
     <video id="mainVid" autoplay playsinline muted disablepictureinpicture></video>
     <div id="flashFx"></div>
     <div id="focusRing"></div>
     <div id="cdOverlay"><div id="cdNum">3</div></div>
     <div id="pipWrap"><img id="pipImg"></div>
+    </div>
   </div>
 
   <div id="botBar">
@@ -385,9 +404,28 @@ white-space:nowrap;
     mainVid.srcObject=null; mainVid.classList.remove('on');
   }
 
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden){ if(recording)stopRec(); stopCam(); }
-    else startCam();
+  /* ── 화면 녹화 감지 ── */
+  function checkScreenRecording() {
+    // iOS 17.4+ 에서 지원
+    if (!navigator.mediaDevices?.addEventListener) return;
+    if (typeof MediaCaptureCapabilities !== 'undefined') return;
+  }
+
+  // mediaDevices 변화 감지 (화면공유/캡처 시작 시 트리거)
+  if (navigator.mediaDevices) {
+    navigator.mediaDevices.addEventListener?.('devicechange', () => {
+      showToast('⚠️ 외부 캡처가 감지됐어요');
+    });
+  }
+
+  // visibility 기반 추가 보호 — 녹화 중 백그라운드 전환 시
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (recording) stopRec();
+      stopCam();
+    } else {
+      startCam();
+    }
   });
   window.addEventListener('pagehide', stopCam);
 
@@ -434,14 +472,56 @@ white-space:nowrap;
   };
 
   /* MODE */
+  /* ── 스와이프로 모드 전환 ── */
+  const modes = ['video','photo'];
+  let swipeStartX = 0;
+
+  function switchToMode(m) {
+    const btn = document.querySelector(`.mBtn[data-m="${m}"]`);
+    if (btn) btn.click();
+  }
+
+  document.getElementById('botBar').addEventListener('touchstart', e => {
+    swipeStartX = e.touches[0].clientX;
+  }, { passive:true });
+
+  document.getElementById('botBar').addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    if (Math.abs(dx) < 40) return; // 너무 짧은 건 무시
+    const cur = modes.indexOf(mode);
+    if (dx < 0 && cur < modes.length-1) switchToMode(modes[cur+1]); // 왼쪽 → 다음
+    if (dx > 0 && cur > 0) switchToMode(modes[cur-1]); // 오른쪽 → 이전
+  }, { passive:true });
+
+  // 뷰파인더에서도 스와이프 가능
+  document.getElementById('vf').addEventListener('touchstart', e => {
+    swipeStartX = e.touches[0].clientX;
+  }, { passive:true });
+
+  document.getElementById('vf').addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    if (Math.abs(dx) < 60) return;
+    const cur = modes.indexOf(mode);
+    if (dx < 0 && cur < modes.length-1) switchToMode(modes[cur+1]);
+    if (dx > 0 && cur > 0) switchToMode(modes[cur-1]);
+  }, { passive:true });
+
   document.querySelectorAll('.mBtn').forEach(b=>{
     b.onclick=()=>{
       document.querySelectorAll('.mBtn').forEach(x=>x.classList.remove('on'));
       b.classList.add('on'); mode=b.dataset.m;
+      const inner=document.getElementById('vfInner');
       shutter.classList.remove('vid','rec');
-      if(mode==='video') shutter.classList.add('vid');
-      flashBtn.style.visibility = mode==='video'?'hidden':'visible';
-      bothBtn.style.visibility  = mode==='video'?'hidden':'visible';
+      if(mode==='video'){
+        shutter.classList.add('vid');
+        inner.classList.add('landscape');
+        flashBtn.style.visibility='hidden';
+        bothBtn.style.visibility='hidden';
+      } else {
+        inner.classList.remove('landscape');
+        flashBtn.style.visibility='visible';
+        bothBtn.style.visibility='visible';
+      }
     };
   });
 
