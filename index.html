@@ -37,7 +37,7 @@ CAMERA PAGE
 #topBar {
 flex-shrink:0;
 width:100%;
-padding-top:max(var(–st), 56px);
+padding-top:80px;
 padding-left:18px;
 padding-right:18px;
 padding-bottom:12px;
@@ -45,12 +45,6 @@ display:flex;
 align-items:center;
 justify-content:space-between;
 background:#000;
-}
-/* 홈화면 앱 전용 추가 여백 */
-@supports (-webkit-touch-callout: none) {
-#topBar {
-padding-top:max(var(–st), 70px);
-}
 }
 #flashBtn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
 #bothBtn {
@@ -361,6 +355,19 @@ white-space:nowrap;
 (() => {
   /* STATE */
   let cam=null, camTrack=null, facing='back';
+
+  /* ── Safe Area 동적 적용 (홈화면 앱 대응) ── */
+  (function fixSafeArea() {
+    const el = document.getElementById('topBar');
+    // CSS env() 값을 읽기 위해 임시 엘리먼트 사용
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;top:env(safe-area-inset-top,0px);width:1px;height:1px;pointer-events:none;visibility:hidden;';
+    document.body.appendChild(probe);
+    const sat = probe.getBoundingClientRect().top;
+    document.body.removeChild(probe);
+    const pad = Math.max(sat + 14, 80);
+    el.style.paddingTop = pad + 'px';
+  })();
   let mode='photo', bothMode=false, flashMode='off';
   let processing=false, recording=false;
   let recorder=null, recChunks=[];
