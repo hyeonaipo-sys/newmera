@@ -280,7 +280,8 @@ text-overflow:ellipsis;
         <path id="flashPath" d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13Z" fill="rgba(255,255,255,0.85)"/>
       </svg>
     </button>
-    <button id="bothBtn">BOTH</button>
+    <button id="bothOff" style="font-size:12px;font-weight:700;letter-spacing:.05em;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 14px;white-space:nowrap;">BOTH</button>
+    <button id="bothOn" style="font-size:12px;font-weight:700;letter-spacing:.05em;color:#000;background:#ffd60a;border:1px solid #ffd60a;border-radius:6px;padding:5px 14px;white-space:nowrap;display:none;">BOTH ON</button>
   </div>
 
   <div id="vf">
@@ -388,7 +389,22 @@ text-overflow:ellipsis;
   const pipWrap=$('pipWrap'), pipImg=$('pipImg');
   const shutter=$('shutter'), sInner=$('sInner');
   const thumbImg=$('thumbImg'), thumbBtn=$('thumbBtn');
-  const flashBtn=$('flashBtn'), flashPath=$('flashPath'), bothBtn=$('bothBtn');
+  const flashBtn=$('flashBtn'), flashPath=$('flashPath');
+  const bothOff=$('bothOff'), bothOn=$('bothOn');
+
+  function setBothMode(val){
+    bothMode=val;
+    bothOff.style.display=val?'none':'';
+    bothOn.style.display=val?'':'none';
+  }
+
+  bothOff.onclick=()=>{
+    if(mode!=='photo'){ showToast('PHOTO 모드에서만 가능해요'); return; }
+    setBothMode(true); showToast('BOTH ON');
+  };
+  bothOn.onclick=()=>{
+    setBothMode(false); showToast('BOTH OFF');
+  };
   const flipBtn=$('flipBtn'), vf=$('vf');
   const galGrid=$('galGrid'), galEmpty=$('galEmpty'), selBar=$('selBar'), selN=$('selN');
   const vwImg=$('vwImg'), vwSubImg=$('vwSubImg'), vwSub=$('vwSub'), vwIdxEl=$('vwIdx');
@@ -460,14 +476,7 @@ text-overflow:ellipsis;
   }
 
   /* BOTH */
-  bothBtn.onclick=()=>{
-    if(mode!=='photo'){ showToast('PHOTO 모드에서만 가능해요'); return; }
-    bothMode=!bothMode;
-    bothBtn.classList.toggle('on',bothMode);
-    while(bothBtn.firstChild) bothBtn.removeChild(bothBtn.firstChild);
-    bothBtn.appendChild(document.createTextNode(bothMode?'BOTH ON':'BOTH'));
-    showToast(bothMode?'BOTH ON':'BOTH OFF');
-  };
+  bothOff.onclick=bothOff.onclick; // already set above
 
   /* FLIP */
   flipBtn.onclick=async()=>{
@@ -521,18 +530,21 @@ text-overflow:ellipsis;
         shutter.classList.add('vid');
         inner.classList.add('landscape');
         flashBtn.style.display='none';
-        bothBtn.style.display='none';
+        bothOff.style.display='none';
+        bothOn.style.display='none';
       } else {
         inner.classList.remove('landscape');
         flashBtn.style.display='flex';
-        bothBtn.style.display='flex';
+        bothOff.style.display=bothMode?'none':'';
+        bothOn.style.display=bothMode?'':'none';
       }
     };
   });
 
   // 초기 상태: photo 모드이므로 버튼 보이게
   flashBtn.style.display='flex';
-  bothBtn.style.display='flex';
+  bothOff.style.display='';
+  bothOn.style.display='none';
 
   /* SHUTTER */
   shutter.onclick=()=>{ mode==='video'?(recording?stopRec():startRec()):handlePhoto(); };
