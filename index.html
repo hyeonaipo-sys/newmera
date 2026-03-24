@@ -233,7 +233,7 @@ VIEWER
 #viewer.on { display:flex; }
 #vwHead {
 flex-shrink:0;
-padding: max(var(–st),14px) 16px 10px;
+padding: 80px 16px 10px;
 display:flex; justify-content:space-between; align-items:center;
 }
 .vwBtn { font-size:16px; font-weight:600; color:#fff; }
@@ -369,15 +369,15 @@ text-overflow:ellipsis;
 
   /* ── Safe Area 동적 적용 (홈화면 앱 대응) ── */
   (function fixSafeArea() {
-    const el = document.getElementById('topBar');
-    // CSS env() 값을 읽기 위해 임시 엘리먼트 사용
     const probe = document.createElement('div');
     probe.style.cssText = 'position:fixed;top:env(safe-area-inset-top,0px);width:1px;height:1px;pointer-events:none;visibility:hidden;';
     document.body.appendChild(probe);
     const sat = probe.getBoundingClientRect().top;
     document.body.removeChild(probe);
-    const pad = Math.max(sat + 14, 80);
-    el.style.paddingTop = pad + 'px';
+    const pad = Math.max(sat + 14, 80) + 'px';
+    document.getElementById('topBar').style.paddingTop = pad;
+    document.getElementById('galHead').style.paddingTop = pad;
+    document.getElementById('vwHead').style.paddingTop = pad;
   })();
   let mode='photo', bothMode=false, flashMode='off';
   let processing=false, recording=false;
@@ -586,33 +586,32 @@ text-overflow:ellipsis;
       const W=i1.width,H=i1.height;
       cv.width=W; cv.height=H;
       const ctx=cv.getContext('2d');
-      // 배경: 메인 사진
       ctx.drawImage(i1,0,0,W,H);
-      // PIP: 왼쪽 상단, 35% 크기, 검정+흰 테두리
-      const pw=W*.35, ph=pw*(i2.height/i2.width);
-      const mg=W*.04, rx=mg, ry=mg, r=Math.round(W*.03);
-      const bw=Math.round(W*.008); // 테두리 두께
-      // 검정 배경 테두리
+      const mg=W*.04, pw=W*.34, ph=pw*(i2.height/i2.width);
+      const rx=mg, ry=mg, r=Math.round(W*.025);
+      const pad=Math.round(W*.006);
+      // 검정 배경 (패딩만큼 크게)
       ctx.fillStyle='#000';
-      ctx.beginPath();
-      ctx.moveTo(rx-bw+r,ry-bw); ctx.lineTo(rx+pw+bw-r,ry-bw); ctx.quadraticCurveTo(rx+pw+bw,ry-bw,rx+pw+bw,ry-bw+r);
-      ctx.lineTo(rx+pw+bw,ry+ph+bw-r); ctx.quadraticCurveTo(rx+pw+bw,ry+ph+bw,rx+pw+bw-r,ry+ph+bw);
-      ctx.lineTo(rx-bw+r,ry+ph+bw); ctx.quadraticCurveTo(rx-bw,ry+ph+bw,rx-bw,ry+ph+bw-r);
-      ctx.lineTo(rx-bw,ry-bw+r); ctx.quadraticCurveTo(rx-bw,ry-bw,rx-bw+r,ry-bw);
-      ctx.closePath(); ctx.fill();
-      // PIP 이미지 클립
+      roundRect(ctx, rx-pad, ry-pad, pw+pad*2, ph+pad*2, r+pad);
+      ctx.fill();
+      // PIP 이미지
       ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(rx+r,ry); ctx.lineTo(rx+pw-r,ry); ctx.quadraticCurveTo(rx+pw,ry,rx+pw,ry+r);
-      ctx.lineTo(rx+pw,ry+ph-r); ctx.quadraticCurveTo(rx+pw,ry+ph,rx+pw-r,ry+ph);
-      ctx.lineTo(rx+r,ry+ph); ctx.quadraticCurveTo(rx,ry+ph,rx,ry+ph-r);
-      ctx.lineTo(rx,ry+r); ctx.quadraticCurveTo(rx,ry,rx+r,ry);
-      ctx.closePath(); ctx.clip();
-      ctx.drawImage(i2,rx,ry,pw,ph);
+      roundRect(ctx, rx, ry, pw, ph, r);
+      ctx.clip();
+      ctx.drawImage(i2, rx, ry, pw, ph);
       ctx.restore();
       saveItem({type:'photo',main:cv.toDataURL('image/jpeg',.92),sub:url2});
       showToast('BOTH 저장됨 ✓');
     }; i2.src=url2; }; i1.src=url1;
+  }
+
+  function roundRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
   }
 
   /* VIDEO */
@@ -697,9 +696,16 @@ text-overflow:ellipsis;
       const div=document.createElement('div');
       div.className='gItem'+(selMode?' selMode':'')+(selIds.has(p.id)?' sel':'');
       if(p.type==='video'&&p.blob){
-        const v=document.createElement('video');
-        v.src=URL.createObjectURL(p.blob); v.muted=true; v.playsInline=true; v.preload='metadata';
-        div.appendChild(v);
+        // 영상은 검정 배경 + 플레이 아이콘
+        div.style.background='#111';
+        const icon=document.createElement('div');
+        icon.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px;';
+        icon.textContent='▶';
+        div.appendChild(icon);
+        const badge=document.createElement('div');
+        badge.style.cssText='position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.7);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;';
+        badge.textContent='VIDEO';
+        div.appendChild(badge);
       } else {
         const img=document.createElement('img'); img.src=p.main; div.appendChild(img);
         if(p.sub){ const pip=document.createElement('div'); pip.className='gPip';
