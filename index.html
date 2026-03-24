@@ -54,14 +54,11 @@ border:1px solid rgba(255,255,255,.25);
 border-radius:6px;
 padding:4px 12px;
 min-width:72px;
-width:auto;
 white-space:nowrap;
-overflow:visible;
 text-align:center;
-display:flex;
-align-items:center;
-justify-content:center;
 }
+#bothBtn::after { content:‘BOTH’; }
+#bothBtn.on::after { content:‘BOTH ON’; }
 #bothBtn.on { background:var(–y); color:#000; border-color:var(–y); }
 
 /* viewfinder */
@@ -286,7 +283,7 @@ text-overflow:ellipsis;
         <path id="flashPath" d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13Z" fill="rgba(255,255,255,0.85)"/>
       </svg>
     </button>
-    <button id="bothBtn"><span id="bothLabel">BOTH</span></button>
+    <button id="bothBtn"></button>
   </div>
 
   <div id="vf">
@@ -470,7 +467,6 @@ text-overflow:ellipsis;
     if(mode!=='photo'){ showToast('PHOTO 모드에서만 가능해요'); return; }
     bothMode=!bothMode;
     bothBtn.classList.toggle('on',bothMode);
-    document.getElementById('bothLabel').textContent=bothMode?'BOTH ON':'BOTH';
     showToast(bothMode?'BOTH ON':'BOTH OFF');
   };
 
@@ -757,15 +753,36 @@ text-overflow:ellipsis;
     tx.oncomplete=()=>{ viewer.classList.remove('on'); loadItems(); showToast('삭제됨'); };
   };
 
-  /* double tap swap */
-  $('vwBody')||document.getElementById('vwBody');
-  document.getElementById('vwBody').addEventListener('click',()=>{
-    const p=items[vwIdx]; if(!p?.sub) return;
-    if(pvTapTimer){ clearTimeout(pvTapTimer); pvTapTimer=null;
-      pvSwapped=!pvSwapped;
-      vwImg.style.opacity='0';
-      setTimeout(()=>{ vwImg.src=pvSwapped?p.sub:p.main; vwSubImg.src=pvSwapped?p.main:p.sub; vwImg.style.opacity='1'; },150);
-    } else pvTapTimer=setTimeout(()=>pvTapTimer=null,280);
+  /* viewer: swipe to navigate + double tap to swap */
+  let vwSwipeX = 0;
+  const vwBodyEl = document.getElementById('vwBody');
+
+  vwBodyEl.addEventListener('touchstart', e => {
+    vwSwipeX = e.touches[0].clientX;
+  }, { passive:true });
+
+  vwBodyEl.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - vwSwipeX;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0 && vwIdx < items.length-1) openViewer(vwIdx+1);
+      else if (dx > 0 && vwIdx > 0) openViewer(vwIdx-1);
+    }
+  }, { passive:true });
+
+  vwBodyEl.addEventListener('click', () => {
+    const p = items[vwIdx]; if (!p?.sub) return;
+    if (pvTapTimer) {
+      clearTimeout(pvTapTimer); pvTapTimer = null;
+      pvSwapped = !pvSwapped;
+      vwImg.style.opacity = '0';
+      setTimeout(() => {
+        vwImg.src = pvSwapped ? p.sub : p.main;
+        vwSubImg.src = pvSwapped ? p.main : p.sub;
+        vwImg.style.opacity = '1';
+      }, 150);
+    } else {
+      pvTapTimer = setTimeout(() => pvTapTimer = null, 280);
+    }
   });
 
   /* TOAST */
