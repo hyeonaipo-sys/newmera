@@ -404,21 +404,6 @@ white-space:nowrap;
     mainVid.srcObject=null; mainVid.classList.remove('on');
   }
 
-  /* ── 화면 녹화 감지 ── */
-  function checkScreenRecording() {
-    // iOS 17.4+ 에서 지원
-    if (!navigator.mediaDevices?.addEventListener) return;
-    if (typeof MediaCaptureCapabilities !== 'undefined') return;
-  }
-
-  // mediaDevices 변화 감지 (화면공유/캡처 시작 시 트리거)
-  if (navigator.mediaDevices) {
-    navigator.mediaDevices.addEventListener?.('devicechange', () => {
-      showToast('⚠️ 외부 캡처가 감지됐어요');
-    });
-  }
-
-  // visibility 기반 추가 보호 — 녹화 중 백그라운드 전환 시
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       if (recording) stopRec();
