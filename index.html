@@ -37,7 +37,7 @@ CAMERA PAGE
 #topBar {
 flex-shrink:0;
 width:100%;
-padding-top:max(var(–st), 60px);
+padding-top:max(var(–st), 56px);
 padding-left:18px;
 padding-right:18px;
 padding-bottom:12px;
@@ -45,6 +45,12 @@ display:flex;
 align-items:center;
 justify-content:space-between;
 background:#000;
+}
+/* 홈화면 앱 전용 추가 여백 */
+@supports (-webkit-touch-callout: none) {
+#topBar {
+padding-top:max(var(–st), 70px);
+}
 }
 #flashBtn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
 #bothBtn {
