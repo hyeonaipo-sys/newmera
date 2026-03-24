@@ -464,8 +464,8 @@ text-overflow:ellipsis;
     if(mode!=='photo'){ showToast('PHOTO 모드에서만 가능해요'); return; }
     bothMode=!bothMode;
     bothBtn.classList.toggle('on',bothMode);
-    bothBtn.textContent=bothMode?'BOTH ON':'BOTH';
-    showToast(bothMode?'👁 BOTH 켜짐 — 셔터 누르면 3초 후 반대 카메라 촬영':'BOTH 꺼짐');
+    bothBtn.innerHTML=bothMode?'BOTH&nbsp;ON':'BOTH';
+    showToast(bothMode?'BOTH ON':'BOTH OFF');
   };
 
   /* FLIP */
