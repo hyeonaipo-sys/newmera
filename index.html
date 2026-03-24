@@ -525,19 +525,19 @@ text-overflow:ellipsis;
       if(mode==='video'){
         shutter.classList.add('vid');
         inner.classList.add('landscape');
-        flashBtn.style.visibility='hidden';
-        bothBtn.style.visibility='hidden';
+        flashBtn.style.display='none';
+        bothBtn.style.display='none';
       } else {
         inner.classList.remove('landscape');
-        flashBtn.style.visibility='visible';
-        bothBtn.style.visibility='visible';
+        flashBtn.style.display='flex';
+        bothBtn.style.display='flex';
       }
     };
   });
 
   // 초기 상태: photo 모드이므로 버튼 보이게
-  flashBtn.style.visibility='visible';
-  bothBtn.style.visibility='visible';
+  flashBtn.style.display='flex';
+  bothBtn.style.display='flex';
 
   /* SHUTTER */
   shutter.onclick=()=>{ mode==='video'?(recording?stopRec():startRec()):handlePhoto(); };
@@ -604,7 +604,7 @@ text-overflow:ellipsis;
       ctx.clip();
       ctx.drawImage(i2, rx, ry, pw, ph);
       ctx.restore();
-      saveItem({type:'photo',main:cv.toDataURL('image/jpeg',.92),sub:url2});
+      saveItem({type:'photo', main:cv.toDataURL('image/jpeg',.92)});
       showToast('BOTH 저장됨 ✓');
     }; i2.src=url2; }; i1.src=url1;
   }
