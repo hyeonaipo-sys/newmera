@@ -632,7 +632,7 @@ text-overflow:ellipsis;
       ctx.drawImage(i2, px, py, pw, ph);
       ctx.restore();
 
-      saveItem({type:'photo', main:c2.toDataURL('image/jpeg',.92), sub:url2});
+      saveItem({type:'photo', main:c2.toDataURL('image/jpeg',.92)});
       showToast('BOTH 저장됨 ✓');
     }; i2.src=url2; }; i1.src=url1;
   }
@@ -760,8 +760,7 @@ text-overflow:ellipsis;
     const p=items[idx]; if(!p) return;
     vwImg.src=p.main||'';
     vwIdxEl.textContent=(idx+1)+' / '+items.length;
-    if(p.sub){ vwSubImg.src=p.sub; vwSub.style.display='block'; }
-    else vwSub.style.display='none';
+    vwSub.style.display='none';
     viewer.classList.add('on');
     if(p.sub) showToast('더블탭으로 전환 👆');
   }
