@@ -37,7 +37,7 @@ CAMERA PAGE
 #topBar {
 flex-shrink:0;
 width:100%;
-padding-top:max(var(–st), 54px);
+padding-top:max(var(–st), 60px);
 padding-left:18px;
 padding-right:18px;
 padding-bottom:12px;
@@ -604,7 +604,23 @@ white-space:nowrap;
   }
   function stopRec(){ if(recorder&&recording) recorder.stop(); }
 
-  /* STORAGE */
+  async function sharePhoto(dataURL, filename) {
+    try {
+      // dataURL → Blob → File
+      const res = await fetch(dataURL);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type: 'image/jpeg' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file] });
+      } else {
+        // fallback: 새 탭
+        const w = window.open();
+        if (w) w.document.write('<img src="'+dataURL+'" style="max-width:100%"><p style="font-family:sans-serif;text-align:center;color:#888;padding:12px">꾹 눌러서 저장</p>');
+      }
+    } catch(e) {
+      if (e.name !== 'AbortError') showToast('저장 실패');
+    }
+  }
   function saveItem(item){
     item.id=Date.now()+Math.floor(Math.random()*999);
     const tx=db.transaction('media','readwrite');
@@ -673,17 +689,11 @@ white-space:nowrap;
     selIds.forEach(id=>store.delete(id));
     tx.oncomplete=()=>{ selIds.clear(); selMode=false; loadItems(); showToast('삭제됨'); };
   };
-  $('dlSelBtn').onclick=()=>{
+  $('dlSelBtn').onclick=async()=>{
     if(!selIds.size){ showToast('사진을 선택해주세요'); return; }
-    const sel=items.filter(p=>selIds.has(p.id));
-    if(/iPhone|iPad/.test(navigator.userAgent)){
-      sel.forEach(p=>{ if(p.type==='video') return;
-        const w=window.open(); if(w) w.document.write('<img src="'+p.main+'" style="max-width:100%"><p style="font-family:sans-serif;text-align:center;color:#888;padding:12px">꾹 눌러서 저장</p>'); });
-    } else {
-      sel.forEach((p,i)=>{ if(p.type==='video') return;
-        setTimeout(()=>{ const a=document.createElement('a'); a.href=p.main; a.download='newmera_'+p.id+'.jpg'; a.click(); },i*150); });
-    }
-    showToast(sel.length+'장 저장 중...');
+    const sel=items.filter(p=>selIds.has(p.id)&&p.type==='photo');
+    if(!sel.length){ showToast('사진만 저장 가능해요'); return; }
+    for(const p of sel) await sharePhoto(p.main,'newmera_'+p.id+'.jpg');
   };
 
   /* VIEWER */
@@ -698,11 +708,9 @@ white-space:nowrap;
     if(p.sub) showToast('더블탭으로 전환 👆');
   }
   $('vwBack').onclick=()=>{ viewer.classList.remove('on'); pvSwapped=false; };
-  $('vwDl').onclick=()=>{
+  $('vwDl').onclick=async()=>{
     const p=items[vwIdx]; if(!p||p.type==='video') return;
-    if(/iPhone|iPad/.test(navigator.userAgent)){
-      const w=window.open(); if(w) w.document.write('<img src="'+p.main+'" style="max-width:100%"><p style="font-family:sans-serif;text-align:center;color:#888;padding:12px">꾹 눌러서 저장</p>');
-    } else { const a=document.createElement('a'); a.href=p.main; a.download='newmera_'+p.id+'.jpg'; a.click(); }
+    await sharePhoto(p.main,'newmera_'+p.id+'.jpg');
   };
   $('vwDel').onclick=()=>{
     const p=items[vwIdx]; if(!p||!confirm('삭제할까요?')) return;
