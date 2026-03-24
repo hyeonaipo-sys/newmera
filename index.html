@@ -53,6 +53,8 @@ color:rgba(255,255,255,.75);
 border:1px solid rgba(255,255,255,.25);
 border-radius:6px;
 padding:4px 10px;
+min-width:60px;
+text-align:center;
 }
 #bothBtn.on { background:var(–y); color:#000; border-color:var(–y); }
 
@@ -251,7 +253,7 @@ TOAST
 ══════════════════ */
 #toast {
 position:fixed; z-index:99;
-bottom:max(calc(var(–sb) + 140px), 160px);
+bottom:200px;
 left:50%; transform:translateX(-50%) translateY(6px);
 background:#fff; color:#111;
 padding:8px 18px; border-radius:999px;
@@ -259,6 +261,9 @@ font-size:13px; font-weight:800;
 opacity:0; pointer-events:none;
 transition:opacity .2s, transform .2s;
 white-space:nowrap;
+max-width:90vw;
+overflow:hidden;
+text-overflow:ellipsis;
 }
 #toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
