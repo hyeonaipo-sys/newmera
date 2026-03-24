@@ -618,21 +618,37 @@ text-overflow:ellipsis;
       const px=Math.round(W*.04);
       const py=Math.round(H*.04);
       const pr=Math.round(W*.03);
-      const bd=Math.round(W*.008);
+      const bd=Math.round(W*.003); // 얇은 테두리
 
-      // 3. 검정 테두리
+      // 검정 테두리
       ctx.fillStyle='#000';
       _rr(ctx, px-bd, py-bd, pw+bd*2, ph+bd*2, pr+bd);
       ctx.fill();
 
-      // 4. PIP 이미지
+      // PIP 이미지
       ctx.save();
       _rr(ctx, px, py, pw, ph, pr);
       ctx.clip();
       ctx.drawImage(i2, px, py, pw, ph);
       ctx.restore();
 
-      saveItem({type:'photo', main:c2.toDataURL('image/jpeg',.92)});
+      // 합성본 저장 + sub에 반대 합성본도 만들어서 저장 (더블탭용)
+      const composed1 = c2.toDataURL('image/jpeg',.92);
+
+      // 반대 버전: i2가 메인, i1이 PIP
+      ctx.clearRect(0,0,W,H);
+      ctx.drawImage(i2,0,0,W,H);
+      ctx.fillStyle='#000';
+      _rr(ctx, px-bd, py-bd, pw+bd*2, ph+bd*2, pr+bd);
+      ctx.fill();
+      ctx.save();
+      _rr(ctx, px, py, pw, ph, pr);
+      ctx.clip();
+      ctx.drawImage(i1, px, py, pw, ph);
+      ctx.restore();
+      const composed2 = c2.toDataURL('image/jpeg',.92);
+
+      saveItem({type:'photo', main:composed1, sub:composed2});
       showToast('BOTH 저장됨 ✓');
     }; i2.src=url2; }; i1.src=url1;
   }
@@ -790,6 +806,22 @@ text-overflow:ellipsis;
       else if (dx > 0 && vwIdx > 0) openViewer(vwIdx-1);
     }
   }, { passive:true });
+
+  vwBodyEl.addEventListener('click', () => {
+    const p = items[vwIdx];
+    if (!p?.sub) return;
+    if (pvTapTimer) {
+      clearTimeout(pvTapTimer); pvTapTimer = null;
+      pvSwapped = !pvSwapped;
+      vwImg.style.opacity = '0';
+      setTimeout(() => {
+        vwImg.src = pvSwapped ? p.sub : p.main;
+        vwImg.style.opacity = '1';
+      }, 150);
+    } else {
+      pvTapTimer = setTimeout(() => pvTapTimer = null, 280);
+    }
+  });
 
   vwBodyEl.addEventListener('click', () => {
     const p = items[vwIdx];
