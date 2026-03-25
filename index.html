@@ -26,13 +26,16 @@ img,video{display:block}
 #topBar{
 flex-shrink:0;width:100%;
 padding:80px 18px 10px;
-display:flex;align-items:center;justify-content:space-between;
+display:grid;
+grid-template-columns:auto 1fr auto;
+align-items:center;
+gap:8px;
 background:#000;
 }
+#ratioWrap{display:flex;justify-content:center;position:relative}
 #flashBtn{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
-#bothOff{font-size:12px;font-weight:700;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 14px}
-#bothOn{font-size:12px;font-weight:700;color:#000;background:var(–y);border:1px solid var(–y);border-radius:6px;padding:5px 14px;display:none}
-#ratioWrap{position:relative}
+#bothOff{font-size:12px;font-weight:700;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 14px;white-space:nowrap}
+#bothOn{font-size:12px;font-weight:700;color:#000;background:var(–y);border:1px solid var(–y);border-radius:6px;padding:5px 14px;white-space:nowrap;display:none}
 #ratioBtn{font-size:13px;font-weight:700;color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:5px 12px}
 #ratioMenu{position:absolute;top:36px;left:50%;transform:translateX(-50%);background:rgba(28,28,30,.96);border:1px solid rgba(255,255,255,.1);border-radius:10px;overflow:hidden;display:none;flex-direction:column;min-width:70px;z-index:30}
 #ratioMenu.on{display:flex}
@@ -83,7 +86,7 @@ background:#000;
 .ghBtn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:6px 13px;font-size:13px;font-weight:600}
 .ghBtn.pri{background:#fff;color:#000}
 .ghBtn.del{background:rgba(255,59,48,.12);color:#ff3b30;border-color:rgba(255,59,48,.3)}
-#galGrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;overflow-y:scroll;scrollbar-width:none}
+#galGrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;overflow-y:scroll;scrollbar-width:none;align-content:start}
 #galGrid::-webkit-scrollbar{display:none}
 #galEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,.3);font-size:14px}
 .gItem{position:relative;aspect-ratio:1;background:#111;overflow:hidden;cursor:pointer}
@@ -120,12 +123,13 @@ background:#000;
 
 <div class="pg on" id="camPg">
   <div id="topBar">
+    <!-- 왼쪽: 플래시 -->
     <button id="flashBtn">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
         <path id="flashPath" d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13Z" fill="rgba(255,255,255,0.85)"/>
       </svg>
     </button>
-    <!-- 비율 선택 -->
+    <!-- 가운데: 비율 -->
     <div id="ratioWrap">
       <button id="ratioBtn" onclick="toggleRatioMenu()">1:1</button>
       <div id="ratioMenu">
@@ -134,7 +138,8 @@ background:#000;
         <button onclick="setRatio('9:16')">9:16</button>
       </div>
     </div>
-    <div style="display:flex;gap:8px">
+    <!-- 오른쪽: BOTH -->
+    <div style="display:flex;justify-content:flex-end">
       <button id="bothOff">BOTH</button>
       <button id="bothOn">BOTH ON</button>
     </div>
