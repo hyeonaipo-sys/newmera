@@ -3,269 +3,107 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#000">
 <title>Newmera</title>
 <style>
-:root { --y:#ffd60a; --sb:env(safe-area-inset-bottom); --st:env(safe-area-inset-top); }
+:root{--y:#ffd60a;--sb:env(safe-area-inset-bottom);--st:env(safe-area-inset-top)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;background:#000}
+body{height:100%;width:100%;background:#000;color:#fff;font-family:-apple-system,sans-serif;overflow:hidden;-webkit-text-size-adjust:none}
+button{border:none;background:none;color:inherit;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+img,video{display:block}
 
-/* ── RESET ── */
-*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-html { height:100%; background:#000; }
-body {
-height:100%; width:100%;
-background:#000; color:#fff;
-font-family:-apple-system,BlinkMacSystemFont,sans-serif;
--webkit-text-size-adjust:none;
-overflow:hidden;
-}
-button { border:none; background:none; color:inherit; font:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-img, video { display:block; }
+/* PAGES */
+.pg{position:fixed;inset:0;background:#000;display:none;flex-direction:column}
+.pg.on{display:flex}
 
-/* ── SCREEN SYSTEM ── */
-.pg { position:fixed; inset:0; background:#000; display:none; flex-direction:column; }
-.pg.on { display:flex; }
+/* ── CAMERA ── */
+#camPg{overflow:hidden}
 
-/* ══════════════════
-CAMERA PAGE
-══════════════════ */
-#camPg { overflow:hidden; }
-
-/* topbar */
-#topBar {
-flex-shrink:0;
-width:100%;
-padding-top:80px;
-padding-left:18px;
-padding-right:18px;
-padding-bottom:12px;
-display:flex;
-align-items:center;
-justify-content:space-between;
+#topBar{
+flex-shrink:0;width:100%;
+padding:80px 18px 10px;
+display:flex;align-items:center;justify-content:space-between;
 background:#000;
 }
-#flashBtn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
-#bothBtn {
-font-size:12px; font-weight:700; letter-spacing:.05em;
-color:rgba(255,255,255,.75);
-border:1px solid rgba(255,255,255,.25);
-border-radius:6px;
-padding:5px 14px;
-white-space:nowrap;
-line-height:1.4;
-}
-#bothBtn.on { background:var(–y); color:#000; border-color:var(–y); }
+#flashBtn{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+#bothOff{font-size:12px;font-weight:700;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 14px}
+#bothOn{font-size:12px;font-weight:700;color:#000;background:var(–y);border:1px solid var(–y);border-radius:6px;padding:5px 14px;display:none}
 
 /* viewfinder */
-#vf {
-flex:1;
-width:100%;
-position:relative;
-background:#000;
-overflow:hidden;
-min-height:0;
-display:flex;
-align-items:center;
-justify-content:center;
-}
-#vfInner {
-position:relative;
-width:100%; height:100%;
-overflow:hidden;
-}
-#vfInner.landscape {
-height:auto;
-aspect-ratio:16/9;
-border-radius:16px;
-overflow:hidden;
-}
-#mainVid {
-position:absolute; inset:0;
-width:100%; height:100%;
-object-fit:cover;
-opacity:0; transition:opacity .15s;
-}
-#mainVid.on { opacity:1; }
+#vf{flex:1;position:relative;background:#000;overflow:hidden;min-height:0;display:flex;align-items:center;justify-content:center}
+#vfInner{position:relative;width:100%;height:100%;overflow:hidden}
+#vfInner.land{height:auto;aspect-ratio:16/9;border-radius:16px;overflow:hidden}
+#mainVid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .15s;pointer-events:none}
+#mainVid.on{opacity:1}
+#flashFx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:5}
+#focusRing{position:absolute;width:58px;height:58px;border:1.5px solid var(–y);border-radius:5px;transform:translate(-50%,-50%);display:none;pointer-events:none;z-index:6}
+#cdOverlay{position:absolute;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:8}
+#cdNum{font-size:100px;font-weight:900;color:#fff}
+#pipWrap{position:absolute;bottom:16px;left:14px;width:76px;aspect-ratio:3/4;border-radius:12px;overflow:hidden;border:2px solid #fff;display:none;z-index:7}
+#pipWrap.on{display:block}
+#pipImg{width:100%;height:100%;object-fit:cover}
 
-/* overlay elements inside vf */
-#flashFx { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:5; }
-#focusRing {
-position:absolute; width:58px; height:58px;
-border:1.5px solid var(–y); border-radius:5px;
-transform:translate(-50%,-50%);
-display:none; pointer-events:none; z-index:6;
-}
-#cdOverlay {
-position:absolute; inset:0;
-background:rgba(0,0,0,.4);
-display:none; align-items:center; justify-content:center;
-z-index:8;
-}
-#cdNum { font-size:96px; font-weight:900; color:#fff; }
-#pipWrap {
-position:absolute; bottom:16px; left:14px;
-width:76px; aspect-ratio:3/4;
-border-radius:12px; overflow:hidden;
-border:2px solid #fff;
-display:none; z-index:7;
-}
-#pipWrap.on { display:block; }
-#pipImg { width:100%; height:100%; object-fit:cover; }
+/* REC pill */
+#recPill{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;padding:5px 14px;border-radius:20px;display:none;align-items:center;gap:7px;font-size:14px;font-weight:600;z-index:20;white-space:nowrap}
+#recPill.on{display:flex}
+.reddot{width:8px;height:8px;border-radius:50%;background:#ff3b30;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
-/* bottom bar */
-#botBar {
-flex-shrink:0;
-width:100%;
-background:#000;
-padding-top:10px;
-padding-bottom:max(var(–sb), 22px);
-}
-#modeRow {
-display:flex; justify-content:center; gap:32px;
-margin-bottom:14px;
-}
-.mBtn {
-font-size:13px; letter-spacing:1.4px; font-weight:500;
-color:rgba(255,255,255,.38);
-}
-.mBtn.on { color:var(–y); font-weight:700; }
-#ctrlRow {
-display:flex; align-items:center; justify-content:space-between;
-padding:0 32px;
-}
-#thumbBtn {
-width:50px; height:50px;
-border-radius:8px; overflow:hidden;
-background:#1a1a1a;
-flex-shrink:0;
-}
-#thumbBtn img { width:100%; height:100%; object-fit:cover; display:none; }
-#shutter {
-width:70px; height:70px; border-radius:50%;
-border:3px solid #fff;
-display:flex; align-items:center; justify-content:center;
-flex-shrink:0;
-}
-#shutter:active { transform:scale(.93); }
-#sInner {
-width:56px; height:56px; border-radius:50%; background:#fff;
-transition:all .18s;
-}
-#shutter.vid #sInner { background:#ff3b30; }
-#shutter.rec #sInner { width:26px; height:26px; border-radius:6px; background:#ff3b30; }
-#flipBtn {
-width:46px; height:46px; border-radius:50%;
-background:rgba(255,255,255,.14);
-display:flex; align-items:center; justify-content:center;
-flex-shrink:0;
-}
+/* bottom */
+#botBar{flex-shrink:0;width:100%;background:#000;padding-top:10px;padding-bottom:max(var(–sb),22px)}
+#modeRow{display:flex;justify-content:center;gap:32px;margin-bottom:14px}
+.mBtn{font-size:13px;letter-spacing:1.4px;font-weight:500;color:rgba(255,255,255,.38)}
+.mBtn.on{color:var(–y);font-weight:700}
+#ctrlRow{display:flex;align-items:center;justify-content:space-between;padding:0 32px}
+#thumbBtn{width:50px;height:50px;border-radius:8px;overflow:hidden;background:#1a1a1a;flex-shrink:0}
+#thumbBtn img{width:100%;height:100%;object-fit:cover;display:none}
+#shutter{width:70px;height:70px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .1s}
+#shutter:active{transform:scale(.93)}
+#sInner{width:56px;height:56px;border-radius:50%;background:#fff;transition:all .18s}
+#shutter.vid #sInner{background:#ff3b30}
+#shutter.rec #sInner{width:26px;height:26px;border-radius:6px;background:#ff3b30}
+#flipBtn{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-/* ══════════════════
-GALLERY PAGE
-══════════════════ */
-#galPg { z-index:40; }
-#galHead {
-flex-shrink:0; width:100%;
-padding: 80px 16px 10px;
-display:flex; justify-content:space-between; align-items:center;
-border-bottom:1px solid rgba(255,255,255,.07);
-}
-#galHead span { font-size:18px; font-weight:700; }
-#galHeadR { display:flex; gap:8px; }
-.ghBtn { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.12); border-radius:9px; padding:6px 13px; font-size:13px; font-weight:600; }
-.ghBtn.pri { background:#fff; color:#000; border-color:#fff; }
-.ghBtn.del { background:rgba(255,59,48,.12); color:#ff3b30; border-color:rgba(255,59,48,.3); }
+/* ── GALLERY ── */
+#galPg{z-index:40}
+#galHead{flex-shrink:0;width:100%;padding:80px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.07)}
+#galHead span{font-size:18px;font-weight:700}
+#galHeadR{display:flex;gap:8px}
+.ghBtn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:6px 13px;font-size:13px;font-weight:600}
+.ghBtn.pri{background:#fff;color:#000}
+.ghBtn.del{background:rgba(255,59,48,.12);color:#ff3b30;border-color:rgba(255,59,48,.3)}
+#galGrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;overflow-y:scroll;scrollbar-width:none}
+#galGrid::-webkit-scrollbar{display:none}
+#galEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,.3);font-size:14px}
+.gItem{position:relative;aspect-ratio:1;background:#111;overflow:hidden;cursor:pointer}
+.gItem img{width:100%;height:100%;object-fit:cover}
+.gItem.sel img{opacity:.65}
+.gChk{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:transparent;display:none;align-items:center;justify-content:center;font-size:12px}
+.gItem.selMode .gChk{display:flex}
+.gItem.sel .gChk{background:var(–y);border-color:var(–y);color:#000}
+.gPip{position:absolute;top:5px;left:5px;width:28%;aspect-ratio:3/4;border-radius:5px;overflow:hidden;border:1.5px solid rgba(255,255,255,.9)}
+.gPip img{width:100%;height:100%;object-fit:cover}
+#selBar{flex-shrink:0;display:none;align-items:center;justify-content:space-between;padding:10px 16px;padding-bottom:max(var(–sb),10px);border-top:1px solid rgba(255,255,255,.07)}
+#selBar.on{display:flex}
 
-#galGrid {
-flex:1; min-height:0;
-display:grid; grid-template-columns:repeat(3,1fr); gap:2px;
-overflow-y:scroll;
-scrollbar-width:none;
-}
-#galGrid::-webkit-scrollbar { display:none; }
+/* ── VIEWER ── */
+#viewer{position:fixed;inset:0;background:#000;display:none;flex-direction:column;z-index:60}
+#viewer.on{display:flex}
+#vwHead{flex-shrink:0;padding:80px 16px 10px;display:flex;justify-content:space-between;align-items:center}
+.vwBtn{font-size:16px;font-weight:600;color:#fff}
+.vwBtn.del{color:#ff3b30}
+#vwBody{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px;overflow:hidden}
+#vwWrap{position:relative;max-width:100%;max-height:100%}
+#vwImg{max-width:100%;max-height:70vh;border-radius:14px;object-fit:contain}
+#vwFoot{flex-shrink:0;padding:12px 20px;padding-bottom:max(var(–sb),16px);display:flex;justify-content:center}
 
-#galEmpty {
-flex:1; display:flex; flex-direction:column;
-align-items:center; justify-content:center;
-gap:10px; color:rgba(255,255,255,.3); font-size:14px;
-}
-.gItem { position:relative; aspect-ratio:1; background:#111; overflow:hidden; cursor:pointer; }
-.gItem img { width:100%; height:100%; object-fit:cover; }
-.gItem.sel img { opacity:.65; }
-.gChk {
-position:absolute; top:6px; right:6px;
-width:22px; height:22px; border-radius:50%;
-border:2px solid #fff; background:transparent;
-display:none; align-items:center; justify-content:center;
-font-size:12px;
-}
-.gItem.selMode .gChk { display:flex; }
-.gItem.sel .gChk { background:var(–y); border-color:var(–y); color:#000; }
-.gPip {
-position:absolute; top:5px; left:5px;
-width:28%; aspect-ratio:3/4;
-border-radius:5px; overflow:hidden;
-border:1.5px solid rgba(255,255,255,.9);
-}
-.gPip img { width:100%; height:100%; object-fit:cover; }
-
-#selBar {
-flex-shrink:0; display:none;
-align-items:center; justify-content:space-between;
-padding:10px 16px; padding-bottom:max(var(–sb),10px);
-border-top:1px solid rgba(255,255,255,.07);
-}
-#selBar.on { display:flex; }
-#selN { font-size:14px; font-weight:600; }
-
-/* ══════════════════
-VIEWER
-══════════════════ */
-#viewer { position:fixed; inset:0; background:#000; display:none; flex-direction:column; z-index:60; }
-#viewer.on { display:flex; }
-#vwHead {
-flex-shrink:0;
-padding: 80px 16px 10px;
-display:flex; justify-content:space-between; align-items:center;
-}
-.vwBtn { font-size:16px; font-weight:600; color:#fff; }
-.vwBtn.del { color:#ff3b30; }
-#vwBody { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:12px; overflow:hidden; }
-#vwWrap { position:relative; max-width:100%; max-height:100%; }
-#vwImg { max-width:100%; max-height:70vh; border-radius:14px; object-fit:contain; display:block; }
-#vwSub {
-position:absolute; top:12px; left:12px;
-width:30%; aspect-ratio:3/4;
-border-radius:12px; overflow:hidden;
-display:none;
-}
-#vwSub img { width:100%; height:100%; object-fit:cover; }
-#vwFoot {
-flex-shrink:0;
-padding:12px 20px; padding-bottom:max(var(–sb),16px);
-display:flex; justify-content:center;
-}
-
-/* ══════════════════
-TOAST
-══════════════════ */
-#toast {
-position:fixed; z-index:99;
-bottom:200px;
-left:50%; transform:translateX(-50%) translateY(6px);
-background:#fff; color:#111;
-padding:8px 18px; border-radius:999px;
-font-size:13px; font-weight:800;
-opacity:0; pointer-events:none;
-transition:opacity .2s, transform .2s;
-white-space:nowrap;
-max-width:90vw;
-overflow:hidden;
-text-overflow:ellipsis;
-}
-#toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
+/* TOAST */
+#toast{position:fixed;z-index:99;bottom:200px;left:50%;transform:translateX(-50%) translateY(6px);background:#fff;color:#111;padding:8px 18px;border-radius:999px;font-size:13px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:90vw}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 
 </head>
@@ -280,17 +118,18 @@ text-overflow:ellipsis;
         <path id="flashPath" d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13Z" fill="rgba(255,255,255,0.85)"/>
       </svg>
     </button>
-    <button id="bothOff" style="font-size:12px;font-weight:700;letter-spacing:.05em;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 14px;white-space:nowrap;">BOTH</button>
-    <button id="bothOn" style="font-size:12px;font-weight:700;letter-spacing:.05em;color:#000;background:#ffd60a;border:1px solid #ffd60a;border-radius:6px;padding:5px 14px;white-space:nowrap;display:none;">BOTH ON</button>
+    <button id="bothOff">BOTH</button>
+    <button id="bothOn">BOTH ON</button>
   </div>
 
   <div id="vf">
     <div id="vfInner">
-    <video id="mainVid" autoplay playsinline muted disablepictureinpicture></video>
-    <div id="flashFx"></div>
-    <div id="focusRing"></div>
-    <div id="cdOverlay"><div id="cdNum">3</div></div>
-    <div id="pipWrap"><img id="pipImg"></div>
+      <video id="mainVid" autoplay playsinline muted disablepictureinpicture></video>
+      <div id="flashFx"></div>
+      <div id="focusRing"></div>
+      <div id="cdOverlay"><div id="cdNum">3</div></div>
+      <div id="pipWrap"><img id="pipImg"></div>
+      <div id="recPill"><div class="reddot"></div><span id="recTime">00:00</span></div>
     </div>
   </div>
 
@@ -300,9 +139,9 @@ text-overflow:ellipsis;
       <button class="mBtn on" data-m="photo">PHOTO</button>
     </div>
     <div id="ctrlRow">
-      <button id="thumbBtn"><img id="thumbImg" alt=""></button>
-      <button id="shutter"><div id="sInner"></div></button>
-      <button id="flipBtn">
+      <button id="thumbBtn" onclick="openGallery()"><img id="thumbImg" alt=""></button>
+      <button id="shutter" onclick="handleShutter()"><div id="sInner"></div></button>
+      <button id="flipBtn" onclick="doFlip()">
         <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
           <path d="M16 5l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M6 9h14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
@@ -320,8 +159,8 @@ text-overflow:ellipsis;
   <div id="galHead">
     <span>갤러리</span>
     <div id="galHeadR">
-      <button class="ghBtn" id="selBtn">선택</button>
-      <button class="ghBtn" id="galClose">닫기</button>
+      <button class="ghBtn" id="selBtn" onclick="toggleSel()">선택</button>
+      <button class="ghBtn" onclick="closeGallery()">닫기</button>
     </div>
   </div>
   <div id="galGrid"></div>
@@ -329,8 +168,8 @@ text-overflow:ellipsis;
   <div id="selBar">
     <span id="selN">0장 선택됨</span>
     <div style="display:flex;gap:8px">
-      <button class="ghBtn del" id="delSelBtn">삭제</button>
-      <button class="ghBtn pri" id="dlSelBtn">저장</button>
+      <button class="ghBtn del" onclick="deleteSelected()">삭제</button>
+      <button class="ghBtn pri" onclick="downloadSelected()">저장</button>
     </div>
   </div>
 </div>
@@ -339,18 +178,15 @@ text-overflow:ellipsis;
 
 <div id="viewer">
   <div id="vwHead">
-    <button class="vwBtn" id="vwBack">← 뒤로</button>
+    <button class="vwBtn" onclick="closeViewer()">← 뒤로</button>
     <span id="vwIdx" style="color:rgba(255,255,255,.4);font-size:13px"></span>
-    <button class="vwBtn" id="vwDl">저장</button>
+    <button class="vwBtn" onclick="downloadCurrent()">저장</button>
   </div>
   <div id="vwBody">
-    <div id="vwWrap">
-      <img id="vwImg">
-      <div id="vwSub"><img id="vwSubImg"></div>
-    </div>
+    <div id="vwWrap"><img id="vwImg"></div>
   </div>
   <div id="vwFoot">
-    <button class="vwBtn del" id="vwDel">삭제</button>
+    <button class="vwBtn del" onclick="deleteCurrent()">삭제</button>
   </div>
 </div>
 
@@ -358,499 +194,398 @@ text-overflow:ellipsis;
 <canvas id="cv" style="display:none"></canvas>
 
 <script>
-(() => {
-  /* STATE */
-  let cam=null, camTrack=null, facing='back';
+/* ── STATE ── */
+let cam=null,camTrack=null,facing='back';
+let mode='photo',bothMode=false,flashMode='off';
+let processing=false,recording=false;
+let recorder=null,recChunks=[],recTimer=null,recSec=0;
+let db=null,items=[],selMode=false,selIds=new Set(),vwIdx=0;
+let bFirstURL=null,bFirstFacing=null;
+let pvSwapped=false,pvTapTimer=null;
 
-  /* ── Safe Area 동적 적용 (홈화면 앱 대응) ── */
-  (function fixSafeArea() {
-    const probe = document.createElement('div');
-    probe.style.cssText = 'position:fixed;top:env(safe-area-inset-top,0px);width:1px;height:1px;pointer-events:none;visibility:hidden;';
-    document.body.appendChild(probe);
-    const sat = probe.getBoundingClientRect().top;
-    document.body.removeChild(probe);
-    const pad = Math.max(sat + 14, 80) + 'px';
-    document.getElementById('topBar').style.paddingTop = pad;
-    document.getElementById('galHead').style.paddingTop = pad;
-    document.getElementById('vwHead').style.paddingTop = pad;
-  })();
-  let mode='photo', bothMode=false, flashMode='off';
-  let processing=false, recording=false;
-  let recorder=null, recChunks=[];
-  let db=null, items=[], selMode=false, selIds=new Set(), vwIdx=0;
-  let pvSwapped=false, pvTapTimer=null;
-  let bFirstURL=null, bFirstFacing=null;
+/* ── DOM ── */
+const $=id=>document.getElementById(id);
+const mainVid=$('mainVid'),flashFx=$('flashFx'),focusRing=$('focusRing');
+const cdOverlay=$('cdOverlay'),cdNum=$('cdNum');
+const pipWrap=$('pipWrap'),pipImg=$('pipImg');
+const shutter=$('shutter'),sInner=$('sInner');
+const thumbImg=$('thumbImg');
+const flashPath=$('flashPath');
+const bothOff=$('bothOff'),bothOn=$('bothOn');
+const vfInner=$('vfInner');
+const recPill=$('recPill'),recTimeEl=$('recTime');
+const galGrid=$('galGrid'),galEmpty=$('galEmpty'),selBar=$('selBar'),selN=$('selN');
+const vwImg=$('vwImg'),vwIdxEl=$('vwIdx');
+const toast=$('toast'),cv=$('cv');
 
-  /* DOM */
-  const $ = id => document.getElementById(id);
-  const camPg=$('camPg'), galPg=$('galPg'), viewer=$('viewer');
-  const mainVid=$('mainVid'), flashFx=$('flashFx'), focusRing=$('focusRing');
-  const cdOverlay=$('cdOverlay'), cdNum=$('cdNum');
-  const pipWrap=$('pipWrap'), pipImg=$('pipImg');
-  const shutter=$('shutter'), sInner=$('sInner');
-  const thumbImg=$('thumbImg'), thumbBtn=$('thumbBtn');
-  const flashBtn=$('flashBtn'), flashPath=$('flashPath');
-  const bothOff=$('bothOff'), bothOn=$('bothOn');
-
-  function setBothMode(val){
-    bothMode=val;
-    bothOff.style.display=val?'none':'';
-    bothOn.style.display=val?'':'none';
-  }
-
-  bothOff.onclick=()=>{
-    if(mode!=='photo'){ showToast('PHOTO 모드에서만 가능해요'); return; }
-    setBothMode(true); showToast('BOTH ON');
-  };
-  bothOn.onclick=()=>{
-    setBothMode(false); showToast('BOTH OFF');
-  };
-  const flipBtn=$('flipBtn'), vf=$('vf');
-  const galGrid=$('galGrid'), galEmpty=$('galEmpty'), selBar=$('selBar'), selN=$('selN');
-  const vwImg=$('vwImg'), vwSubImg=$('vwSubImg'), vwSub=$('vwSub'), vwIdxEl=$('vwIdx');
-  const toast=$('toast'), cv=$('cv');
-
-  /* DB */
-  const req = indexedDB.open('newmera_v3', 1);
-  req.onupgradeneeded = e => e.target.result.createObjectStore('media',{keyPath:'id'});
-  req.onsuccess = e => { db=e.target.result; loadItems(); startCam(); };
-  req.onerror = () => showToast('DB 오류');
-
-  /* CAMERA */
-  async function startCam() {
-    try {
-      if (cam) cam.getTracks().forEach(t=>t.stop());
-      mainVid.classList.remove('on');
-      cam = await navigator.mediaDevices.getUserMedia({
-        video:{ facingMode: facing==='back'?'environment':'user' },
-        audio:false
-      });
-      camTrack = cam.getVideoTracks()[0]||null;
-      mainVid.srcObject = cam;
-      mainVid.style.transform = facing==='front'?'scaleX(-1)':'none';
-      mainVid.addEventListener('canplay',()=>mainVid.classList.add('on'),{once:true});
-      mainVid.play().catch(()=>{});
-    } catch(e) { showToast('카메라 권한을 허용해주세요'); }
-  }
-
-  function stopCam() {
-    if(cam){ cam.getTracks().forEach(t=>t.stop()); cam=null; camTrack=null; }
-    mainVid.srcObject=null; mainVid.classList.remove('on');
-  }
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      if (recording) stopRec();
-      stopCam();
-    } else {
-      startCam();
-    }
-  });
-  window.addEventListener('pagehide', stopCam);
-
-  /* FOCUS TAP */
-  vf.addEventListener('click', e=>{
-    focusRing.style.left=e.clientX+'px'; focusRing.style.top=e.clientY+'px';
-    focusRing.style.display='block';
-    setTimeout(()=>focusRing.style.display='none',1000);
-  });
-
-  /* FLASH */
-  flashBtn.onclick = async()=>{
-    flashMode = flashMode==='off'?'on':'off';
-    flashPath.setAttribute('fill', flashMode==='on'?'#ffd60a':'rgba(255,255,255,0.85)');
-    if(flashMode==='off') try{ await setTorch(false); }catch{}
-  };
-  async function setTorch(on){
-    if(!camTrack||facing!=='back') return false;
-    const caps=camTrack.getCapabilities?.()??{};
-    if(!caps.torch) return false;
-    await camTrack.applyConstraints({advanced:[{torch:on}]});
-    return true;
-  }
-  async function doFlash(){
-    if(flashMode!=='on') return;
-    const ok=await setTorch(true);
-    if(!ok){ flashFx.style.opacity='1'; setTimeout(()=>flashFx.style.opacity='0',100); return; }
-    setTimeout(()=>setTorch(false).catch(()=>{}),130);
-  }
-
-  /* BOTH */
-  bothOff.onclick=bothOff.onclick; // already set above
-
-  /* FLIP */
-  flipBtn.onclick=async()=>{
-    if(recording) return;
-    facing=facing==='back'?'front':'back';
-    await startCam();
-  };
-
-  /* MODE */
-  /* ── 스와이프로 모드 전환 ── */
-  const modes = ['video','photo'];
-  let swipeStartX = 0;
-
-  function switchToMode(m) {
-    const btn = document.querySelector(`.mBtn[data-m="${m}"]`);
-    if (btn) btn.click();
-  }
-
-  document.getElementById('botBar').addEventListener('touchstart', e => {
-    swipeStartX = e.touches[0].clientX;
-  }, { passive:true });
-
-  document.getElementById('botBar').addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - swipeStartX;
-    if (Math.abs(dx) < 40) return; // 너무 짧은 건 무시
-    const cur = modes.indexOf(mode);
-    if (dx < 0 && cur < modes.length-1) switchToMode(modes[cur+1]); // 왼쪽 → 다음
-    if (dx > 0 && cur > 0) switchToMode(modes[cur-1]); // 오른쪽 → 이전
-  }, { passive:true });
-
-  // 뷰파인더에서도 스와이프 가능
-  document.getElementById('vf').addEventListener('touchstart', e => {
-    swipeStartX = e.touches[0].clientX;
-  }, { passive:true });
-
-  document.getElementById('vf').addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - swipeStartX;
-    if (Math.abs(dx) < 60) return;
-    const cur = modes.indexOf(mode);
-    if (dx < 0 && cur < modes.length-1) switchToMode(modes[cur+1]);
-    if (dx > 0 && cur > 0) switchToMode(modes[cur-1]);
-  }, { passive:true });
-
-  document.querySelectorAll('.mBtn').forEach(b=>{
-    b.onclick=()=>{
-      document.querySelectorAll('.mBtn').forEach(x=>x.classList.remove('on'));
-      b.classList.add('on'); mode=b.dataset.m;
-      const inner=document.getElementById('vfInner');
-      shutter.classList.remove('vid','rec');
-      if(mode==='video'){
-        shutter.classList.add('vid');
-        inner.classList.add('landscape');
-        flashBtn.style.display='none';
-        bothOff.style.display='none';
-        bothOn.style.display='none';
-      } else {
-        inner.classList.remove('landscape');
-        flashBtn.style.display='flex';
-        bothOff.style.display=bothMode?'none':'';
-        bothOn.style.display=bothMode?'':'none';
-      }
-    };
-  });
-
-  // 초기 상태: photo 모드이므로 버튼 보이게
-  flashBtn.style.display='flex';
-  bothOff.style.display='';
-  bothOn.style.display='none';
-
-  /* SHUTTER */
-  shutter.onclick=()=>{ mode==='video'?(recording?stopRec():startRec()):handlePhoto(); };
-
-  /* PHOTO */
-  async function handlePhoto(){
-    if(processing) return; processing=true;
-    try{ bothMode?await doBoth():await doSnap(); }
-    finally{ setTimeout(()=>processing=false,300); }
-  }
-
-  async function doSnap(){
-    await doFlash(); flashFx.style.opacity='0.6';
-    setTimeout(()=>flashFx.style.opacity='0',80);
-    saveItem({type:'photo',main:grab()});
-    showToast('저장됨 ✓');
-  }
-
-  async function doBoth(){
-    bFirstURL=grab(); bFirstFacing=facing;
-    pipImg.src=bFirstURL; pipWrap.classList.add('on');
-    let c=3; cdNum.textContent=c; cdOverlay.style.display='flex';
-    await new Promise(res=>{
-      const iv=setInterval(()=>{
-        c--; if(c>0) cdNum.textContent=c;
-        else{ clearInterval(iv); cdOverlay.style.display='none'; res(); }
-      },1000);
-    });
-    facing=bFirstFacing==='back'?'front':'back';
-    await startCam(); await new Promise(r=>setTimeout(r,400));
-    const second=grab();
-    pipWrap.classList.remove('on');
-    composeBoth(bFirstURL,second);
-    facing=bFirstFacing; await startCam();
-  }
-
-  function grab(){
-    const vw=mainVid.videoWidth||1280, vh=mainVid.videoHeight||720;
-    cv.width=vw; cv.height=vh;
-    const ctx=cv.getContext('2d');
-    if(facing==='front'){ ctx.translate(vw,0); ctx.scale(-1,1); }
-    ctx.drawImage(mainVid,0,0,vw,vh);
-    if(facing==='front') ctx.setTransform(1,0,0,1,0,0);
-    return cv.toDataURL('image/jpeg',.92);
-  }
-
-  function _rr(ctx, x, y, w, h, r){
-    ctx.beginPath();
-    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
-    ctx.closePath();
-  }
-
-  function composeBoth(url1,url2){
-    const i1=new Image(),i2=new Image();
-    i1.onload=()=>{ i2.onload=()=>{
-      const W=i1.width, H=i1.height;
-      // 별도 캔버스 사용 (grab()과 충돌 방지)
-      const c2=document.createElement('canvas');
-      c2.width=W; c2.height=H;
-      const ctx=c2.getContext('2d');
-
-      // 1. 메인 사진
-      ctx.drawImage(i1,0,0,W,H);
-
-      // 2. PIP 계산
-      const pw=Math.round(W*.38);
-      const ph=Math.round(pw*(i2.height/i2.width));
-      const px=Math.round(W*.04);
-      const py=Math.round(H*.04);
-      const pr=Math.round(W*.03);
-      const bd=Math.round(W*.003); // 얇은 테두리
-
-      // 검정 테두리
-      ctx.fillStyle='#000';
-      _rr(ctx, px-bd, py-bd, pw+bd*2, ph+bd*2, pr+bd);
-      ctx.fill();
-
-      // PIP 이미지
-      ctx.save();
-      _rr(ctx, px, py, pw, ph, pr);
-      ctx.clip();
-      ctx.drawImage(i2, px, py, pw, ph);
-      ctx.restore();
-
-      // 합성본 저장 + sub에 반대 합성본도 만들어서 저장 (더블탭용)
-      const composed1 = c2.toDataURL('image/jpeg',.92);
-
-      // 반대 버전: i2가 메인, i1이 PIP
-      ctx.clearRect(0,0,W,H);
-      ctx.drawImage(i2,0,0,W,H);
-      ctx.fillStyle='#000';
-      _rr(ctx, px-bd, py-bd, pw+bd*2, ph+bd*2, pr+bd);
-      ctx.fill();
-      ctx.save();
-      _rr(ctx, px, py, pw, ph, pr);
-      ctx.clip();
-      ctx.drawImage(i1, px, py, pw, ph);
-      ctx.restore();
-      const composed2 = c2.toDataURL('image/jpeg',.92);
-
-      saveItem({type:'photo', main:composed1, sub:composed2});
-      showToast('BOTH 저장됨 ✓');
-    }; i2.src=url2; }; i1.src=url1;
-  }
-
-  /* VIDEO */
-  function startRec(){
-    if(!cam||recording) return; recChunks=[];
-    const mime=['video/mp4','video/webm;codecs=h264','video/webm'].find(t=>MediaRecorder.isTypeSupported(t))||'';
-    try{ recorder=new MediaRecorder(cam,mime?{mimeType:mime}:undefined); }
-    catch(e){ recorder=new MediaRecorder(cam); }
-    recorder.ondataavailable=e=>{ if(e.data?.size>0) recChunks.push(e.data); };
-    recorder.onstop=()=>{
-      const blob=new Blob(recChunks,{type:recorder.mimeType||'video/webm'});
-      saveItem({type:'video',blob});
-      recording=false; shutter.classList.remove('rec'); shutter.classList.add('vid');
-      showToast('영상 저장됨 ✓');
-    };
-    recorder.start(200); recording=true;
-    shutter.classList.add('rec'); showToast('● REC');
-  }
-  function stopRec(){ if(recorder&&recording) recorder.stop(); }
-
-  async function sharePhoto(dataURL, filename) {
-    try {
-      // dataURL → Blob → File
-      const res = await fetch(dataURL);
-      const blob = await res.blob();
-      const file = new File([blob], filename, { type: 'image/jpeg' });
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file] });
-      } else {
-        // fallback: 새 탭
-        const w = window.open();
-        if (w) w.document.write('<img src="'+dataURL+'" style="max-width:100%"><p style="font-family:sans-serif;text-align:center;color:#888;padding:12px">꾹 눌러서 저장</p>');
-      }
-    } catch(e) {
-      if (e.name !== 'AbortError') showToast('저장 실패');
-    }
-  }
-  function saveItem(item){
-    item.id=Date.now()+Math.floor(Math.random()*999);
-    const tx=db.transaction('media','readwrite');
-    tx.objectStore('media').add(item);
-    tx.oncomplete=loadItems;
-  }
-  function loadItems(){
-    if(!db) return;
-    db.transaction('media','readonly').objectStore('media').getAll().onsuccess=e=>{
-      items=e.target.result.sort((a,b)=>b.id-a.id);
-      updateThumb(); renderGallery();
-    };
-  }
-  function updateThumb(){
-    if(!items.length){ thumbImg.style.display='none'; return; }
-    const p=items[0];
-    if(p.type==='photo'&&p.main){ thumbImg.src=p.main; thumbImg.style.display='block'; }
-  }
-
-  /* GALLERY */
-  thumbBtn.onclick=()=>openGallery();
-  $('galClose').onclick=()=>closeGallery();
-
-  function openGallery(){
-    selMode=false; selIds.clear(); renderGallery();
-    camPg.classList.remove('on'); galPg.classList.add('on');
-  }
-  function closeGallery(){
-    galPg.classList.remove('on'); camPg.classList.add('on'); updateThumb();
-  }
-
-  $('selBtn').onclick=()=>{
-    selMode=!selMode; selIds.clear();
-    $('selBtn').textContent=selMode?'취소':'선택';
-    renderGallery();
-  };
-
-  function renderGallery(){
-    galGrid.innerHTML='';
-    selBar.classList.toggle('on', selMode&&selIds.size>0);
-    selN.textContent=selIds.size+'장 선택됨';
-    if(!items.length){ galGrid.style.display='none'; galEmpty.style.display='flex'; return; }
-    galGrid.style.display='grid'; galEmpty.style.display='none';
-    items.forEach((p,i)=>{
-      const div=document.createElement('div');
-      div.className='gItem'+(selMode?' selMode':'')+(selIds.has(p.id)?' sel':'');
-      if(p.type==='video'&&p.blob){
-        // 영상은 검정 배경 + 플레이 아이콘
-        div.style.background='#111';
-        const icon=document.createElement('div');
-        icon.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px;';
-        icon.textContent='▶';
-        div.appendChild(icon);
-        const badge=document.createElement('div');
-        badge.style.cssText='position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.7);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;';
-        badge.textContent='VIDEO';
-        div.appendChild(badge);
-      } else {
-        const img=document.createElement('img'); img.src=p.main; div.appendChild(img);
-        if(p.sub){ const pip=document.createElement('div'); pip.className='gPip';
-          const si=document.createElement('img'); si.src=p.sub; pip.appendChild(si); div.appendChild(pip); }
-      }
-      const chk=document.createElement('div'); chk.className='gChk'; chk.textContent='✓'; div.appendChild(chk);
-      div.onclick=()=>{ if(selMode){ selIds.has(p.id)?selIds.delete(p.id):selIds.add(p.id); renderGallery(); } else openViewer(i); };
-      galGrid.appendChild(div);
-    });
-  }
-
-  $('delSelBtn').onclick=()=>{
-    if(!selIds.size) return;
-    if(!confirm(selIds.size+'장을 삭제할까요?')) return;
-    const tx=db.transaction('media','readwrite'), store=tx.objectStore('media');
-    selIds.forEach(id=>store.delete(id));
-    tx.oncomplete=()=>{ selIds.clear(); selMode=false; loadItems(); showToast('삭제됨'); };
-  };
-  $('dlSelBtn').onclick=async()=>{
-    if(!selIds.size){ showToast('사진을 선택해주세요'); return; }
-    const sel=items.filter(p=>selIds.has(p.id)&&p.type==='photo');
-    if(!sel.length){ showToast('사진만 저장 가능해요'); return; }
-    for(const p of sel) await sharePhoto(p.main,'newmera_'+p.id+'.jpg');
-  };
-
-  /* VIEWER */
-  function openViewer(idx){
-    vwIdx=idx; pvSwapped=false;
-    const p=items[idx]; if(!p) return;
-    vwImg.src=p.main||'';
-    vwIdxEl.textContent=(idx+1)+' / '+items.length;
-    vwSub.style.display='none';
-    viewer.classList.add('on');
-    if(p.sub) showToast('더블탭으로 전환 👆');
-  }
-  $('vwBack').onclick=()=>{ viewer.classList.remove('on'); pvSwapped=false; };
-  $('vwDl').onclick=async()=>{
-    const p=items[vwIdx]; if(!p||p.type==='video') return;
-    await sharePhoto(p.main,'newmera_'+p.id+'.jpg');
-  };
-  $('vwDel').onclick=()=>{
-    const p=items[vwIdx]; if(!p||!confirm('삭제할까요?')) return;
-    const tx=db.transaction('media','readwrite'); tx.objectStore('media').delete(p.id);
-    tx.oncomplete=()=>{ viewer.classList.remove('on'); loadItems(); showToast('삭제됨'); };
-  };
-
-  /* viewer: swipe navigate + double tap swap */
-  let vwSwipeX = 0;
-  const vwBodyEl = document.getElementById('vwBody');
-
-  vwBodyEl.addEventListener('touchstart', e => {
-    vwSwipeX = e.touches[0].clientX;
-  }, { passive:true });
-
-  vwBodyEl.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - vwSwipeX;
-    if (Math.abs(dx) > 50) {
-      if (dx < 0 && vwIdx < items.length-1) openViewer(vwIdx+1);
-      else if (dx > 0 && vwIdx > 0) openViewer(vwIdx-1);
-    }
-  }, { passive:true });
-
-  vwBodyEl.addEventListener('click', () => {
-    const p = items[vwIdx];
-    if (!p?.sub) return;
-    if (pvTapTimer) {
-      clearTimeout(pvTapTimer); pvTapTimer = null;
-      pvSwapped = !pvSwapped;
-      vwImg.style.opacity = '0';
-      setTimeout(() => {
-        vwImg.src = pvSwapped ? p.sub : p.main;
-        vwImg.style.opacity = '1';
-      }, 150);
-    } else {
-      pvTapTimer = setTimeout(() => pvTapTimer = null, 280);
-    }
-  });
-
-  vwBodyEl.addEventListener('click', () => {
-    const p = items[vwIdx];
-    if (!p || !p.sub) return;
-    if (pvTapTimer) {
-      clearTimeout(pvTapTimer); pvTapTimer = null;
-      pvSwapped = !pvSwapped;
-      vwImg.style.transition = 'opacity .15s';
-      vwImg.style.opacity = '0';
-      setTimeout(() => {
-        const mainSrc = pvSwapped ? p.sub : p.main;
-        const subSrc  = pvSwapped ? p.main : p.sub;
-        vwImg.src = mainSrc;
-        vwSubImg.src = subSrc;
-        vwSub.style.display = 'block';
-        vwImg.style.opacity = '1';
-      }, 150);
-    } else {
-      pvTapTimer = setTimeout(() => { pvTapTimer = null; }, 280);
-    }
-  });
-
-  /* TOAST */
-  let toastT;
-  function showToast(msg,ms=1400){
-    toast.textContent=msg; toast.classList.add('on');
-    clearTimeout(toastT); toastT=setTimeout(()=>toast.classList.remove('on'),ms);
-  }
+/* ── SAFE AREA ── */
+(function(){
+  const p=document.createElement('div');
+  p.style.cssText='position:fixed;top:env(safe-area-inset-top,0px);width:1px;height:1px;visibility:hidden;';
+  document.body.appendChild(p);
+  const sat=p.getBoundingClientRect().top;
+  document.body.removeChild(p);
+  const pad=Math.max(sat+14,80)+'px';
+  ['topBar','galHead','vwHead'].forEach(id=>$(id).style.paddingTop=pad);
 })();
+
+/* ── DB ── */
+const req=indexedDB.open('newmera_v4',1);
+req.onupgradeneeded=e=>e.target.result.createObjectStore('media',{keyPath:'id'});
+req.onsuccess=e=>{db=e.target.result;loadItems();startCam()};
+req.onerror=()=>showToast('DB 오류');
+
+/* ── CAMERA ── */
+async function startCam(){
+  try{
+    if(cam) cam.getTracks().forEach(t=>t.stop());
+    mainVid.classList.remove('on');
+    cam=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:facing==='back'?'environment':'user',width:{ideal:1920},height:{ideal:1080}},
+      audio:true
+    });
+    camTrack=cam.getVideoTracks()[0]||null;
+    mainVid.srcObject=cam;
+    mainVid.style.transform=facing==='front'?'scaleX(-1)':'none';
+    mainVid.addEventListener('canplay',()=>mainVid.classList.add('on'),{once:true});
+    mainVid.play().catch(()=>{});
+  }catch(e){showToast('카메라 권한을 허용해주세요')}
+}
+function stopCam(){
+  if(cam){cam.getTracks().forEach(t=>t.stop());cam=null;camTrack=null}
+  mainVid.srcObject=null;mainVid.classList.remove('on');
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){if(recording)stopRec();stopCam()}else startCam();
+});
+window.addEventListener('pagehide',stopCam);
+
+/* ── FOCUS ── */
+$('vf').addEventListener('click',e=>{
+  if(e.target.closest('#botBar')||e.target.closest('#topBar')) return;
+  focusRing.style.left=e.clientX+'px';focusRing.style.top=e.clientY+'px';
+  focusRing.style.display='block';
+  setTimeout(()=>focusRing.style.display='none',1000);
+});
+
+/* ── FLASH ── */
+$('flashBtn').onclick=async()=>{
+  flashMode=flashMode==='off'?'on':'off';
+  flashPath.setAttribute('fill',flashMode==='on'?'#ffd60a':'rgba(255,255,255,0.85)');
+  if(flashMode==='off') try{await setTorch(false)}catch{}
+};
+async function setTorch(on){
+  if(!camTrack||facing!=='back') return false;
+  const caps=camTrack.getCapabilities?.()??{};
+  if(!caps.torch) return false;
+  await camTrack.applyConstraints({advanced:[{torch:on}]});
+  return true;
+}
+async function doFlash(){
+  if(flashMode!=='on') return;
+  const ok=await setTorch(true);
+  if(!ok){flashFx.style.opacity='1';setTimeout(()=>flashFx.style.opacity='0',100);return}
+  setTimeout(()=>setTorch(false).catch(()=>{}),130);
+}
+
+/* ── BOTH ── */
+bothOff.onclick=()=>{
+  if(mode!=='photo'){showToast('PHOTO 모드에서만 가능해요');return}
+  bothMode=true;bothOff.style.display='none';bothOn.style.display='';showToast('BOTH ON');
+};
+bothOn.onclick=()=>{
+  bothMode=false;bothOn.style.display='none';bothOff.style.display='';showToast('BOTH OFF');
+};
+
+/* ── FLIP ── */
+function doFlip(){
+  if(recording) return;
+  facing=facing==='back'?'front':'back';
+  startCam();
+}
+
+/* ── MODE ── */
+document.querySelectorAll('.mBtn').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.mBtn').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');mode=b.dataset.m;
+    shutter.classList.remove('vid','rec');
+    if(mode==='video'){
+      shutter.classList.add('vid');
+      vfInner.classList.add('land');
+      $('flashBtn').style.display='none';
+      bothOff.style.display='none';bothOn.style.display='none';
+    }else{
+      vfInner.classList.remove('land');
+      $('flashBtn').style.display='';
+      bothOff.style.display=bothMode?'none':'';
+      bothOn.style.display=bothMode?'':'none';
+    }
+  };
+});
+
+/* ── SHUTTER ── */
+function handleShutter(){
+  if(mode==='video'){recording?stopRec():startRec();return}
+  if(processing) return;
+  processing=true;
+  (bothMode?doBoth():doSnap()).finally(()=>setTimeout(()=>processing=false,300));
+}
+
+/* ── PHOTO ── */
+async function doSnap(){
+  await doFlash();
+  flashFx.style.opacity='.6';setTimeout(()=>flashFx.style.opacity='0',80);
+  saveItem({type:'photo',main:grab()});
+  showToast('저장됨 ✓');
+}
+
+async function doBoth(){
+  bFirstURL=grab();bFirstFacing=facing;
+  pipImg.src=bFirstURL;pipWrap.classList.add('on');
+  let c=3;cdNum.textContent=c;cdOverlay.style.display='flex';
+  await new Promise(res=>{
+    const iv=setInterval(()=>{
+      c--;
+      if(c>0){cdNum.textContent=c}
+      else{clearInterval(iv);cdOverlay.style.display='none';res()}
+    },1000);
+  });
+  facing=bFirstFacing==='back'?'front':'back';
+  await startCam();
+  await new Promise(r=>setTimeout(r,500));
+  const second=grab();
+  pipWrap.classList.remove('on');
+  composeBoth(bFirstURL,second);
+  facing=bFirstFacing;await startCam();
+}
+
+function grab(){
+  const vw=mainVid.videoWidth||1920,vh=mainVid.videoHeight||1080;
+  cv.width=vw;cv.height=vh;
+  const ctx=cv.getContext('2d');
+  if(facing==='front'){ctx.translate(vw,0);ctx.scale(-1,1)}
+  ctx.drawImage(mainVid,0,0,vw,vh);
+  if(facing==='front') ctx.setTransform(1,0,0,1,0,0);
+  return cv.toDataURL('image/jpeg',.95);
+}
+
+function composeBoth(url1,url2){
+  const i1=new Image(),i2=new Image();
+  i1.onload=()=>{i2.onload=()=>{
+    const W=i1.width,H=i1.height;
+    const c2=document.createElement('canvas');
+    c2.width=W;c2.height=H;
+    const ctx=c2.getContext('2d');
+    ctx.drawImage(i1,0,0,W,H);
+    const pw=Math.round(W*.35),ph=Math.round(pw*(i2.height/i2.width));
+    const px=Math.round(W*.04),py=Math.round(H*.04);
+    const pr=Math.round(W*.025),bd=Math.round(W*.004);
+    // 검정 테두리
+    ctx.fillStyle='#000';
+    rr(ctx,px-bd,py-bd,pw+bd*2,ph+bd*2,pr+bd);ctx.fill();
+    // PIP
+    ctx.save();rr(ctx,px,py,pw,ph,pr);ctx.clip();
+    ctx.drawImage(i2,px,py,pw,ph);ctx.restore();
+
+    // 반대 버전 (더블탭용)
+    const composed1=c2.toDataURL('image/jpeg',.95);
+    ctx.clearRect(0,0,W,H);
+    ctx.drawImage(i2,0,0,W,H);
+    ctx.fillStyle='#000';
+    rr(ctx,px-bd,py-bd,pw+bd*2,ph+bd*2,pr+bd);ctx.fill();
+    ctx.save();rr(ctx,px,py,pw,ph,pr);ctx.clip();
+    ctx.drawImage(i1,px,py,pw,ph);ctx.restore();
+    const composed2=c2.toDataURL('image/jpeg',.95);
+
+    saveItem({type:'photo',main:composed1,sub:composed2});
+    showToast('BOTH 저장됨 ✓');
+  };i2.src=url2};i1.src=url1;
+}
+
+function rr(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+/* ── VIDEO ── */
+function startRec(){
+  if(!cam||recording) return;
+  recChunks=[];
+  const mime=['video/mp4','video/webm;codecs=h264,opus','video/webm;codecs=vp9,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t))||'';
+  try{recorder=new MediaRecorder(cam,mime?{mimeType:mime}:undefined)}
+  catch(e){recorder=new MediaRecorder(cam)}
+  recorder.ondataavailable=e=>{if(e.data?.size>0) recChunks.push(e.data)};
+  recorder.onstop=()=>{
+    const blob=new Blob(recChunks,{type:recorder.mimeType||'video/webm'});
+    saveItem({type:'video',blob,thumb:null});
+    recording=false;
+    shutter.classList.remove('rec');shutter.classList.add('vid');
+    recPill.classList.remove('on');
+    clearInterval(recTimer);
+    showToast('영상 저장됨 ✓');
+  };
+  recorder.start(200);
+  recording=true;recSec=0;
+  shutter.classList.add('rec');
+  recPill.classList.add('on');
+  updateRecTime();
+  recTimer=setInterval(()=>{recSec++;updateRecTime()},1000);
+  showToast('● REC');
+}
+function stopRec(){if(recorder&&recording) recorder.stop()}
+function updateRecTime(){
+  const m=String(Math.floor(recSec/60)).padStart(2,'0');
+  const s=String(recSec%60).padStart(2,'0');
+  recTimeEl.textContent=m+':'+s;
+}
+
+/* ── STORAGE ── */
+function saveItem(item){
+  item.id=Date.now()+Math.floor(Math.random()*999);
+  const tx=db.transaction('media','readwrite');
+  tx.objectStore('media').add(item);
+  tx.oncomplete=loadItems;
+  tx.onerror=()=>showToast('저장 오류');
+}
+function loadItems(){
+  if(!db) return;
+  db.transaction('media','readonly').objectStore('media').getAll().onsuccess=e=>{
+    items=e.target.result.sort((a,b)=>b.id-a.id);
+    updateThumb();renderGallery();
+  };
+}
+function updateThumb(){
+  if(!items.length){thumbImg.style.display='none';return}
+  const p=items[0];
+  if(p.type==='photo'&&p.main){thumbImg.src=p.main;thumbImg.style.display='block'}
+  else if(p.type==='video'){thumbImg.style.display='none'}
+}
+
+/* ── GALLERY ── */
+function openGallery(){
+  selMode=false;selIds.clear();renderGallery();
+  $('camPg').classList.remove('on');$('galPg').classList.add('on');
+}
+function closeGallery(){
+  $('galPg').classList.remove('on');$('camPg').classList.add('on');updateThumb();
+}
+function toggleSel(){
+  selMode=!selMode;selIds.clear();
+  $('selBtn').textContent=selMode?'취소':'선택';
+  renderGallery();
+}
+function renderGallery(){
+  galGrid.innerHTML='';
+  selBar.classList.toggle('on',selMode&&selIds.size>0);
+  selN.textContent=selIds.size+'장 선택됨';
+  if(!items.length){galGrid.style.display='none';galEmpty.style.display='flex';return}
+  galGrid.style.display='grid';galEmpty.style.display='none';
+  items.forEach((p,i)=>{
+    const div=document.createElement('div');
+    div.className='gItem'+(selMode?' selMode':'')+(selIds.has(p.id)?' sel':'');
+    if(p.type==='video'){
+      div.style.background='#111';
+      const icon=document.createElement('div');
+      icon.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff';
+      icon.textContent='▶';div.appendChild(icon);
+      const badge=document.createElement('div');
+      badge.style.cssText='position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.7);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px';
+      badge.textContent='VIDEO';div.appendChild(badge);
+    }else{
+      const img=document.createElement('img');img.src=p.main;div.appendChild(img);
+      if(p.sub){
+        const pip=document.createElement('div');pip.className='gPip';
+        const si=document.createElement('img');si.src=p.sub;pip.appendChild(si);div.appendChild(pip);
+      }
+    }
+    const chk=document.createElement('div');chk.className='gChk';chk.textContent='✓';div.appendChild(chk);
+    div.onclick=()=>{
+      if(selMode){selIds.has(p.id)?selIds.delete(p.id):selIds.add(p.id);renderGallery()}
+      else openViewer(i);
+    };
+    galGrid.appendChild(div);
+  });
+}
+function deleteSelected(){
+  if(!selIds.size) return;
+  if(!confirm(selIds.size+'장을 삭제할까요?')) return;
+  const tx=db.transaction('media','readwrite'),store=tx.objectStore('media');
+  selIds.forEach(id=>store.delete(id));
+  tx.oncomplete=()=>{selIds.clear();selMode=false;loadItems();showToast('삭제됨')};
+}
+async function downloadSelected(){
+  if(!selIds.size){showToast('사진을 선택해주세요');return}
+  const sel=items.filter(p=>selIds.has(p.id)&&p.type==='photo');
+  for(const p of sel) await sharePhoto(p.main,'newmera_'+p.id+'.jpg');
+}
+
+/* ── VIEWER ── */
+function openViewer(idx){
+  vwIdx=idx;pvSwapped=false;
+  const p=items[idx];if(!p) return;
+  vwImg.src=p.main||'';
+  vwIdxEl.textContent=(idx+1)+' / '+items.length;
+  $('viewer').classList.add('on');
+}
+function closeViewer(){$('viewer').classList.remove('on');pvSwapped=false}
+async function downloadCurrent(){
+  const p=items[vwIdx];if(!p||p.type==='video') return;
+  await sharePhoto(p.main,'newmera_'+p.id+'.jpg');
+}
+function deleteCurrent(){
+  const p=items[vwIdx];if(!p||!confirm('삭제할까요?')) return;
+  const tx=db.transaction('media','readwrite');
+  tx.objectStore('media').delete(p.id);
+  tx.oncomplete=()=>{closeViewer();loadItems();showToast('삭제됨')};
+}
+
+/* viewer swipe + double tap */
+let vwSX=0;
+const vwBody=$('vwBody');
+vwBody.addEventListener('touchstart',e=>{vwSX=e.touches[0].clientX},{passive:true});
+vwBody.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-vwSX;
+  if(Math.abs(dx)>50){
+    if(dx<0&&vwIdx<items.length-1) openViewer(vwIdx+1);
+    else if(dx>0&&vwIdx>0) openViewer(vwIdx-1);
+  }
+},{passive:true});
+vwBody.addEventListener('click',()=>{
+  const p=items[vwIdx];if(!p?.sub) return;
+  if(pvTapTimer){
+    clearTimeout(pvTapTimer);pvTapTimer=null;
+    pvSwapped=!pvSwapped;
+    vwImg.style.opacity='0';
+    setTimeout(()=>{vwImg.src=pvSwapped?p.sub:p.main;vwImg.style.opacity='1'},150);
+  }else pvTapTimer=setTimeout(()=>pvTapTimer=null,280);
+});
+
+/* ── SHARE ── */
+async function sharePhoto(dataURL,filename){
+  try{
+    const res=await fetch(dataURL);
+    const blob=await res.blob();
+    const file=new File([blob],filename,{type:'image/jpeg'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file]});
+    }else{
+      const w=window.open();
+      if(w) w.document.write('<img src="'+dataURL+'" style="max-width:100%"><p style="font-family:sans-serif;text-align:center;color:#888;padding:12px">꾹 눌러서 저장</p>');
+    }
+  }catch(e){if(e.name!=='AbortError') showToast('저장 실패')}
+}
+
+/* ── TOAST ── */
+let toastT;
+function showToast(msg,ms=1400){
+  toast.textContent=msg;toast.classList.add('on');
+  clearTimeout(toastT);toastT=setTimeout(()=>toast.classList.remove('on'),ms);
+}
 </script>
 
 </body>
