@@ -88,7 +88,8 @@ background:#000;
 .ghBtn.del{background:rgba(255,59,48,.12);color:#ff3b30;border-color:rgba(255,59,48,.3)}
 #galGrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;overflow-y:scroll;scrollbar-width:none;align-content:start}
 #galGrid::-webkit-scrollbar{display:none}
-#galEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,.3);font-size:14px}
+#galEmpty{display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,.3);font-size:14px;padding:60px 0}
+#galEmpty.show{display:flex}
 .gItem{position:relative;aspect-ratio:1;background:#111;overflow:hidden;cursor:pointer}
 .gItem img{width:100%;height:100%;object-fit:cover}
 .gItem.sel img{opacity:.65}
@@ -315,10 +316,16 @@ async function doFlash(){
 /* ── BOTH ── */
 bothOff.onclick=()=>{
   if(mode!=='photo'){showToast('PHOTO 모드에서만 가능해요');return}
-  bothMode=true;bothOff.style.display='none';bothOn.style.display='';showToast('BOTH ON');
+  bothMode=true;
+  bothOff.style.display='none';
+  bothOn.style.display='block';
+  showToast('BOTH ON');
 };
 bothOn.onclick=()=>{
-  bothMode=false;bothOn.style.display='none';bothOff.style.display='';showToast('BOTH OFF');
+  bothMode=false;
+  bothOn.style.display='none';
+  bothOff.style.display='block';
+  showToast('BOTH OFF');
 };
 
 /* ── FLIP ── */
@@ -342,10 +349,9 @@ document.querySelectorAll('.mBtn').forEach(b=>{
       bothOn.style.display='none';
     }else{
       vfInner.classList.remove('land');
-      $('flashBtn').style.display='';
-      // BOTH 버튼 상태 복원
-      bothOff.style.display=bothMode?'none':'';
-      bothOn.style.display=bothMode?'':'none';
+      $('flashBtn').style.display='block';
+      bothOff.style.display=bothMode?'none':'block';
+      bothOn.style.display=bothMode?'block':'none';
     }
   };
 });
@@ -543,8 +549,13 @@ function renderGallery(){
   galGrid.innerHTML='';
   selBar.classList.toggle('on',selMode&&selIds.size>0);
   selN.textContent=selIds.size+'장 선택됨';
-  if(!items.length){galGrid.style.display='none';galEmpty.style.display='flex';return}
-  galGrid.style.display='grid';galEmpty.style.display='none';
+  if(!items.length){
+    galGrid.style.display='none';
+    galEmpty.classList.add('show');
+    return;
+  }
+  galGrid.style.display='grid';
+  galEmpty.classList.remove('show');
   items.forEach((p,i)=>{
     const div=document.createElement('div');
     div.className='gItem'+(selMode?' selMode':'')+(selIds.has(p.id)?' sel':'');
@@ -597,20 +608,22 @@ async function downloadSelected(){
 function openViewer(idx){
   vwIdx=idx;pvSwapped=false;
   const p=items[idx];if(!p) return;
-  const wrap=$('vwWrap');
-  wrap.innerHTML='';
+
+  // 기존 동적 video 제거
+  const oldVid=$('vwWrap').querySelector('video');
+  if(oldVid) oldVid.remove();
+
   if(p.type==='video'&&p.blob){
     const vid=document.createElement('video');
     vid.src=URL.createObjectURL(p.blob);
     vid.controls=true;vid.playsInline=true;
     vid.style.cssText='max-width:100%;max-height:70vh;border-radius:14px;display:block';
-    wrap.appendChild(vid);
-    $('vwImg').style.display='none';
+    $('vwWrap').appendChild(vid);
+    vwImg.style.display='none';
   }else{
-    const img=$('vwImg');
-    if(!wrap.contains(img)) wrap.appendChild(img);
-    img.style.display='block';
-    img.src=p.main||'';
+    vwImg.style.display='block';
+    vwImg.style.opacity='1';
+    vwImg.src=p.main||'';
   }
   vwIdxEl.textContent=(idx+1)+' / '+items.length;
   $('viewer').classList.add('on');
@@ -669,6 +682,21 @@ function showToast(msg,ms=1400){
   toast.textContent=msg;toast.classList.add('on');
   clearTimeout(toastT);toastT=setTimeout(()=>toast.classList.remove('on'),ms);
 }
+
+// inline onclick 함수들을 window에 노출
+window.openGallery=openGallery;
+window.closeGallery=closeGallery;
+window.handleShutter=handleShutter;
+window.doFlip=doFlip;
+window.toggleSel=toggleSel;
+window.deleteSelected=deleteSelected;
+window.downloadSelected=downloadSelected;
+window.closeViewer=closeViewer;
+window.downloadCurrent=downloadCurrent;
+window.deleteCurrent=deleteCurrent;
+window.toggleRatioMenu=toggleRatioMenu;
+window.setRatio=setRatio;
+window.openViewer=openViewer;
 </script>
 
 </body>
