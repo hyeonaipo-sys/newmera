@@ -132,9 +132,8 @@ background:#000;
     </button>
     <!-- 가운데: 비율 -->
     <div id="ratioWrap">
-      <button id="ratioBtn" onclick="toggleRatioMenu()">1:1</button>
+      <button id="ratioBtn" onclick="toggleRatioMenu()">3:4</button>
       <div id="ratioMenu">
-        <button onclick="setRatio('1:1')">1:1</button>
         <button onclick="setRatio('3:4')">3:4</button>
         <button onclick="setRatio('9:16')">9:16</button>
       </div>
@@ -159,8 +158,8 @@ background:#000;
 
   <div id="botBar">
     <div id="modeRow">
-      <button class="mBtn" data-m="video">VIDEO</button>
-      <button class="mBtn on" data-m="photo">PHOTO</button>
+      <button class="mBtn" data-m="photo">PHOTO</button>
+      <button class="mBtn on" data-m="video">VIDEO</button>
     </div>
     <div id="ctrlRow">
       <button id="thumbBtn" onclick="openGallery()"><img id="thumbImg" alt=""></button>
@@ -220,8 +219,8 @@ background:#000;
 <script>
 /* ── STATE ── */
 let cam=null,camTrack=null,facing='back';
-let mode='photo',bothMode=false,flashMode='off';
-let ratio='1:1'; // 기본 비율
+let mode='video',bothMode=false,flashMode='off';
+let ratio='3:4'; // 기본 비율
 let processing=false,recording=false;
 let recorder=null,recChunks=[],recTimer=null,recSec=0;
 let db=null,items=[],selMode=false,selIds=new Set(),vwIdx=0;
@@ -257,7 +256,17 @@ const toast=$('toast'),cv=$('cv');
 /* ── DB ── */
 const req=indexedDB.open('newmera_v4',1);
 req.onupgradeneeded=e=>e.target.result.createObjectStore('media',{keyPath:'id'});
-req.onsuccess=e=>{db=e.target.result;loadItems();startCam()};
+req.onsuccess=e=>{
+  db=e.target.result;
+  loadItems();
+  // 초기 VIDEO 모드 설정
+  shutter.classList.add('vid');
+  vfInner.classList.add('land');
+  $('flashBtn').style.display='none';
+  bothOff.style.display='none';
+  bothOn.style.display='none';
+  startCam();
+};
 req.onerror=()=>showToast('DB 오류');
 
 /* ── CAMERA ── */
@@ -318,13 +327,13 @@ bothOff.onclick=()=>{
   if(mode!=='photo'){showToast('PHOTO 모드에서만 가능해요');return}
   bothMode=true;
   bothOff.style.display='none';
-  bothOn.style.display='block';
+  bothOn.style.display='inline-block';
   showToast('BOTH ON');
 };
 bothOn.onclick=()=>{
   bothMode=false;
   bothOn.style.display='none';
-  bothOff.style.display='block';
+  bothOff.style.display='inline-block';
   showToast('BOTH OFF');
 };
 
@@ -350,8 +359,8 @@ document.querySelectorAll('.mBtn').forEach(b=>{
     }else{
       vfInner.classList.remove('land');
       $('flashBtn').style.display='block';
-      bothOff.style.display=bothMode?'none':'block';
-      bothOn.style.display=bothMode?'block':'none';
+      bothOff.style.display=bothMode?'none':'inline-block';
+      bothOn.style.display=bothMode?'inline-block':'none';
     }
   };
 });
@@ -444,7 +453,8 @@ function composeBoth(url1,url2){
     c2.width=W;c2.height=H;
     const ctx=c2.getContext('2d');
     ctx.drawImage(i1,0,0,W,H);
-    const pw=Math.round(W*.35),ph=Math.round(pw*(i2.height/i2.width));
+    const pw=Math.round(W*.35);
+    const ph=Math.round(pw*(4/3)); // PIP 항상 3:4 고정
     const px=Math.round(W*.04),py=Math.round(H*.04);
     const pr=Math.round(W*.025),bd=Math.round(W*.004);
     // 검정 테두리
@@ -578,10 +588,6 @@ function renderGallery(){
       div.appendChild(icon);
     }else{
       const img=document.createElement('img');img.src=p.main;div.appendChild(img);
-      if(p.sub){
-        const pip=document.createElement('div');pip.className='gPip';
-        const si=document.createElement('img');si.src=p.sub;pip.appendChild(si);div.appendChild(pip);
-      }
     }
     const chk=document.createElement('div');chk.className='gChk';chk.textContent='✓';div.appendChild(chk);
     div.onclick=()=>{
@@ -617,7 +623,7 @@ function openViewer(idx){
     const vid=document.createElement('video');
     vid.src=URL.createObjectURL(p.blob);
     vid.controls=true;vid.playsInline=true;
-    vid.style.cssText='max-width:100%;max-height:70vh;border-radius:14px;display:block';
+    vid.style.cssText='width:100%;aspect-ratio:16/9;border-radius:14px;display:block;object-fit:cover';
     $('vwWrap').appendChild(vid);
     vwImg.style.display='none';
   }else{
@@ -639,6 +645,22 @@ function deleteCurrent(){
   tx.objectStore('media').delete(p.id);
   tx.oncomplete=()=>{closeViewer();loadItems();showToast('삭제됨')};
 }
+
+/* ── 카메라 스와이프로 모드 전환 ── */
+const modeList=['photo','video'];
+let camSwipeX=0;
+[$('vf'),$('botBar')].forEach(el=>{
+  el.addEventListener('touchstart',e=>{camSwipeX=e.touches[0].clientX},{passive:true});
+  el.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-camSwipeX;
+    if(Math.abs(dx)<50) return;
+    const cur=modeList.indexOf(mode);
+    const next=dx<0?cur+1:cur-1;
+    if(next>=0&&next<modeList.length){
+      document.querySelector(`.mBtn[data-m="${modeList[next]}"]`).click();
+    }
+  },{passive:true});
+});
 
 /* viewer swipe + double tap */
 let vwSX=0;
