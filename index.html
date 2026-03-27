@@ -34,7 +34,7 @@ background:#000;
 }
 #ratioWrap{display:flex;justify-content:center;position:relative}
 #flashBtn{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
-#bothOff{font-size:12px;font-weight:700;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 14px;white-space:nowrap}
+#bothOff{font-size:12px;font-weight:700;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 14px;white-space:nowrap;display:inline-block}
 #bothOn{font-size:12px;font-weight:700;color:#000;background:var(–y);border:1px solid var(–y);border-radius:6px;padding:5px 14px;white-space:nowrap;display:none}
 #ratioBtn{font-size:13px;font-weight:700;color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:5px 12px}
 #ratioMenu{position:absolute;top:36px;left:50%;transform:translateX(-50%);background:rgba(28,28,30,.96);border:1px solid rgba(255,255,255,.1);border-radius:10px;overflow:hidden;display:none;flex-direction:column;min-width:70px;z-index:30}
@@ -132,10 +132,14 @@ background:#000;
     </button>
     <!-- 가운데: 비율 -->
     <div id="ratioWrap">
-      <button id="ratioBtn" onclick="toggleRatioMenu()">3:4</button>
+      <button id="ratioBtn" onclick="toggleRatioMenu()">16:9↔</button>
       <div id="ratioMenu">
-        <button onclick="setRatio('3:4')">3:4</button>
-        <button onclick="setRatio('9:16')">9:16</button>
+        <!-- PHOTO 모드 옵션 -->
+        <button id="r34" onclick="setRatio('3:4')">3:4</button>
+        <button id="r916" onclick="setRatio('9:16')">9:16</button>
+        <!-- VIDEO 모드 옵션 -->
+        <button id="r169h" onclick="setRatio('16:9h')" style="display:none">16:9 가로↔</button>
+        <button id="r169v" onclick="setRatio('16:9v')" style="display:none">16:9 세로↕</button>
       </div>
     </div>
     <!-- 오른쪽: BOTH -->
@@ -265,6 +269,10 @@ req.onsuccess=e=>{
   $('flashBtn').style.display='none';
   bothOff.style.display='none';
   bothOn.style.display='none';
+  $('r34').style.display='none'; $('r916').style.display='none';
+  $('r169h').style.display=''; $('r169v').style.display='';
+  ratio='16:9h';
+  $('ratioBtn').textContent='16:9↔';
   startCam();
 };
 req.onerror=()=>showToast('DB 오류');
@@ -356,11 +364,19 @@ document.querySelectorAll('.mBtn').forEach(b=>{
       $('flashBtn').style.display='none';
       bothOff.style.display='none';
       bothOn.style.display='none';
+      // 비율 메뉴: 가로/세로 16:9
+      $('r34').style.display='none'; $('r916').style.display='none';
+      $('r169h').style.display=''; $('r169v').style.display='';
+      setRatio('16:9h');
     }else{
       vfInner.classList.remove('land');
-      $('flashBtn').style.display='block';
+      $('flashBtn').style.display='flex';
       bothOff.style.display=bothMode?'none':'inline-block';
       bothOn.style.display=bothMode?'inline-block':'none';
+      // 비율 메뉴: 3:4 / 9:16
+      $('r34').style.display=''; $('r916').style.display='';
+      $('r169h').style.display='none'; $('r169v').style.display='none';
+      setRatio('3:4');
     }
   };
 });
@@ -411,18 +427,26 @@ async function doBoth(){
 }
 
 function toggleRatioMenu(){$('ratioMenu').classList.toggle('on')}
+
 function setRatio(r){
   ratio=r;
-  $('ratioBtn').textContent=r;
+  const labels={'3:4':'3:4','9:16':'9:16','16:9h':'16:9↔','16:9v':'16:9↕'};
+  $('ratioBtn').textContent=labels[r]||r;
   $('ratioMenu').classList.remove('on');
-  document.querySelectorAll('#ratioMenu button').forEach(b=>{
-    b.classList.toggle('sel',b.textContent===r);
-  });
-  // vfInner 비율도 적용
-  const map={'1:1':'1/1','3:4':'3/4','9:16':'9/16'};
-  vfInner.style.aspectRatio=map[r]||'';
-  vfInner.style.height=r==='1:1'||r==='3:4'||r==='9:16'?'auto':'100%';
-  if(r==='9:16') vfInner.style.height='100%';
+  // 뷰파인더 비율 적용
+  if(r==='16:9h'){
+    vfInner.classList.add('land');
+    vfInner.style.aspectRatio='';vfInner.style.height='';
+  }else if(r==='16:9v'){
+    vfInner.classList.remove('land');
+    vfInner.style.aspectRatio='9/16';vfInner.style.width='100%';vfInner.style.height='auto';
+  }else if(r==='3:4'){
+    vfInner.classList.remove('land');
+    vfInner.style.aspectRatio='';vfInner.style.height='100%';
+  }else if(r==='9:16'){
+    vfInner.classList.remove('land');
+    vfInner.style.aspectRatio='';vfInner.style.height='100%';
+  }
 }
 // 외부 탭 시 메뉴 닫기
 document.addEventListener('click',e=>{
@@ -453,7 +477,7 @@ function composeBoth(url1,url2){
     c2.width=W;c2.height=H;
     const ctx=c2.getContext('2d');
     ctx.drawImage(i1,0,0,W,H);
-    const pw=Math.round(W*.35);
+    const pw=Math.round(W*.28);
     const ph=Math.round(pw*(4/3)); // PIP 항상 3:4 고정
     const px=Math.round(W*.04),py=Math.round(H*.04);
     const pr=Math.round(W*.025),bd=Math.round(W*.004);
